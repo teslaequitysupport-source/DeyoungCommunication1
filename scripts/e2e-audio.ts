@@ -4,15 +4,16 @@
 
 import { io } from "socket.io-client";
 import { PrismaClient } from "@prisma/client";
+import { readFileSync } from "fs";
 
 const db = new PrismaClient();
 const BASE = "http://127.0.0.1:3000";
 const COOKIE = process.env.USER_JAR || "/tmp/user.jar";
 
-function readCookie(file) {
-  const line = require("fs").readFileSync(file, "utf8").split("\n").find((l) => l.includes("voxcore_session"));
+function readCookie(file: string) {
+  const line = readFileSync(file, "utf8").split("\n").find((l) => l.includes("voxcore_session"));
   if (!line) throw new Error("no session cookie");
-  return line.split("\t").pop().trim();
+  return line.split("\t").pop()!.trim();
 }
 
 async function startSession(modelId) {
@@ -45,27 +46,40 @@ async function main() {
   let received = 0;
   const rtts = [];
   const pending = new Map();
+  let peerReady = false;
+
+  socket.on("peer-ready", () => {
+    peerReady = true;
+    console.log("peer-ready: worker connected, starting stream");
+  });
 
   socket.on("connect", () => {
     socket.emit("auth", { token: s.gatewayToken }, (ack) => {
       if (!ack.ok) throw new Error("gateway auth failed: " + ack.error);
       console.log("gateway auth ok, role:", ack.role, "peer:", ack.peerConnected);
 
-      // Stream 30 chunks of synthetic "speech-like" audio (128ms each).
-      let seq = 0;
-      const interval = setInterval(() => {
-        seq++;
-        const n = 2048;
-        const pcm = new Int16Array(n);
-        for (let i = 0; i < n; i++) {
-          const t = (seq * n + i) / audioCtx.sampleRate;
-          const v = Math.sin(2 * Math.PI * 220 * t) * 0.5 * (1 + 0.4 * Math.sin(2 * Math.PI * 3 * t));
-          pcm[i] = Math.max(-32767, Math.min(32767, Math.round(v * 32767)));
-        }
-        pending.set(seq, Date.now());
-        socket.emit("audio", { seq, data: pcm.buffer });
-        if (seq >= 30) clearInterval(interval);
-      }, 140);
+      // Correct client behavior: do not stream before the worker joined the
+      // pair. The gateway now rejects (not silently drops) pre-peer chunks.
+      const waitPeer = setInterval(() => {
+        if (!peerReady) return;
+        clearInterval(waitPeer);
+
+        // Stream 30 chunks of synthetic "speech-like" audio (128ms each).
+        let seq = 0;
+        const interval = setInterval(() => {
+          seq++;
+          const n = 2048;
+          const pcm = new Int16Array(n);
+          for (let i = 0; i < n; i++) {
+            const t = (seq * n + i) / audioCtx.sampleRate;
+            const v = Math.sin(2 * Math.PI * 220 * t) * 0.5 * (1 + 0.4 * Math.sin(2 * Math.PI * 3 * t));
+            pcm[i] = Math.max(-32767, Math.min(32767, Math.round(v * 32767)));
+          }
+          pending.set(seq, Date.now());
+          socket.emit("audio", { seq, data: pcm.buffer });
+          if (seq >= 30) clearInterval(interval);
+        }, 140);
+      }, 100);
     });
   });
 

@@ -134,21 +134,38 @@ async function testTransport() {
 }
 
 async function testRateLimit(burst?: number) {
-  const count = Math.min(Math.max(burst ?? 260, 10), 400);
+  const count = Math.min(Math.max(burst ?? 300, 50), 500);
+  // Align to a fresh fixed window: the limiter uses 60s fixed buckets, so a
+  // slow burst that straddles two windows may never exceed the limit. A real
+  // burst is concurrent, so fire in parallel batches inside one window.
+  const waitMs = 60_000 - (Date.now() % 60_000) + 200;
+  await new Promise((r) => setTimeout(r, Math.min(waitMs, 60_000)));
   let got429 = 0;
   let got200 = 0;
-  for (let i = 0; i < count; i++) {
-    const res = await fetch("http://127.0.0.1:3000/api/health").catch(() => null);
-    if (!res) continue;
-    if (res.status === 429) got429++;
-    else if (res.status === 200) got200++;
+  let other = 0;
+  const batchSize = 25;
+  for (let i = 0; i < count; i += batchSize) {
+    const n = Math.min(batchSize, count - i);
+    const statuses = await Promise.all(
+      Array.from({ length: n }, () =>
+        fetch("http://127.0.0.1:3000/api/health")
+          .then((r) => r.status)
+          .catch(() => 0)
+      )
+    );
+    for (const s of statuses) {
+      if (s === 429) got429++;
+      else if (s === 200) got200++;
+      else other++;
+    }
   }
   return {
     burst: count,
     http200: got200,
     http429: got429,
+    otherStatuses: other,
     verdict: got429 > 0 ? "Rate limiter engaged (429s observed)" : "No 429 observed; burst may be under the 240/min window",
-    note: "The health route allows 240 requests per minute per identity; this burst may consume this machine's own window briefly",
+    note: "The health route allows 240 requests per minute per identity; the burst is aligned to a single 60s window",
   };
 }
 

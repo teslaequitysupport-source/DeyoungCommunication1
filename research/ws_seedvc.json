@@ -1,0 +1,56 @@
+[
+  {
+    "url": "https://github.com",
+    "name": "Plachtaa/seed-vc: zero-shot voice conversion",
+    "snippet": "Real-time voice conversion is support, with algorithm delay of ~300ms and device side delay of ~100ms, suitable for online meetings, gaming and live streaming . Read more",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.aimodels.fyi",
+    "name": "Seed-VC: Audio-to-Audio model — overview, use cases,",
+    "snippet": "Apr 17, 2026 — Q: Can I use Seed - VC in a commercial product? A: The GPL-3.0 license permits commercial use only if your entire product source code is open ... Read more",
+    "host_name": "www.aimodels.fyi",
+    "rank": 1,
+    "date": "Apr 17, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org",
+    "name": "Zero-shot Voice Conversion with Diffusion Transformers",
+    "snippet": "by S Liu · 2024 · Cited by 99 — Seed - VC outperforms strong baselines like OpenVoice and CosyVoice, achieving higher speaker similarity and lower word error rates in zero-shot  ...",
+    "host_name": "arxiv.org",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://levelup.gitconnected.com",
+    "name": "Transform Voices with AI: A Complete Guide to Seed-VC",
+    "snippet": "Apr 27, 2026 — Seed - VC first separates speech into content and speaker style, then recombines them to generate the target voice .",
+    "host_name": "levelup.gitconnected.com",
+    "rank": 3,
+    "date": "Apr 27, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co",
+    "name": "Seed Voice Conversion - a Hugging Face Space by Plachta",
+    "snippet": "This app lets you upload a source audio file and a reference voice , then transforms the source so it sounds like the reference speaker (or an anonymized ...",
+    "host_name": "huggingface.co",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.semanticscholar.org",
+    "name": "STREAMVC: Real-Time Low-Latency Voice Conversion",
+    "snippet": "This work demonstrates the feasibility of learning soft speech units causally, as well as the effectiveness of supplying whitened fundamental frequency ...",
+    "host_name": "www.semanticscholar.org",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  }
+]

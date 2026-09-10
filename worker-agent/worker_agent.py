@@ -78,6 +78,19 @@ STATE = {
 
 log_lock = threading.Lock()
 
+# Chunk-level trace file for session streaming diagnosis. Verbose but cheap:
+# one line every 10 chunks, plus every exception with traceback.
+TRACE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent.log")
+
+
+def trace(msg):
+    try:
+        with log_lock:
+            with open(TRACE_PATH, "a") as f:
+                f.write(f"{time.strftime('%H:%M:%S')} {msg}\n")
+    except Exception:
+        pass
+
 
 def log(level, kind, message, data=None):
     line = json.dumps({"level": level, "kind": kind, "msg": message, "data": data, "ts": time.time()})
@@ -480,10 +493,20 @@ def session_loop(session_id, gateway_urls, token):
     def _end(data):
         stop_event.set()
 
+    @sio.on("connect")
+    def _gw_connect():
+        trace(f"session {session_id}: gateway socket connected")
+
+    @sio.on("disconnect")
+    def _gw_disconnect(*args):
+        trace(f"session {session_id}: gateway socket DISCONNECTED args={args}")
+
     @sio.on("audio-in")
     def _audio_in(msg):
         if stop_event.is_set():
             return
+        sess = SESSIONS.get(session_id)
+        sess["recv"] = sess.get("recv", 0) + 1
         started = time.time()
         try:
             audio = bytes(msg["audio"])
@@ -492,8 +515,13 @@ def session_loop(session_id, gateway_urls, token):
             infer_ms = (time.time() - started) * 1000
             STATE["infer_ms"].append(infer_ms)
             sio.emit("audio", {"seq": msg["seq"], "audio": out})
+            sess["emit"] = sess.get("emit", 0) + 1
+            if sess["recv"] % 10 == 0:
+                trace(f"session {session_id}: recv={sess['recv']} emit={sess['emit']} seq={msg['seq']} infer={infer_ms:.2f}ms sio_connected={sio.connected}")
         except Exception as e:
             STATE["error_count"] += 1
+            import traceback
+            trace(f"session {session_id}: CONVERT_FAILED at recv={sess['recv']} seq={msg.get('seq')}: {e}\n{traceback.format_exc()}")
             log("error", "CONVERT_FAILED", str(e)[:200])
 
     try:

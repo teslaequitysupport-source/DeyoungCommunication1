@@ -70,6 +70,7 @@ export default function StudioView({ navigate, refreshMe, config }: { navigate: 
   const analyserRef = useRef<AnalyserNode | null>(null);
   const seqRef = useRef(0);
   const pendingRef = useRef<Map<number, number>>(new Map());
+  const peerReadyRef = useRef(false);
   const statsRef = useRef<LatStats>({ n: 0, p50: 0, p95: 0, last: 0, sent: 0, recv: 0, dropsPct: 0, bufferUnderruns: 0 });
   const convertedRef = useRef<Float32Array[]>([]);
   const recordingRef = useRef(false);
@@ -183,6 +184,9 @@ export default function StudioView({ navigate, refreshMe, config }: { navigate: 
         let peak = 0;
         for (let i = 0; i < f32.length; i += 8) peak = Math.max(peak, Math.abs(f32[i]));
         setMicLevel(peak);
+        // Do not stream before the worker joined the pair: the gateway rejects
+        // pre-peer chunks, so dropping them here keeps seq numbers dense.
+        if (!peerReadyRef.current) return;
         // convert to Int16 and send
         const pcm16 = new Int16Array(f32.length);
         for (let i = 0; i < f32.length; i++) {
@@ -222,6 +226,8 @@ export default function StudioView({ navigate, refreshMe, config }: { navigate: 
         });
       });
       socket.on("peer-ready", () => {
+        peerReadyRef.current = true;
+        seqRef.current = 0;
         setPhase("LIVE");
         toast({ title: "Session live", description: "Speak into your microphone. Converted audio returns through the worker." });
       });
@@ -257,6 +263,7 @@ export default function StudioView({ navigate, refreshMe, config }: { navigate: 
   const stopEverything = async (abandon?: boolean) => {
     cancelAnimationFrame(rafRef.current);
     recordingRef.current = false;
+    peerReadyRef.current = false;
     try { socketRef.current?.disconnect(); } catch {}
     try { captureRef.current?.disconnect(); } catch {}
     try { playbackRef.current?.disconnect(); } catch {}

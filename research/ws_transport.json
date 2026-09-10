@@ -1,0 +1,47 @@
+[
+  {
+    "url": "https://bloggeek.me",
+    "name": "WebRTC for Voice AI: how the transport layer works",
+    "snippet": "Does voice AI use WebRTC or WebSockets? Most browser-based voice AI uses WebRTC because it is built for low-latency real-time audio. WebSockets are used by ... Read more",
+    "host_name": "bloggeek.me",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://openai.com",
+    "name": "How OpenAI delivers low-latency voice AI at scale",
+    "snippet": "May 4, 2026 — How OpenAI rebuilt its WebRTC stack to power real - time Voice AI with low latency , global scale, and seamless conversational turn-taking.",
+    "host_name": "openai.com",
+    "rank": 1,
+    "date": "May 4, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://localai.io",
+    "name": "Realtime API",
+    "snippet": "WebRTC transport enables browser-based voice conversations with lower latency . WebRTC uses the Opus audio codec for encoding and decoding audio on RTP tracks.",
+    "host_name": "localai.io",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://ably.com",
+    "name": "WebRTC vs. WebSocket: Key differences and which to use",
+    "snippet": "Jan 30, 2023 — WebRTC and WebSockets are both event-driven technologies that provide sub-second latencies, which makes them suitable for realtime use cases. Read more",
+    "host_name": "ably.com",
+    "rank": 3,
+    "date": "Jan 30, 2023",
+    "favicon": ""
+  },
+  {
+    "url": "https://dev.to",
+    "name": "Real-Time Voice Interactions over WebRTC",
+    "snippet": "Jan 14, 2025 — WebRTC's peer-to-peer design minimizes latency , ensuring natural, fluid conversations. ​2. Adaptive Quality. WebRTC dynamically adjusts audio ... Read more",
+    "host_name": "dev.to",
+    "rank": 4,
+    "date": "Jan 14, 2025",
+    "favicon": ""
+  }
+]

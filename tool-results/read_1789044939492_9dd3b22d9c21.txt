@@ -1,0 +1,2002 @@
+     1→     1→ULTIMATE MASTER RESEARCH + BUILD DIRECTIVE
+     2→     2→
+     3→     3→REAL-TIME AI VOICE PLATFORM
+     4→     4→
+     5→     5→Desktop + Android + iOS + Cloud GPU Worker Fleet + Admin Command Center + SaaS
+     6→     6→
+     7→     7→⸻
+     8→     8→
+     9→     9→0. EXECUTIVE DIRECTIVE
+    10→    10→
+    11→    11→You are acting as the principal technical team responsible for researching, architecting, building, securing, testing, auditing, documenting, and maintaining a production-grade real-time AI voice conversion platform.
+    12→    12→
+    13→    13→Do not behave like a basic code generator.
+    14→    14→
+    15→    15→Act as a combined:
+    16→    16→
+    17→    17→* Principal Software Architect
+    18→    18→* Full-Stack Engineer
+    19→    19→* ML/AI Engineer
+    20→    20→* Real-Time Audio Engineer
+    21→    21→* Distributed Systems Engineer
+    22→    22→* DevOps/SRE Engineer
+    23→    23→* Cloud Infrastructure Engineer
+    24→    24→* Security Engineer
+    25→    25→* Privacy Engineer
+    26→    26→* Accessibility Engineer
+    27→    27→* Product Designer
+    28→    28→* UX Engineer
+    29→    29→* Mobile Engineer
+    30→    30→* Desktop Engineer
+    31→    31→* QA Engineer
+    32→    32→* Performance Engineer
+    33→    33→* Licensing Researcher
+    34→    34→* Compliance Researcher
+    35→    35→* SaaS Architect
+    36→    36→* Cost Optimization Engineer
+    37→    37→
+    38→    38→The product must be sophisticated, functional, secure, scalable, maintainable, commercially viable, and visually premium.
+    39→    39→
+    40→    40→The final system must NOT be generic, sloppy, fake, unfinished-looking, template-like, or full of placeholders.
+    41→    41→
+    42→    42→The system must use real functionality wherever functionality is claimed.
+    43→    43→
+    44→    44→Do not fabricate:
+    45→    45→
+    46→    46→* APIs
+    47→    47→* GPU availability
+    48→    48→* pricing
+    49→    49→* quotas
+    50→    50→* licenses
+    51→    51→* commercial permissions
+    52→    52→* model capabilities
+    53→    53→* mobile capabilities
+    54→    54→* compatibility
+    55→    55→* uptime
+    56→    56→* performance
+    57→    57→* integrations
+    58→    58→* reviews
+    59→    59→* customers
+    60→    60→* statistics
+    61→    61→* testimonials
+    62→    62→* infrastructure
+    63→    63→* payment functionality
+    64→    64→
+    65→    65→If something is unknown, research it.
+    66→    66→
+    67→    67→If something cannot be verified, mark it as unverified.
+    68→    68→
+    69→    69→If something is impossible, say so.
+    70→    70→
+    71→    71→If something requires a workaround, document the workaround.
+    72→    72→
+    73→    73→Never hide technical limitations.
+    74→    74→
+    75→    75→⸻
+    76→    76→
+    77→    77→1. PRODUCT VISION
+    78→    78→
+    79→    79→Build a real-time AI voice conversion platform inspired by the user experience of products such as Altered AI RealTime Pro, but DO NOT use Altered AI’s proprietary API, backend, infrastructure, models, or restricted services as the foundation of this competing product.
+    80→    80→
+    81→    81→The platform should allow a user to:
+    82→    82→
+    83→    83→1. Select a voice model.
+    84→    84→2. Speak into a microphone.
+    85→    85→3. Capture the microphone audio.
+    86→    86→4. Process the audio through an AI voice-conversion pipeline.
+    87→    87→5. Return the converted audio with minimal latency.
+    88→    88→6. Route the processed audio to supported applications.
+    89→    89→7. Record or stream converted audio.
+    90→    90→8. Manage voices and models.
+    91→    91→9. Monitor session quality.
+    92→    92→10. Eventually use the same platform across Windows, Android, and iOS.
+    93→    93→
+    94→    94→The platform must support a hybrid architecture:
+    95→    95→
+    96→    96→LOCAL + CLOUD GPU
+    97→    97→
+    98→    98→Where possible:
+    99→    99→
+   100→   100→* run locally
+   101→   101→* use free compute
+   102→   102→* use remote free GPU
+   103→   103→* use paid GPU only when necessary
+   104→   104→* scale paid infrastructure to zero when unused
+   105→   105→* automatically recover from failed workers
+   106→   106→* avoid unnecessary infrastructure costs
+   107→   107→
+   108→   108→The ultimate business model should allow:
+   109→   109→
+   110→   110→$0 infrastructure at the beginning where realistically possible.
+   111→   111→
+   112→   112→Then:
+   113→   113→
+   114→   114→USER DEMAND → GPU CAPACITY → BILLING → REVENUE → MORE CAPACITY
+   115→   115→
+   116→   116→⸻
+   117→   117→
+   118→   118→2. CRITICAL PRE-IMPLEMENTATION GATE
+   119→   119→
+   120→   120→DO NOT START IMPLEMENTATION IMMEDIATELY.
+   121→   121→
+   122→   122→Before coding, perform enough research to understand the project.
+   123→   123→
+   124→   124→Then ask the user EXACTLY THREE high-value questions.
+   125→   125→
+   126→   126→Not two.
+   127→   127→
+   128→   128→Not four.
+   129→   129→
+   130→   130→Exactly THREE.
+   131→   131→
+   132→   132→The questions must be based on what you discovered during the initial research and must materially affect architecture or implementation.
+   133→   133→
+   134→   134→After asking the three questions:
+   135→   135→
+   136→   136→STOP.
+   137→   137→
+   138→   138→Do not code.
+   139→   139→
+   140→   140→Do not deploy.
+   141→   141→
+   142→   142→Do not silently assume the answers.
+   143→   143→
+   144→   144→Do not create fake defaults for critical product decisions.
+   145→   145→
+   146→   146→Wait for the user’s answers.
+   147→   147→
+   148→   148→Once the user answers:
+   149→   149→
+   150→   150→RESEARCH → ARCHITECTURE → IMPLEMENTATION.
+   151→   151→
+   152→   152→⸻
+   153→   153→
+   154→   154→3. USER EXPERIENCE
+   155→   155→
+   156→   156→The final product should feel like a serious premium AI product.
+   157→   157→
+   158→   158→It should NOT look like:
+   159→   159→
+   160→   160→* a generic SaaS template
+   161→   161→* a cheap AI wrapper
+   162→   162→* an unfinished startup
+   163→   163→* a copied dashboard
+   164→   164→* an AI-generated landing page
+   165→   165→* a collection of random cards
+   166→   166→* excessive gradients
+   167→   167→* meaningless animations
+   168→   168→* fake 3D elements
+   169→   169→* placeholder text
+   170→   170→* placeholder statistics
+   171→   171→* fake testimonials
+   172→   172→
+   173→   173→The interface should feel:
+   174→   174→
+   175→   175→* sophisticated
+   176→   176→* technical
+   177→   177→* premium
+   178→   178→* powerful
+   179→   179→* intentional
+   180→   180→* modern
+   181→   181→* responsive
+   182→   182→* fast
+   183→   183→* trustworthy
+   184→   184→* visually coherent
+   185→   185→
+   186→   186→Use high-quality:
+   187→   187→
+   188→   188→* typography
+   189→   189→* spacing
+   190→   190→* hierarchy
+   191→   191→* motion
+   192→   192→* 3D effects where useful
+   193→   193→* micro-interactions
+   194→   194→* transitions
+   195→   195→* data visualization
+   196→   196→* system-status visualization
+   197→   197→* loading states
+   198→   198→* error states
+   199→   199→* empty states
+   200→   200→* success states
+   201→   201→
+   202→   202→3D animation must serve the product experience.
+   203→   203→
+   204→   204→Do not add 3D simply because “3D looks cool.”
+   205→   205→
+   206→   206→Respect reduced-motion preferences.
+   207→   207→
+   208→   208→NO EM DASHES.
+   209→   209→
+   210→   210→Do not use em dashes in UI copy, documentation, prompts, marketing copy, comments, or generated content.
+   211→   211→
+   212→   212→⸻
+   213→   213→
+   214→   214→4. FULL-STACK REQUIREMENT
+   215→   215→
+   216→   216→This must be a COMPLETE FULL-STACK APPLICATION.
+   217→   217→
+   218→   218→Do not build a frontend prototype pretending to be a finished product.
+   219→   219→
+   220→   220→The architecture must include real:
+   221→   221→
+   222→   222→Frontend
+   223→   223→↓
+   224→   224→Authentication
+   225→   225→↓
+   226→   226→Backend/API
+   227→   227→↓
+   228→   228→Database
+   229→   229→↓
+   230→   230→Worker Registry
+   231→   231→↓
+   232→   232→Scheduler
+   233→   233→↓
+   234→   234→GPU Workers
+   235→   235→↓
+   236→   236→AI Voice Pipeline
+   237→   237→↓
+   238→   238→Audio Transport
+   239→   239→↓
+   240→   240→Storage
+   241→   241→↓
+   242→   242→Usage Metering
+   243→   243→↓
+   244→   244→Billing
+   245→   245→↓
+   246→   246→Notifications
+   247→   247→↓
+   248→   248→Admin Control Plane
+   249→   249→↓
+   250→   250→Monitoring / Observability
+   251→   251→
+   252→   252→Every important UI action must connect to real functionality.
+   253→   253→
+   254→   254→No fake API responses.
+   255→   255→
+   256→   256→No hard-coded fake users.
+   257→   257→
+   258→   258→No fake GPU workers.
+   259→   259→
+   260→   260→No fake usage numbers.
+   261→   261→
+   262→   262→No fake subscription status.
+   263→   263→
+   264→   264→No fake analytics.
+   265→   265→
+   266→   266→No fake support tickets.
+   267→   267→
+   268→   268→No fake inbox.
+   269→   269→
+   270→   270→No fake payment success.
+   271→   271→
+   272→   272→No fake worker health.
+   273→   273→
+   274→   274→⸻
+   275→   275→
+   276→   276→5. PLATFORM TARGETS
+   277→   277→
+   278→   278→The platform must eventually support:
+   279→   279→
+   280→   280→Windows
+   281→   281→
+   282→   282→Research and implement:
+   283→   283→
+   284→   284→* Windows desktop client
+   285→   285→* microphone capture
+   286→   286→* real-time processing
+   287→   287→* virtual microphone
+   288→   288→* WASAPI
+   289→   289→* Windows Audio APIs
+   290→   290→* VB-CABLE or suitable alternative
+   291→   291→* open-source virtual audio drivers
+   292→   292→* microphone device selection
+   293→   293→* output device selection
+   294→   294→* system audio configuration
+   295→   295→* Discord
+   296→   296→* WhatsApp Desktop
+   297→   297→* Zoom
+   298→   298→* Google Meet
+   299→   299→* OBS
+   300→   300→* other microphone-based applications
+   301→   301→
+   302→   302→Do not claim compatibility without testing.
+   303→   303→
+   304→   304→⸻
+   305→   305→
+   306→   306→6. ANDROID
+   307→   307→
+   308→   308→Android is a first-class platform.
+   309→   309→
+   310→   310→Research current Android audio architecture and implementation constraints.
+   311→   311→
+   312→   312→Investigate:
+   313→   313→
+   314→   314→* AudioRecord
+   315→   315→* AudioTrack
+   316→   316→* AAudio
+   317→   317→* Oboe
+   318→   318→* WebRTC
+   319→   319→* AudioManager
+   320→   320→* foreground services
+   321→   321→* background execution
+   322→   322→* audio focus
+   323→   323→* Bluetooth
+   324→   324→* USB audio
+   325→   325→* microphone permissions
+   326→   326→* Android OS restrictions
+   327→   327→* Android 10+
+   328→   328→* current Android versions
+   329→   329→* device differences
+   330→   330→* GPU/NPU inference
+   331→   331→* battery usage
+   332→   332→* thermal throttling
+   333→   333→
+   334→   334→Separate the product into:
+   335→   335→
+   336→   336→Mode A
+   337→   337→
+   338→   338→In-app voice conversion.
+   339→   339→
+   340→   340→Mode B
+   341→   341→
+   342→   342→System/third-party application microphone routing.
+   343→   343→
+   344→   344→Mode C
+   345→   345→
+   346→   346→External audio routing.
+   347→   347→
+   348→   348→Do not claim that Android can inject a processed microphone into every third-party application unless this is technically verified.
+   349→   349→
+   350→   350→Create a compatibility matrix.
+   351→   351→
+   352→   352→Statuses should include:
+   353→   353→
+   354→   354→SUPPORTED
+   355→   355→PARTIAL
+   356→   356→UNSUPPORTED
+   357→   357→WORKAROUND
+   358→   358→DESKTOP COMPANION REQUIRED
+   359→   359→
+   360→   360→⸻
+   361→   361→
+   362→   362→7. iOS
+   363→   363→
+   364→   364→iOS is also a first-class platform.
+   365→   365→
+   366→   366→Research current iOS audio capabilities.
+   367→   367→
+   368→   368→Investigate:
+   369→   369→
+   370→   370→* AVAudioEngine
+   371→   371→* AVAudioSession
+   372→   372→* Audio Units
+   373→   373→* Audio Unit Extensions
+   374→   374→* Voice Processing I/O
+   375→   375→* CallKit
+   376→   376→* PushKit
+   377→   377→* WebRTC
+   378→   378→* ReplayKit
+   379→   379→* Bluetooth
+   380→   380→* USB audio
+   381→   381→* background audio
+   382→   382→* VoIP restrictions
+   383→   383→* sandbox restrictions
+   384→   384→* current iOS versions
+   385→   385→* local inference
+   386→   386→* Core ML
+   387→   387→* Apple Neural Engine
+   388→   388→
+   389→   389→Do not promise system-wide microphone replacement if iOS does not permit it.
+   390→   390→
+   391→   391→Provide the best technically legitimate architecture.
+   392→   392→
+   393→   393→Separate:
+   394→   394→
+   395→   395→IN-APP CONVERSION
+   396→   396→
+   397→   397→THIRD-PARTY APP ROUTING
+   398→   398→
+   399→   399→EXTERNAL AUDIO ROUTING
+   400→   400→
+   401→   401→DESKTOP COMPANION
+   402→   402→
+   403→   403→Research each independently.
+   404→   404→
+   405→   405→⸻
+   406→   406→
+   407→   407→8. MOBILE LOCAL AI
+   408→   408→
+   409→   409→Research whether supported voice conversion models can run directly on mobile.
+   410→   410→
+   411→   411→Evaluate:
+   412→   412→
+   413→   413→* Core ML
+   414→   414→* ONNX Runtime
+   415→   415→* TensorFlow Lite
+   416→   416→* ExecuTorch
+   417→   417→* NCNN
+   418→   418→* MNN
+   419→   419→* native inference
+   420→   420→* Android GPU
+   421→   421→* Android NPU
+   422→   422→* Apple Neural Engine
+   423→   423→* CPU fallback
+   424→   424→
+   425→   425→Benchmark:
+   426→   426→
+   427→   427→* latency
+   428→   428→* RAM
+   429→   429→* model size
+   430→   430→* battery
+   431→   431→* thermal performance
+   432→   432→* quality
+   433→   433→* sustained performance
+   434→   434→
+   435→   435→Do not force local inference if it produces unacceptable latency or quality.
+   436→   436→
+   437→   437→⸻
+   438→   438→
+   439→   439→9. CLOUD VOICE CONVERSION
+   440→   440→
+   441→   441→Implement cloud inference as a provider-agnostic architecture.
+   442→   442→
+   443→   443→The client sends audio to the appropriate worker.
+   444→   444→
+   445→   445→Pipeline:
+   446→   446→
+   447→   447→MICROPHONE
+   448→   448→→ AUDIO CAPTURE
+   449→   449→→ NOISE PROCESSING
+   450→   450→→ RESAMPLING
+   451→   451→→ CHUNKING
+   452→   452→→ AUDIO TRANSPORT
+   453→   453→→ GPU WORKER
+   454→   454→→ VOICE CONVERSION
+   455→   455→→ POST PROCESSING
+   456→   456→→ AUDIO TRANSPORT
+   457→   457→→ CLIENT
+   458→   458→→ OUTPUT DEVICE
+   459→   459→
+   460→   460→Research:
+   461→   461→
+   462→   462→* WebRTC
+   463→   463→* WebSocket
+   464→   464→* QUIC
+   465→   465→* RTP
+   466→   466→* UDP
+   467→   467→* TCP
+   468→   468→* jitter buffers
+   469→   469→* packet loss
+   470→   470→* congestion
+   471→   471→* reconnects
+   472→   472→* NAT traversal
+   473→   473→* TURN
+   474→   474→* STUN
+   475→   475→* encryption
+   476→   476→* latency
+   477→   477→
+   478→   478→Do not choose the transport protocol based on popularity.
+   479→   479→
+   480→   480→Benchmark it.
+   481→   481→
+   482→   482→⸻
+   483→   483→
+   484→   484→10. REAL-TIME LATENCY
+   485→   485→
+   486→   486→Latency is a core product requirement.
+   487→   487→
+   488→   488→Measure:
+   489→   489→
+   490→   490→* microphone capture latency
+   491→   491→* network latency
+   492→   492→* queue latency
+   493→   493→* GPU inference latency
+   494→   494→* post-processing latency
+   495→   495→* playback latency
+   496→   496→* total end-to-end latency
+   497→   497→
+   498→   498→Define:
+   499→   499→
+   500→   500→P50
+   501→   501→P75
+   502→   502→P90
+   503→   503→P95
+   504→   504→P99
+   505→   505→
+   506→   506→Measure:
+   507→   507→
+   508→   508→* CPU
+   509→   509→* GPU
+   510→   510→* VRAM
+   511→   511→* RAM
+   512→   512→* dropped audio
+   513→   513→* jitter
+   514→   514→* packet loss
+   515→   515→* buffer size
+   516→   516→* model warm-up
+   517→   517→* cold-start time
+   518→   518→
+   519→   519→Never advertise latency figures without measurements.
+   520→   520→
+   521→   521→⸻
+   522→   522→
+   523→   523→11. VOICE MODEL RESEARCH
+   524→   524→
+   525→   525→Research credible open-source voice conversion systems including:
+   526→   526→
+   527→   527→* RVC
+   528→   528→* RVC Project
+   529→   529→* w-okada/voice-changer
+   530→   530→* Applio
+   531→   531→* Beatrice
+   532→   532→* DDSP-SVC
+   533→   533→* so-vits-svc
+   534→   534→* Seed-VC
+   535→   535→* other technically credible alternatives
+   536→   536→
+   537→   537→For every model/repository investigate:
+   538→   538→
+   539→   539→* repository
+   540→   540→* license
+   541→   541→* model license
+   542→   542→* model weights
+   543→   543→* datasets
+   544→   544→* dependencies
+   545→   545→* commercial use
+   546→   546→* SaaS use
+   547→   547→* API use
+   548→   548→* redistribution
+   549→   549→* modification
+   550→   550→* attribution
+   551→   551→* voice rights
+   552→   552→* dataset restrictions
+   553→   553→* known limitations
+   554→   554→* latency
+   555→   555→* GPU requirements
+   556→   556→* VRAM
+   557→   557→* CPU requirements
+   558→   558→* streaming capability
+   559→   559→* maintenance status
+   560→   560→* security concerns
+   561→   561→
+   562→   562→Do not assume an MIT repository means every model weight or dependency is MIT.
+   563→   563→
+   564→   564→Audit each layer separately.
+   565→   565→
+   566→   566→⸻
+   567→   567→
+   568→   568→12. VOICE RIGHTS
+   569→   569→
+   570→   570→The platform must address voice rights.
+   571→   571→
+   572→   572→Implement policies covering:
+   573→   573→
+   574→   574→* user-owned voices
+   575→   575→* authorized voices
+   576→   576→* voice cloning
+   577→   577→* impersonation
+   578→   578→* public figures
+   579→   579→* unauthorized cloning
+   580→   580→* fraudulent use
+   581→   581→* harassment
+   582→   582→* abuse
+   583→   583→* identity deception
+   584→   584→* copyright
+   585→   585→* personality/publicity rights
+   586→   586→* takedown procedures
+   587→   587→
+   588→   588→Do not create a platform that encourages unauthorized impersonation.
+   589→   589→
+   590→   590→⸻
+   591→   591→
+   592→   592→13. GPU WORKER FLEET
+   593→   593→
+   594→   594→Create a provider abstraction.
+   595→   595→
+   596→   596→Example:
+   597→   597→
+   598→   598→LocalProvider
+   599→   599→KaggleProvider
+   600→   600→HuggingFaceProvider
+   601→   601→ModalProvider
+   602→   602→RunPodProvider
+   603→   603→FutureProvider
+   604→   604→
+   605→   605→The architecture must not depend on one provider.
+   606→   606→
+   607→   607→Every worker should register itself.
+   608→   608→
+   609→   609→Worker metadata:
+   610→   610→
+   611→   611→* worker_id
+   612→   612→* provider
+   613→   613→* region
+   614→   614→* GPU
+   615→   615→* VRAM
+   616→   616→* RAM
+   617→   617→* CPU
+   618→   618→* OS
+   619→   619→* CUDA version
+   620→   620→* Python version
+   621→   621→* model version
+   622→   622→* worker version
+   623→   623→* status
+   624→   624→* capacity
+   625→   625→* active sessions
+   626→   626→* maximum sessions
+   627→   627→* heartbeat
+   628→   628→* last_seen
+   629→   629→* startup time
+   630→   630→* health status
+   631→   631→
+   632→   632→Worker states:
+   633→   633→
+   634→   634→BOOTING
+   635→   635→LOADING_MODEL
+   636→   636→WARMING
+   637→   637→READY
+   638→   638→ACTIVE
+   639→   639→IDLE
+   640→   640→DRAINING
+   641→   641→STOPPING
+   642→   642→STOPPED
+   643→   643→UNHEALTHY
+   644→   644→FAILED
+   645→   645→RESTARTING
+   646→   646→QUARANTINED
+   647→   647→
+   648→   648→⸻
+   649→   649→
+   650→   650→14. KAGGLE FIRST
+   651→   651→
+   652→   652→Kaggle should be researched as the first free GPU worker target.
+   653→   653→
+   654→   654→Verify current:
+   655→   655→
+   656→   656→* GPU types
+   657→   657→* T4/T4x2 availability
+   658→   658→* VRAM
+   659→   659→* RAM
+   660→   660→* CPU
+   661→   661→* GPU quotas
+   662→   662→* runtime limits
+   663→   663→* idle behavior
+   664→   664→* notebook termination
+   665→   665→* networking
+   666→   666→* internet
+   667→   667→* package installation
+   668→   668→* CUDA
+   669→   669→* PyTorch
+   670→   670→* Python
+   671→   671→* storage
+   672→   672→* persistence
+   673→   673→* WebSocket capability
+   674→   674→* HTTP capability
+   675→   675→* tunneling options
+   676→   676→* concurrent workload limitations
+   677→   677→* commercial-use restrictions
+   678→   678→* Terms of Service
+   679→   679→
+   680→   680→Do not treat Kaggle as permanent 24/7 production infrastructure.
+   681→   681→
+   682→   682→A Kaggle notebook terminating must be considered normal infrastructure failure.
+   683→   683→
+   684→   684→The system must recover through another worker.
+   685→   685→
+   686→   686→⸻
+   687→   687→
+   688→   688→15. TMUX
+   689→   689→
+   690→   690→Use tmux where appropriate for worker process management.
+   691→   691→
+   692→   692→tmux should provide:
+   693→   693→
+   694→   694→* persistent terminal sessions
+   695→   695→* detachable worker processes
+   696→   696→* logging
+   697→   697→* process inspection
+   698→   698→* restart scripts
+   699→   699→* worker management
+   700→   700→* debugging
+   701→   701→* multiple worker processes where technically appropriate
+   702→   702→
+   703→   703→BUT:
+   704→   704→
+   705→   705→tmux does NOT keep a cloud notebook or VM alive after the provider terminates it.
+   706→   706→
+   707→   707→Never design the system around the false assumption that tmux provides cloud persistence.
+   708→   708→
+   709→   709→The worker supervisor must detect infrastructure disappearance and recover elsewhere.
+   710→   710→
+   711→   711→⸻
+   712→   712→
+   713→   713→16. FREE GPU RESEARCH
+   714→   714→
+   715→   715→Research legitimate free GPU providers.
+   716→   716→
+   717→   717→Investigate:
+   718→   718→
+   719→   719→* Kaggle
+   720→   720→* Hugging Face ZeroGPU
+   721→   721→* Google Colab
+   722→   722→* other legitimate free GPU infrastructure
+   723→   723→* educational/research GPU platforms
+   724→   724→* free compute programs
+   725→   725→
+   726→   726→For each provider verify:
+   727→   727→
+   728→   728→* signup
+   729→   729→* email verification
+   730→   730→* phone verification
+   731→   731→* identity requirements
+   732→   732→* payment card requirements
+   733→   733→* Nigeria accessibility
+   734→   734→* GPU
+   735→   735→* VRAM
+   736→   736→* runtime
+   737→   737→* quota
+   738→   738→* idle timeout
+   739→   739→* networking
+   740→   740→* storage
+   741→   741→* Docker
+   742→   742→* SSH
+   743→   743→* HTTP
+   744→   744→* WebSocket
+   745→   745→* commercial restrictions
+   746→   746→* Terms
+   747→   747→* whether persistent servers are actually allowed
+   748→   748→
+   749→   749→Classify each:
+   750→   750→
+   751→   751→FREE FOREVER
+   752→   752→FREE WITH QUOTA
+   753→   753→FREE FOR DEVELOPMENT
+   754→   754→OPEN SOURCE / SELF-HOSTABLE
+   755→   755→FREEMIUM
+   756→   756→PAY-AS-YOU-GO
+   757→   757→PAID
+   758→   758→NOT SUITABLE
+   759→   759→
+   760→   760→Never call something “free” when a payment method is actually required.
+   761→   761→
+   762→   762→⸻
+   763→   763→
+   764→   764→17. SCALE TO ZERO
+   765→   765→
+   766→   766→This is NON-NEGOTIABLE.
+   767→   767→
+   768→   768→When there are no active users:
+   769→   769→
+   770→   770→NO PAID GPU WORKERS SHOULD REMAIN RUNNING unless explicitly configured by the administrator.
+   771→   771→
+   772→   772→Desired lifecycle:
+   773→   773→
+   774→   774→NO DEMAND
+   775→   775→↓
+   776→   776→ZERO PAID WORKERS
+   777→   777→↓
+   778→   778→USER REQUEST
+   779→   779→↓
+   780→   780→PROVISION WORKER
+   781→   781→↓
+   782→   782→BOOT
+   783→   783→↓
+   784→   784→LOAD MODEL
+   785→   785→↓
+   786→   786→HEALTH CHECK
+   787→   787→↓
+   788→   788→READY
+   789→   789→↓
+   790→   790→START SESSION
+   791→   791→↓
+   792→   792→SESSION ENDS
+   793→   793→↓
+   794→   794→IDLE
+   795→   795→↓
+   796→   796→COOLDOWN
+   797→   797→↓
+   798→   798→DRAIN
+   799→   799→↓
+   800→   800→STOP
+   801→   801→↓
+   802→   802→ZERO PAID GPU COST
+   803→   803→
+   804→   804→The system must distinguish:
+   805→   805→
+   806→   806→FREE COMPUTE
+   807→   807→
+   808→   808→from:
+   809→   809→
+   810→   810→PAID COMPUTE
+   811→   811→
+   812→   812→Scale-to-zero must consider:
+   813→   813→
+   814→   814→* active sessions
+   815→   815→* queued sessions
+   816→   816→* startup time
+   817→   817→* model loading
+   818→   818→* health
+   819→   819→* worker capacity
+   820→   820→* subscription level
+   821→   821→* administrator override
+   822→   822→* free-user limits
+   823→   823→* paid-user priority
+   824→   824→* budget limits
+   825→   825→
+   826→   826→Never shut down a worker while a session is active.
+   827→   827→
+   828→   828→⸻
+   829→   829→
+   830→   830→18. AUTO PROVISIONING
+   831→   831→
+   832→   832→The scheduler should be able to determine:
+   833→   833→
+   834→   834→* whether existing workers can handle demand
+   835→   835→* whether another worker is required
+   836→   836→* which provider is best
+   837→   837→* whether free capacity exists
+   838→   838→* whether paid capacity is allowed
+   839→   839→* whether the budget allows provisioning
+   840→   840→
+   841→   841→Worker scoring should consider:
+   842→   842→
+   843→   843→* latency
+   844→   844→* GPU
+   845→   845→* VRAM
+   846→   846→* availability
+   847→   847→* health
+   848→   848→* capacity
+   849→   849→* current sessions
+   850→   850→* model availability
+   851→   851→* provider reliability
+   852→   852→* cost
+   853→   853→* region
+   854→   854→* network quality
+   855→   855→
+   856→   856→⸻
+   857→   857→
+   858→   858→19. SELF-HEALING
+   859→   859→
+   860→   860→The system must automatically recover from:
+   861→   861→
+   862→   862→* worker crash
+   863→   863→* model crash
+   864→   864→* GPU failure
+   865→   865→* network failure
+   866→   866→* provider termination
+   867→   867→* stale heartbeat
+   868→   868→* corrupted worker
+   869→   869→* failed startup
+   870→   870→* failed model loading
+   871→   871→* failed health check
+   872→   872→* audio transport failure
+   873→   873→
+   874→   874→Recovery:
+   875→   875→
+   876→   876→DETECT
+   877→   877→→ MARK UNHEALTHY
+   878→   878→→ STOP ACCEPTING NEW SESSIONS
+   879→   879→→ DRAIN IF POSSIBLE
+   880→   880→→ RESTART OR REPLACE
+   881→   881→→ RECONNECT USERS
+   882→   882→→ VERIFY HEALTH
+   883→   883→→ RETURN TO SERVICE
+   884→   884→
+   885→   885→Never pretend a failed worker is healthy.
+   886→   886→
+   887→   887→⸻
+   888→   888→
+   889→   889→20. WORKER HEARTBEATS
+   890→   890→
+   891→   891→Workers must periodically report:
+   892→   892→
+   893→   893→* worker status
+   894→   894→* GPU
+   895→   895→* VRAM
+   896→   896→* active sessions
+   897→   897→* capacity
+   898→   898→* model
+   899→   899→* model version
+   900→   900→* CPU
+   901→   901→* RAM
+   902→   902→* latency
+   903→   903→* errors
+   904→   904→* uptime
+   905→   905→* timestamp
+   906→   906→
+   907→   907→The backend must detect stale workers.
+   908→   908→
+   909→   909→Never rely only on client-side status.
+   910→   910→
+   911→   911→⸻
+   912→   912→
+   913→   913→21. DESKTOP VIRTUAL MICROPHONE
+   914→   914→
+   915→   915→Research and implement a legitimate Windows audio output architecture.
+   916→   916→
+   917→   917→Investigate:
+   918→   918→
+   919→   919→* VB-CABLE
+   920→   920→* WASAPI
+   921→   921→* Windows Audio APIs
+   922→   922→* virtual audio drivers
+   923→   923→* open-source alternatives
+   924→   924→* driver licensing
+   925→   925→* driver signing
+   926→   926→* installation privileges
+   927→   927→* Windows 10
+   928→   928→* Windows 11
+   929→   929→
+   930→   930→User flow:
+   931→   931→
+   932→   932→PHYSICAL MICROPHONE
+   933→   933→→ OUR APPLICATION
+   934→   934→→ AI VOICE CONVERSION
+   935→   935→→ VIRTUAL AUDIO OUTPUT
+   936→   936→→ DISCORD / WHATSAPP / ZOOM / MEET / OBS
+   937→   937→
+   938→   938→Do not claim universal compatibility.
+   939→   939→
+   940→   940→Build a tested compatibility matrix.
+   941→   941→
+   942→   942→⸻
+   943→   943→
+   944→   944→22. TARGET APPLICATION COMPATIBILITY
+   945→   945→
+   946→   946→Research separately:
+   947→   947→
+   948→   948→* Discord
+   949→   949→* WhatsApp Desktop
+   950→   950→* Zoom
+   951→   951→* Google Meet
+   952→   952→* OBS
+   953→   953→* browser-based applications
+   954→   954→* other microphone-based applications
+   955→   955→
+   956→   956→For mobile investigate:
+   957→   957→
+   958→   958→* WhatsApp
+   959→   959→* Discord
+   960→   960→* Instagram
+   961→   961→* TikTok
+   962→   962→* Facebook
+   963→   963→* other social applications
+   964→   964→
+   965→   965→For every target report:
+   966→   966→
+   967→   967→SUPPORTED
+   968→   968→PARTIAL
+   969→   969→UNSUPPORTED
+   970→   970→WORKAROUND
+   971→   971→DESKTOP COMPANION
+   972→   972→
+   973→   973→Explain WHY.
+   974→   974→
+   975→   975→Never write:
+   976→   976→
+   977→   977→“Works with everything.”
+   978→   978→
+   979→   979→unless it has genuinely been tested.
+   980→   980→
+   981→   981→⸻
+   982→   982→
+   983→   983→23. LOCAL + CLOUD HYBRID
+   984→   984→
+   985→   985→The system should intelligently decide between:
+   986→   986→
+   987→   987→LOCAL
+   988→   988→FREE REMOTE
+   989→   989→PAID REMOTE
+   990→   990→
+   991→   991→based on:
+   992→   992→
+   993→   993→* device capability
+   994→   994→* GPU
+   995→   995→* CPU
+   996→   996→* VRAM
+   997→   997→* battery
+   998→   998→* thermal state
+   999→   999→* network
+  1000→  1000→* latency
+  1001→  1001→* model availability
+  1002→  1002→* user plan
+  1003→  1003→* current worker availability
+  1004→  1004→* infrastructure cost
+  1005→  1005→
+  1006→  1006→The client should not need to know which worker is processing the request unless useful.
+  1007→  1007→
+  1008→  1008→⸻
+  1009→  1009→
+  1010→  1010→24. AUTHENTICATION
+  1011→  1011→
+  1012→  1012→Implement real authentication.
+  1013→  1013→
+  1014→  1014→Research and select an appropriate secure authentication architecture.
+  1015→  1015→
+  1016→  1016→Include:
+  1017→  1017→
+  1018→  1018→* registration
+  1019→  1019→* login
+  1020→  1020→* logout
+  1021→  1021→* email verification
+  1022→  1022→* password reset
+  1023→  1023→* session management
+  1024→  1024→* secure cookies/tokens
+  1025→  1025→* device/session management
+  1026→  1026→* rate limiting
+  1027→  1027→* brute-force protection
+  1028→  1028→* account lockout or progressive throttling
+  1029→  1029→* optional MFA
+  1030→  1030→* account deletion
+  1031→  1031→
+  1032→  1032→Never store passwords incorrectly.
+  1033→  1033→
+  1034→  1034→⸻
+  1035→  1035→
+  1036→  1036→25. RATE LIMITING
+  1037→  1037→
+  1038→  1038→Rate limiting is mandatory.
+  1039→  1039→
+  1040→  1040→Apply appropriate limits to:
+  1041→  1041→
+  1042→  1042→* authentication
+  1043→  1043→* registration
+  1044→  1044→* password reset
+  1045→  1045→* API
+  1046→  1046→* voice conversion
+  1047→  1047→* file upload
+  1048→  1048→* worker registration
+  1049→  1049→* admin endpoints
+  1050→  1050→* support
+  1051→  1051→* email
+  1052→  1052→* expensive operations
+  1053→  1053→* WebSocket/session creation
+  1054→  1054→
+  1055→  1055→Use multiple layers where necessary:
+  1056→  1056→
+  1057→  1057→IP
+  1058→  1058→USER
+  1059→  1059→ACCOUNT
+  1060→  1060→API KEY
+  1061→  1061→DEVICE
+  1062→  1062→ENDPOINT
+  1063→  1063→SESSION
+  1064→  1064→
+  1065→  1065→Do not rely solely on frontend limits.
+  1066→  1066→
+  1067→  1067→⸻
+  1068→  1068→
+  1069→  1069→26. SECURITY
+  1070→  1070→
+  1071→  1071→Perform a serious security audit.
+  1072→  1072→
+  1073→  1073→Protect against:
+  1074→  1074→
+  1075→  1075→* XSS
+  1076→  1076→* CSRF
+  1077→  1077→* injection
+  1078→  1078→* SSRF
+  1079→  1079→* request forgery
+  1080→  1080→* malicious uploads
+  1081→  1081→* path traversal
+  1082→  1082→* authentication attacks
+  1083→  1083→* session hijacking
+  1084→  1084→* credential stuffing
+  1085→  1085→* brute force
+  1086→  1086→* abuse
+  1087→  1087→* API key leakage
+  1088→  1088→* secret leakage
+  1089→  1089→* insecure WebSockets
+  1090→  1090→* worker impersonation
+  1091→  1091→* unauthorized worker registration
+  1092→  1092→* privilege escalation
+  1093→  1093→* admin takeover
+  1094→  1094→* replay attacks
+  1095→  1095→* webhook attacks
+  1096→  1096→* billing manipulation
+  1097→  1097→
+  1098→  1098→Use:
+  1099→  1099→
+  1100→  1100→* HTTPS
+  1101→  1101→* secure headers
+  1102→  1102→* CSP
+  1103→  1103→* secure cookies
+  1104→  1104→* input validation
+  1105→  1105→* output encoding
+  1106→  1106→* secrets management
+  1107→  1107→* RBAC
+  1108→  1108→* audit logging
+  1109→  1109→* encryption where appropriate
+  1110→  1110→* worker authentication
+  1111→  1111→* request signing where appropriate
+  1112→  1112→* secure webhook validation
+  1113→  1113→
+  1114→  1114→⸻
+  1115→  1115→
+  1116→  1116→27. ADMIN PANEL
+  1117→  1117→
+  1118→  1118→Create a completely separate:
+  1119→  1119→
+  1120→  1120→/admin
+  1121→  1121→
+  1122→  1122→The admin panel is the private command centre of the entire platform.
+  1123→  1123→
+  1124→  1124→It must NOT be a customer dashboard with an “admin” label.
+  1125→  1125→
+  1126→  1126→It should have its own premium interface and security model.
+  1127→  1127→
+  1128→  1128→The administrator has full platform access.
+  1129→  1129→
+  1130→  1130→The administrator’s usage should NOT consume customer credits or customer subscription limits.
+  1131→  1131→
+  1132→  1132→However, actual infrastructure costs must still be tracked.
+  1133→  1133→
+  1134→  1134→⸻
+  1135→  1135→
+  1136→  1136→28. ADMIN COMMAND CENTRE
+  1137→  1137→
+  1138→  1138→The admin should be able to control:
+  1139→  1139→
+  1140→  1140→USERS
+  1141→  1141→
+  1142→  1142→* search
+  1143→  1143→* filter
+  1144→  1144→* view
+  1145→  1145→* suspend
+  1146→  1146→* restore
+  1147→  1147→* delete
+  1148→  1148→* sessions
+  1149→  1149→* devices
+  1150→  1150→* subscriptions
+  1151→  1151→* usage
+  1152→  1152→* activity
+  1153→  1153→* support history
+  1154→  1154→* security events
+  1155→  1155→
+  1156→  1156→GPU WORKERS
+  1157→  1157→
+  1158→  1158→* provider
+  1159→  1159→* GPU
+  1160→  1160→* VRAM
+  1161→  1161→* status
+  1162→  1162→* sessions
+  1163→  1163→* latency
+  1164→  1164→* health
+  1165→  1165→* heartbeat
+  1166→  1166→* restart
+  1167→  1167→* drain
+  1168→  1168→* quarantine
+  1169→  1169→* provision
+  1170→  1170→* stop
+  1171→  1171→* scale
+  1172→  1172→* logs
+  1173→  1173→
+  1174→  1174→VOICE MODELS
+  1175→  1175→
+  1176→  1176→* install
+  1177→  1177→* enable
+  1178→  1178→* disable
+  1179→  1179→* version
+  1180→  1180→* license
+  1181→  1181→* performance
+  1182→  1182→* VRAM requirements
+  1183→  1183→* availability
+  1184→  1184→* test
+  1185→  1185→
+  1186→  1186→BILLING
+  1187→  1187→
+  1188→  1188→* plans
+  1189→  1189→* prices
+  1190→  1190→* subscriptions
+  1191→  1191→* credits
+  1192→  1192→* usage
+  1193→  1193→* refunds
+  1194→  1194→* invoices
+  1195→  1195→* revenue
+  1196→  1196→* infrastructure cost
+  1197→  1197→* margins
+  1198→  1198→
+  1199→  1199→SUPPORT
+  1200→  1200→
+  1201→  1201→* inbox
+  1202→  1202→* tickets
+  1203→  1203→* conversations
+  1204→  1204→* internal notes
+  1205→  1205→* assignments
+  1206→  1206→* priority
+  1207→  1207→* status
+  1208→  1208→* responses
+  1209→  1209→
+  1210→  1210→WEBSITE
+  1211→  1211→
+  1212→  1212→Admin should be able to manage, where architecturally safe:
+  1213→  1213→
+  1214→  1214→* fonts
+  1215→  1215→* typography
+  1216→  1216→* theme
+  1217→  1217→* navigation
+  1218→  1218→* homepage content
+  1219→  1219→* pricing
+  1220→  1220→* features
+  1221→  1221→* announcements
+  1222→  1222→* banners
+  1223→  1223→* SEO metadata
+  1224→  1224→* legal pages
+  1225→  1225→* images
+  1226→  1226→* animation intensity
+  1227→  1227→* feature flags
+  1228→  1228→
+  1229→  1229→SYSTEM
+  1230→  1230→
+  1231→  1231→* health
+  1232→  1232→* queues
+  1233→  1233→* database
+  1234→  1234→* storage
+  1235→  1235→* workers
+  1236→  1236→* API
+  1237→  1237→* network
+  1238→  1238→* errors
+  1239→  1239→* logs
+  1240→  1240→* monitoring
+  1241→  1241→
+  1242→  1242→SECURITY
+  1243→  1243→
+  1244→  1244→* login events
+  1245→  1245→* failed logins
+  1246→  1246→* suspicious activity
+  1247→  1247→* rate-limit events
+  1248→  1248→* admin actions
+  1249→  1249→* API abuse
+  1250→  1250→* worker authentication
+  1251→  1251→* security alerts
+  1252→  1252→
+  1253→  1253→⸻
+  1254→  1254→
+  1255→  1255→29. ADMIN SITE CUSTOMIZATION
+  1256→  1256→
+  1257→  1257→The admin must provide controlled customization of the public site.
+  1258→  1258→
+  1259→  1259→Support:
+  1260→  1260→
+  1261→  1261→* font selection
+  1262→  1262→* font weights
+  1263→  1263→* typography scale
+  1264→  1264→* spacing
+  1265→  1265→* border radius
+  1266→  1266→* shadows
+  1267→  1267→* animations
+  1268→  1268→* theme
+  1269→  1269→* logos
+  1270→  1270→* favicon
+  1271→  1271→* navigation
+  1272→  1272→* page content
+  1273→  1273→* pricing
+  1274→  1274→* banners
+  1275→  1275→* feature visibility
+  1276→  1276→
+  1277→  1277→Use:
+  1278→  1278→
+  1279→  1279→DRAFT
+  1280→  1280→→ PREVIEW
+  1281→  1281→→ APPROVE
+  1282→  1282→→ PUBLISH
+  1283→  1283→
+  1284→  1284→Provide:
+  1285→  1285→
+  1286→  1286→* version history
+  1287→  1287→* rollback
+  1288→  1288→* change logs
+  1289→  1289→* audit trail
+  1290→  1290→
+  1291→  1291→Do not allow dangerous arbitrary production changes without safeguards.
+  1292→  1292→
+  1293→  1293→⸻
+  1294→  1294→
+  1295→  1295→30. ADMIN TEST LAB
+  1296→  1296→
+  1297→  1297→Provide an administrative testing environment.
+  1298→  1298→
+  1299→  1299→The admin should be able to test:
+  1300→  1300→
+  1301→  1301→* GPU workers
+  1302→  1302→* model loading
+  1303→  1303→* voice conversion
+  1304→  1304→* audio pipeline
+  1305→  1305→* WebRTC/WebSocket
+  1306→  1306→* latency
+  1307→  1307→* packet loss
+  1308→  1308→* worker failover
+  1309→  1309→* scale-to-zero
+  1310→  1310→* worker recovery
+  1311→  1311→* authentication
+  1312→  1312→* rate limiting
+  1313→  1313→* billing
+  1314→  1314→* notifications
+  1315→  1315→* storage
+  1316→  1316→* mobile connectivity
+  1317→  1317→
+  1318→  1318→The testing system must clearly separate:
+  1319→  1319→
+  1320→  1320→PRODUCTION
+  1321→  1321→
+  1322→  1322→from:
+  1323→  1323→
+  1324→  1324→TEST
+  1325→  1325→
+  1326→  1326→Never accidentally run destructive tests against production.
+  1327→  1327→
+  1328→  1328→⸻
+  1329→  1329→
+  1330→  1330→31. DATABASE
+  1331→  1331→
+  1332→  1332→Design a proper production database.
+  1333→  1333→
+  1334→  1334→Potential entities include:
+  1335→  1335→
+  1336→  1336→users
+  1337→  1337→sessions
+  1338→  1338→devices
+  1339→  1339→subscriptions
+  1340→  1340→plans
+  1341→  1341→usage
+  1342→  1342→credits
+  1343→  1343→payments
+  1344→  1344→refunds
+  1345→  1345→voice_models
+  1346→  1346→voice_profiles
+  1347→  1347→voice_jobs
+  1348→  1348→audio_assets
+  1349→  1349→workers
+  1350→  1350→worker_heartbeats
+  1351→  1351→worker_sessions
+  1352→  1352→worker_events
+  1353→  1353→providers
+  1354→  1354→queues
+  1355→  1355→health_checks
+  1356→  1356→support_tickets
+  1357→  1357→messages
+  1358→  1358→notifications
+  1359→  1359→audit_logs
+  1360→  1360→security_events
+  1361→  1361→rate_limits
+  1362→  1362→consents
+  1363→  1363→privacy_requests
+  1364→  1364→legal_documents
+  1365→  1365→site_settings
+  1366→  1366→feature_flags
+  1367→  1367→analytics_events
+  1368→  1368→licenses
+  1369→  1369→third_party_services
+  1370→  1370→cost_records
+  1371→  1371→
+  1372→  1372→Do not create unnecessary data collection.
+  1373→  1373→
+  1374→  1374→⸻
+  1375→  1375→
+  1376→  1376→32. DATA MINIMISATION
+  1377→  1377→
+  1378→  1378→Only collect data that is actually necessary.
+  1379→  1379→
+  1380→  1380→For every field ask:
+  1381→  1381→
+  1382→  1382→Why do we need this?
+  1383→  1383→
+  1384→  1384→How long do we need it?
+  1385→  1385→
+  1386→  1386→Who can access it?
+  1387→  1387→
+  1388→  1388→Where is it stored?
+  1389→  1389→
+  1390→  1390→Is it sent to a third party?
+  1391→  1391→
+  1392→  1392→Can we avoid collecting it?
+  1393→  1393→
+  1394→  1394→Do not collect personal data simply because it might be useful later.
+  1395→  1395→
+  1396→  1396→⸻
+  1397→  1397→
+  1398→  1398→33. VOICE DATA PRIVACY
+  1399→  1399→
+  1400→  1400→Voice/audio may constitute sensitive or highly identifying information depending on context.
+  1401→  1401→
+  1402→  1402→Design privacy controls for:
+  1403→  1403→
+  1404→  1404→* uploaded audio
+  1405→  1405→* recorded audio
+  1406→  1406→* converted audio
+  1407→  1407→* voice profiles
+  1408→  1408→* model files
+  1409→  1409→* generated output
+  1410→  1410→* logs
+  1411→  1411→* temporary buffers
+  1412→  1412→* support attachments
+  1413→  1413→
+  1414→  1414→Provide:
+  1415→  1415→
+  1416→  1416→* deletion
+  1417→  1417→* retention controls
+  1418→  1418→* access controls
+  1419→  1419→* secure storage
+  1420→  1420→* documented processing purposes
+  1421→  1421→
+  1422→  1422→Do not retain audio indefinitely by default.
+  1423→  1423→
+  1424→  1424→⸻
+  1425→  1425→
+  1426→  1426→34. LEGAL AND COMPLIANCE AUDIT
+  1427→  1427→
+  1428→  1428→Before declaring the product complete, perform a legal/compliance-oriented technical audit.
+  1429→  1429→
+  1430→  1430→Research applicable requirements, including Nigerian requirements, and identify requirements for other jurisdictions if the product serves users there.
+  1431→  1431→
+  1432→  1432→At minimum investigate:
+  1433→  1433→
+  1434→  1434→* Nigeria Data Protection Act
+  1435→  1435→* NDPC requirements
+  1436→  1436→* Nigerian consumer protection requirements
+  1437→  1437→* FCCPC requirements
+  1438→  1438→* electronic communications requirements where applicable
+  1439→  1439→* copyright law
+  1440→  1440→* trademark issues
+  1441→  1441→* privacy law
+  1442→  1442→* cookie requirements
+  1443→  1443→* consent requirements
+  1444→  1444→* subscription requirements
+  1445→  1445→* refund/cancellation requirements
+  1446→  1446→* data retention
+  1447→  1447→* data deletion
+  1448→  1448→* cross-border processing
+  1449→  1449→* payment compliance
+  1450→  1450→* AI/voice rights
+  1451→  1451→* platform terms
+  1452→  1452→
+  1453→  1453→Do not claim “legally compliant” simply because pages were added.
+  1454→  1454→
+  1455→  1455→Identify what requires professional legal review.
+  1456→  1456→
+  1457→  1457→⸻
+  1458→  1458→
+  1459→  1459→35. REQUIRED LEGAL/TRUST PAGES
+  1460→  1460→
+  1461→  1461→The application must have appropriate pages for:
+  1462→  1462→
+  1463→  1463→* Terms & Conditions
+  1464→  1464→* Privacy Policy
+  1465→  1465→* Cookie Policy
+  1466→  1466→* Refund Policy
+  1467→  1467→* Cancellation Policy
+  1468→  1468→* Acceptable Use Policy
+  1469→  1469→* Copyright/IP Policy
+  1470→  1470→* Voice Rights / Voice Usage Policy
+  1471→  1471→* Community/Abuse Policy where needed
+  1472→  1472→* Contact
+  1473→  1473→* Support
+  1474→  1474→
+  1475→  1475→Content must reflect the actual product.
+  1476→  1476→
+  1477→  1477→Do not copy generic legal text that contradicts actual functionality.
+  1478→  1478→
+  1479→  1479→⸻
+  1480→  1480→
+  1481→  1481→36. MANDATORY WEBSITE AUDIT
+  1482→  1482→
+  1483→  1483→Audit the existing website and application before redesigning or declaring completion.
+  1484→  1484→
+  1485→  1485→Check:
+  1486→  1486→
+  1487→  1487→Accessibility
+  1488→  1488→
+  1489→  1489→* colour contrast
+  1490→  1490→* alt text
+  1491→  1491→* keyboard navigation
+  1492→  1492→* focus states
+  1493→  1493→* form labels
+  1494→  1494→* button labels
+  1495→  1495→* semantic HTML
+  1496→  1496→* screen readers
+  1497→  1497→* reduced motion
+  1498→  1498→* accessible dialogs
+  1499→  1499→* accessible navigation
+  1500→  1500→
+  1501→  1501→Trust
+  1502→  1502→
+  1503→  1503→Remove:
+  1504→  1504→
+  1505→  1505→* fake reviews
+  1506→  1506→* fake testimonials
+  1507→  1507→* fake statistics
+  1508→  1508→* fake users
+  1509→  1509→* fake partnerships
+  1510→  1510→* fake awards
+  1511→  1511→* unsupported claims
+  1512→  1512→* invented performance numbers
+  1513→  1513→
+  1514→  1514→Legal
+  1515→  1515→
+  1516→  1516→Verify:
+  1517→  1517→
+  1518→  1518→* Terms & Conditions
+  1519→  1519→* Privacy Policy
+  1520→  1520→* Refund Policy
+  1521→  1521→* Cookie Policy
+  1522→  1522→* consent
+  1523→  1523→* business information
+  1524→  1524→* contact information
+  1525→  1525→* subscription terms
+  1526→  1526→
+  1527→  1527→Third Parties
+  1528→  1528→
+  1529→  1529→Audit:
+  1530→  1530→
+  1531→  1531→* embeds
+  1532→  1532→* analytics
+  1533→  1533→* tracking
+  1534→  1534→* cookies
+  1535→  1535→* external fonts
+  1536→  1536→* external images
+  1537→  1537→* external scripts
+  1538→  1538→* payment providers
+  1539→  1539→* AI APIs
+  1540→  1540→* storage providers
+  1541→  1541→* authentication providers
+  1542→  1542→
+  1543→  1543→For each third party document:
+  1544→  1544→
+  1545→  1545→WHAT
+  1546→  1546→WHY
+  1547→  1547→DATA
+  1548→  1548→LICENSE
+  1549→  1549→COST
+  1550→  1550→PRIVACY
+  1551→  1551→SECURITY
+  1552→  1552→COMMERCIAL TERMS
+  1553→  1553→
+  1554→  1554→⸻
+  1555→  1555→
+  1556→  1556→37. COOKIES AND TRACKING
+  1557→  1557→
+  1558→  1558→Identify every:
+  1559→  1559→
+  1560→  1560→* cookie
+  1561→  1561→* local storage item
+  1562→  1562→* tracking script
+  1563→  1563→* analytics tool
+  1564→  1564→* advertising pixel
+  1565→  1565→* session identifier
+  1566→  1566→* fingerprinting mechanism
+  1567→  1567→
+  1568→  1568→Do not install tracking just because it is common.
+  1569→  1569→
+  1570→  1570→Only collect what is necessary.
+  1571→  1571→
+  1572→  1572→Where consent is legally required:
+  1573→  1573→
+  1574→  1574→show an appropriate consent mechanism.
+  1575→  1575→
+  1576→  1576→Do not bundle unnecessary analytics consent into essential service functionality.
+  1577→  1577→
+  1578→  1578→⸻
+  1579→  1579→
+  1580→  1580→38. FORMS
+  1581→  1581→
+  1582→  1582→Every form must have:
+  1583→  1583→
+  1584→  1584→* clear labels
+  1585→  1585→* accessible inputs
+  1586→  1586→* validation
+  1587→  1587→* useful errors
+  1588→  1588→* keyboard navigation
+  1589→  1589→* appropriate autocomplete
+  1590→  1590→* privacy explanation where necessary
+  1591→  1591→* consent where necessary
+  1592→  1592→* clear submit button
+  1593→  1593→* clear cancellation
+  1594→  1594→* loading state
+  1595→  1595→* success state
+  1596→  1596→* failure state
+  1597→  1597→
+  1598→  1598→Never use unclear labels such as:
+  1599→  1599→
+  1600→  1600→“Submit”
+  1601→  1601→
+  1602→  1602→when a more descriptive label is appropriate.
+  1603→  1603→
+  1604→  1604→⸻
+  1605→  1605→
+  1606→  1606→39. COLOUR AND DESIGN ACCESSIBILITY
+  1607→  1607→
+  1608→  1608→Run a contrast audit.
+  1609→  1609→
+  1610→  1610→Do not sacrifice accessibility for visual aesthetics.
+  1611→  1611→
+  1612→  1612→Check:
+  1613→  1613→
+  1614→  1614→* normal text
+  1615→  1615→* large text
+  1616→  1616→* buttons
+  1617→  1617→* links
+  1618→  1618→* disabled states
+  1619→  1619→* input borders
+  1620→  1620→* focus indicators
+  1621→  1621→* status indicators
+  1622→  1622→
+  1623→  1623→Do not communicate important information using colour alone.
+  1624→  1624→
+  1625→  1625→⸻
+  1626→  1626→
+  1627→  1627→40. IMAGE AND ASSET COPYRIGHT
+  1628→  1628→
+  1629→  1629→Audit every asset.
+  1630→  1630→
+  1631→  1631→For every image, font, icon, video, audio track, sound effect, animation, model, dependency and dataset determine:
+  1632→  1632→
+  1633→  1633→* source
+  1634→  1634→* license
+  1635→  1635→* commercial use
+  1636→  1636→* attribution
+  1637→  1637→* redistribution
+  1638→  1638→* modification
+  1639→  1639→* SaaS restrictions
+  1640→  1640→* copyright status
+  1641→  1641→
+  1642→  1642→Remove anything whose rights cannot be established.
+  1643→  1643→
+  1644→  1644→Do not use random Google images.
+  1645→  1645→
+  1646→  1646→Do not use copyrighted assets simply because they are available online.
+  1647→  1647→
+  1648→  1648→⸻
+  1649→  1649→
+  1650→  1650→41. BUSINESS INFORMATION
+  1651→  1651→
+  1652→  1652→The public site must contain accurate real business information appropriate to the user’s actual business situation.
+  1653→  1653→
+  1654→  1654→Do not invent:
+  1655→  1655→
+  1656→  1656→* company registration numbers
+  1657→  1657→* office addresses
+  1658→  1658→* phone numbers
+  1659→  1659→* emails
+  1660→  1660→* certifications
+  1661→  1661→* partners
+  1662→  1662→* legal entities
+  1663→  1663→
+  1664→  1664→If required information is missing, identify it as an implementation requirement.
+  1665→  1665→
+  1666→  1666→⸻
+  1667→  1667→
+  1668→  1668→42. PAYMENTS
+  1669→  1669→
+  1670→  1670→Billing must be real if enabled.
+  1671→  1671→
+  1672→  1672→Implement:
+  1673→  1673→
+  1674→  1674→* plans
+  1675→  1675→* subscriptions
+  1676→  1676→* usage
+  1677→  1677→* credits
+  1678→  1678→* invoices
+  1679→  1679→* payment state
+  1680→  1680→* cancellation
+  1681→  1681→* refunds
+  1682→  1682→* failed payments
+  1683→  1683→* webhook verification
+  1684→  1684→* entitlement synchronization
+  1685→  1685→
+  1686→  1686→Never mark a payment as successful based solely on frontend state.
+  1687→  1687→
+  1688→  1688→Server-side payment verification is mandatory.
+  1689→  1689→
+  1690→  1690→⸻
+  1691→  1691→
+  1692→  1692→43. COST CONTROL
+  1693→  1693→
+  1694→  1694→The infrastructure system must know:
+  1695→  1695→
+  1696→  1696→* provider
+  1697→  1697→* worker
+  1698→  1698→* GPU
+  1699→  1699→* runtime
+  1700→  1700→* session
+  1701→  1701→* cost
+  1702→  1702→* estimated cost
+  1703→  1703→* daily cost
+  1704→  1704→* monthly cost
+  1705→  1705→
+  1706→  1706→Allow administrator-defined:
+  1707→  1707→
+  1708→  1708→* daily GPU budget
+  1709→  1709→* monthly GPU budget
+  1710→  1710→* maximum concurrent paid workers
+  1711→  1711→* maximum paid sessions
+  1712→  1712→* free-user limits
+  1713→  1713→* emergency shutdown
+  1714→  1714→* provider restrictions
+  1715→  1715→
+  1716→  1716→If a budget threshold is reached, the system must respond according to an explicit policy.
+  1717→  1717→
+  1718→  1718→⸻
+  1719→  1719→
+  1720→  1720→44. SUBSCRIPTION ARCHITECTURE
+  1721→  1721→
+  1722→  1722→Design subscription tiers only after researching realistic infrastructure economics.
+  1723→  1723→
+  1724→  1724→Possible structure:
+  1725→  1725→
+  1726→  1726→FREE
+  1727→  1727→PRO
+  1728→  1728→PREMIUM
+  1729→  1729→BUSINESS
+  1730→  1730→
+  1731→  1731→But do not invent final prices.
+  1732→  1732→
+  1733→  1733→Calculate:
+  1734→  1734→
+  1735→  1735→GPU cost
+  1736→  1736→storage
+  1737→  1737→bandwidth
+  1738→  1738→support
+  1739→  1739→payment fees
+  1740→  1740→infrastructure
+  1741→  1741→margin
+  1742→  1742→
+  1743→  1743→Then recommend pricing.
+  1744→  1744→
+  1745→  1745→Free users must not accidentally create unlimited infrastructure costs.
+  1746→  1746→
+  1747→  1747→Paid users should receive appropriate priority.
+  1748→  1748→
+  1749→  1749→⸻
+  1750→  1750→
+  1751→  1751→45. OBSERVABILITY
+  1752→  1752→
+  1753→  1753→Implement:
+  1754→  1754→
+  1755→  1755→* structured logs
+  1756→  1756→* metrics
+  1757→  1757→* traces where useful
+  1758→  1758→* worker health
+  1759→  1759→* API health
+  1760→  1760→* database health
+  1761→  1761→* queue health
+  1762→  1762→* GPU health
+  1763→  1763→* latency
+  1764→  1764→* error rate
+  1765→  1765→* session count
+  1766→  1766→* active users
+  1767→  1767→* cost
+  1768→  1768→* worker failures
+  1769→  1769→* conversion failures
+  1770→  1770→
+  1771→  1771→Admin dashboard should expose important system health.
+  1772→  1772→
+  1773→  1773→⸻
+  1774→  1774→
+  1775→  1775→46. ALERTING
+  1776→  1776→
+  1777→  1777→Implement alerts for:
+  1778→  1778→
+  1779→  1779→* worker failures
+  1780→  1780→* GPU failures
+  1781→  1781→* repeated crashes
+  1782→  1782→* high latency
+  1783→  1783→* queue overload
+  1784→  1784→* API abuse
+  1785→  1785→* suspicious authentication
+  1786→  1786→* payment failures
+  1787→  1787→* infrastructure budget
+  1788→  1788→* storage issues
+  1789→  1789→* database issues
+  1790→  1790→* service degradation
+  1791→  1791→
+  1792→  1792→⸻
+  1793→  1793→
+  1794→  1794→47. BACKUPS AND RECOVERY
+  1795→  1795→
+  1796→  1796→Research and implement:
+  1797→  1797→
+  1798→  1798→* database backups
+  1799→  1799→* configuration backups
+  1800→  1800→* model metadata backups
+  1801→  1801→* disaster recovery
+  1802→  1802→* restoration procedures
+  1803→  1803→* rollback
+  1804→  1804→* admin recovery
+  1805→  1805→
+  1806→  1806→Do not assume a single provider is permanent.
+  1807→  1807→
+  1808→  1808→⸻
+  1809→  1809→
+  1810→  1810→48. DEPLOYMENT
+  1811→  1811→
+  1812→  1812→The architecture must support:
+  1813→  1813→
+  1814→  1814→DEVELOPMENT
+  1815→  1815→STAGING
+  1816→  1816→PRODUCTION
+  1817→  1817→
+  1818→  1818→Never treat production as the development environment.
+  1819→  1819→
+  1820→  1820→Use environment variables and secure secrets management.
+  1821→  1821→
+  1822→  1822→Never commit:
+  1823→  1823→
+  1824→  1824→* API keys
+  1825→  1825→* passwords
+  1826→  1826→* private tokens
+  1827→  1827→* payment secrets
+  1828→  1828→* production credentials
+  1829→  1829→
+  1830→  1830→⸻
+  1831→  1831→
+  1832→  1832→49. PROVIDER ABSTRACTION
+  1833→  1833→
+  1834→  1834→GPU providers must be interchangeable.
+  1835→  1835→
+  1836→  1836→Define an interface similar to:
+  1837→  1837→
+  1838→  1838→provision()
+  1839→  1839→start()
+  1840→  1840→stop()
+  1841→  1841→restart()
+  1842→  1842→healthCheck()
+  1843→  1843→getStatus()
+  1844→  1844→getCapabilities()
+  1845→  1845→getCost()
+  1846→  1846→terminate()
+  1847→  1847→drain()
+  1848→  1848→scale()
+  1849→  1849→
+  1850→  1850→Adding a new provider should not require rewriting the application.
+  1851→  1851→
+  1852→  1852→⸻
+  1853→  1853→
+  1854→  1854→50. API ARCHITECTURE
+  1855→  1855→
+  1856→  1856→Define clear APIs for:
+  1857→  1857→
+  1858→  1858→authentication
+  1859→  1859→users
+  1860→  1860→voices
+  1861→  1861→models
+  1862→  1862→conversion
+  1863→  1863→sessions
+  1864→  1864→workers
+  1865→  1865→scheduler
+  1866→  1866→billing
+  1867→  1867→usage
+  1868→  1868→support
+  1869→  1869→admin
+  1870→  1870→analytics
+  1871→  1871→notifications
+  1872→  1872→
+  1873→  1873→Document:
+  1874→  1874→
+  1875→  1875→* request
+  1876→  1876→* response
+  1877→  1877→* authentication
+  1878→  1878→* authorization
+  1879→  1879→* validation
+  1880→  1880→* errors
+  1881→  1881→* rate limits
+  1882→  1882→* idempotency
+  1883→  1883→
+  1884→  1884→⸻
+  1885→  1885→
+  1886→  1886→51. WORKER API
+  1887→  1887→
+  1888→  1888→Workers must authenticate with the backend.
+  1889→  1889→
+  1890→  1890→Worker API should include:
+  1891→  1891→
+  1892→  1892→REGISTER
+  1893→  1893→HEARTBEAT
+  1894→  1894→HEALTH
+  1895→  1895→CAPABILITIES
+  1896→  1896→START_SESSION
+  1897→  1897→STOP_SESSION
+  1898→  1898→SESSION_STATUS
+  1899→  1899→CONVERT_AUDIO
+  1900→  1900→DRAIN
+  1901→  1901→SHUTDOWN
+  1902→  1902→
+  1903→  1903→Never allow arbitrary unauthenticated worker registration.
+  1904→  1904→
+  1905→  1905→⸻
+  1906→  1906→
+  1907→  1907→52. DESKTOP API
+  1908→  1908→
+  1909→  1909→Desktop client should support:
+  1910→  1910→
+  1911→  1911→* authentication
+  1912→  1912→* device registration
+  1913→  1913→* worker/session selection
+  1914→  1914→* voice selection
+  1915→  1915→* microphone configuration
+  1916→  1916→* audio output
+  1917→  1917→* session status
+  1918→  1918→* latency information
+  1919→  1919→* reconnection
+  1920→  1920→* error reporting
+  1921→  1921→* diagnostics
+  1922→  1922→
+  1923→  1923→⸻
+  1924→  1924→
+  1925→  1925→53. MOBILE API
+  1926→  1926→
+  1927→  1927→Mobile clients should support:
+  1928→  1928→
+  1929→  1929→* authentication
+  1930→  1930→* device registration
+  1931→  1931→* voice selection
+  1932→  1932→* in-app conversion
+  1933→  1933→* cloud/local routing
+  1934→  1934→* recording
+  1935→  1935→* session management
+  1936→  1936→* reconnect
+  1937→  1937→* network adaptation
+  1938→  1938→* battery-aware processing
+  1939→  1939→* diagnostics
+  1940→  1940→
+  1941→  1941→⸻
+  1942→  1942→
+  1943→  1943→54. MOBILE NETWORK RESILIENCE
+  1944→  1944→
+  1945→  1945→Handle:
+  1946→  1946→
+  1947→  1947→* Wi-Fi → cellular
+  1948→  1948→* cellular → Wi-Fi
+  1949→  1949→* packet loss
+  1950→  1950→* jitter
+  1951→  1951→* temporary disconnection
+  1952→  1952→* NAT changes
+  1953→  1953→* sleep/wake
+  1954→  1954→* app backgrounding
+  1955→  1955→* Bluetooth changes
+  1956→  1956→
+  1957→  1957→The application should recover gracefully.
+  1958→  1958→
+  1959→  1959→⸻
+  1960→  1960→
+  1961→  1961→55. BATTERY AND THERMAL MANAGEMENT
+  1962→  1962→
+  1963→  1963→Mobile must monitor:
+  1964→  1964→
+  1965→  1965→* battery
+  1966→  1966→* temperature where APIs permit
+  1967→  1967→* CPU
+  1968→  1968→* GPU
+  1969→  1969→* inference time
+  1970→  1970→
+  1971→  1971→Avoid running unnecessarily expensive models on mobile.
+  1972→  1972→
+  1973→  1973→Allow quality/performance modes where appropriate.
+  1974→  1974→
+  1975→  1975→⸻
+  1976→  1976→
+  1977→  1977→56. ADMIN SECURITY
+  1978→  1978→
+  1979→  1979→The admin panel must have stronger security than normal users.
+  1980→  1980→
+  1981→  1981→Implement appropriate:
+  1982→  1982→
+  1983→  1983→* MFA
+  1984→  1984→* RBAC
+  1985→  1985→* session timeout
+  1986→  1986→* device management
+  1987→  1987→* audit logs
+  1988→  1988→* suspicious login detection
+  1989→  1989→* reauthentication for destructive actions
+  1990→  1990→* confirmation for dangerous operations
+  1991→  1991→
+  1992→  1992→Critical operations should require additional confirmation.
+  1993→  1993→
+  1994→  1994→Examples:
+  1995→  1995→
+  1996→  1996→DELETE USER
+  1997→  1997→DELETE DATA
+  1998→  1998→REFUND
+  1999→  1999→STOP ALL WORKERS
+  2000→  2000→CHANGE BILLING
+
+[showing lines 1-2000 of 2002; use offset=2001 with limit to continue reading]

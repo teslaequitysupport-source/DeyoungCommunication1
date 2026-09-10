@@ -173,6 +173,13 @@ io.on("connection", (socket: Socket) => {
     pair.lastActivity = Date.now();
 
     if (claims.role === "client") {
+      // Never silently swallow audio. If the worker has not joined the pair
+      // yet, reject the chunk explicitly so the client knows frames were not
+      // delivered (clients wait for peer-ready before streaming).
+      if (!pair.worker) {
+        ack?.({ ok: false });
+        return;
+      }
       const seq = ++pair.seq;
       pair.pending.set(String(seq), Date.now());
       pair.chunksIn++;
@@ -180,10 +187,14 @@ io.on("connection", (socket: Socket) => {
         console.log(JSON.stringify({ level: "info", msg: "audio_c2w", sid: claims.sid, chunk: pair.chunksIn, pending: pair.pending.size }));
       }
       const payload = { seq, ts: Date.now(), audio: data instanceof Buffer ? new Uint8Array(data) : new Uint8Array((data as { data: ArrayBuffer }).data) };
-      pair.worker?.emit("audio-in", payload);
+      pair.worker.emit("audio-in", payload);
       ack?.({ ok: true });
     } else {
       // worker -> client: converted audio with the original seq for RTT math
+      if (!pair.client) {
+        ack?.({ ok: false });
+        return;
+      }
       const msg = data as unknown as { seq: number; audio: Uint8Array };
       const sentAt = pair.pending.get(String(msg.seq));
       if (sentAt !== undefined) {
@@ -195,7 +206,7 @@ io.on("connection", (socket: Socket) => {
       if (pair.chunksOut % 10 === 0) {
         console.log(JSON.stringify({ level: "info", msg: "audio_w2c", sid: claims.sid, chunk: pair.chunksOut }));
       }
-      pair.client?.emit("audio-out", { seq: msg.seq, ts: Date.now(), audio: msg.audio });
+      pair.client.emit("audio-out", { seq: msg.seq, ts: Date.now(), audio: msg.audio });
       ack?.({ ok: true });
     }
   });

@@ -1,0 +1,38 @@
+[
+  {
+    "url": "https://www.kaggle.com",
+    "name": "kaggle gpu usage limit 30hours per week/ when does it",
+    "snippet": "According to here, it resets weekly on Saturday morning (midnight UTC) and every user is provided the same quota , which can be more than 30 hours , depending on ...",
+    "host_name": "www.kaggle.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.luminoai.in",
+    "name": "Kaggle T4 6-Hour LLM Training Limits (2025–2026) | Lumino AI",
+    "snippet": "Weekly GPU allowance: generally 30 hours , sometimes higher, and it resets weekly; Single session cap: 12 hours for CPU and GPU notebooks; Interactive idle ...",
+    "host_name": "www.luminoai.in",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://community.deeplearning.ai",
+    "name": "GPU 0% usage on Kaggle even when I activate it",
+    "snippet": "Jan 4, 2025 — Yes, Kaggle's limit is 30 hours per week for each type of processor. quota : GPU 22h 37m available of 30h TPU 19h 42m available of 20h\"",
+    "host_name": "community.deeplearning.ai",
+    "rank": 2,
+    "date": "Jan 4, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.geeksforgeeks.org",
+    "name": "How to Use GPU in Kaggle?",
+    "snippet": "Jul 23, 2025 — You get around 30 hours of GPU time per week . Use Compatible Libraries: Ensure that you're using libraries optimized for GPU. TensorFlow, ...",
+    "host_name": "www.geeksforgeeks.org",
+    "rank": 3,
+    "date": "Jul 23, 2025",
+    "favicon": ""
+  }
+]

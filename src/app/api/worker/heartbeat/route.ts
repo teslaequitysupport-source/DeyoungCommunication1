@@ -8,15 +8,22 @@ import { authenticateWorker } from "@/lib/worker-auth";
 // heartbeats mark a worker UNHEALTHY (maintenance loop) which stops new
 // assignments and triggers failover for its sessions.
 
+// Control-plane-owned states. An agent heartbeat must not override these:
+// DRAINING/STOPPING/QUARANTINED are admin or scheduler intent, and UNHEALTHY
+// is a detection verdict that only a real recovery path may clear.
+const CONTROL_OWNED = ["DRAINING", "STOPPING", "QUARANTINED", "UNHEALTHY", "STOPPED", "FAILED"];
+
 export const POST = wrap(
   async (req: NextRequest) => {
     const identity = await authenticateWorker(req);
     const body = heartbeatSchema.parse(await req.json());
+    const current = await db.worker.findUnique({ where: { id: identity.id }, select: { status: true } });
 
     await db.worker.update({
       where: { id: identity.id },
       data: {
-        status: body.status,
+        // Preserve control-plane intent while still refreshing liveness.
+        status: current && CONTROL_OWNED.includes(current.status) ? current.status : body.status,
         lastHeartbeatAt: new Date(),
         activeSessions: body.activeSessions,
         loadedModels: JSON.stringify(body.loadedModels),

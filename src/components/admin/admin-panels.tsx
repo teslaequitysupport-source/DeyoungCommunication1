@@ -805,6 +805,49 @@ const TESTS = [
   { kind: "FAILOVER", label: "Failover", desc: "Drains a worker with TEST sessions attached and verifies the maintenance loop ends them." },
 ];
 
+// Control-plane managed services (audio gateway). The control plane spawns
+// and supervises the gateway so it never depends on an operator shell.
+function GatewayServiceCard() {
+  const { toast } = useToast();
+  const [svc, setSvc] = useState<{ port: number; listening: boolean; managed: boolean; pid: number | null; health: { ok: boolean }; logPath: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(() => {
+    apiGet<typeof svc>("/api/admin/services/gateway").then(setSvc).catch(() => setSvc(null));
+  }, []);
+  useEffect(load, [load]);
+
+  const act = async (action?: string) => {
+    setBusy(true);
+    try {
+      await apiSend("/api/admin/services/gateway", "POST", action ? { action } : {});
+      toast({ title: action === "stop" ? "Gateway stop requested" : "Gateway start requested" });
+      setTimeout(load, 1200);
+    } catch (err) {
+      toast({ title: "Gateway action failed", description: err instanceof ApiClientError ? err.message : undefined, variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Card className="border-zinc-800 bg-zinc-950">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm">Audio gateway service</CardTitle>
+        <CardDescription>Real-time audio transport on port {svc?.port ?? 3003}. The control plane supervises the process; logs at {svc?.logPath ?? ".zscripts/gateway.log"}.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex items-center gap-3">
+        <StatusBadge status={svc?.listening ? "READY" : "UNHEALTHY"} />
+        <span className="text-xs text-zinc-400">{svc?.listening ? (svc.health?.ok ? "handshake ok" : "listening, handshake failed") : "not listening"}{svc?.managed ? ` (managed pid ${svc.pid})` : ""}</span>
+        <div className="ml-auto flex gap-2">
+          <Button size="sm" variant="outline" disabled={busy} onClick={() => act()}>Start</Button>
+          <Button size="sm" variant="outline" disabled={busy} onClick={() => act("stop")}>Stop</Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function TestLabPanel() {
   const { toast } = useToast();
   const [runs, setRuns] = useState<TestRun[] | null>(null);
@@ -836,6 +879,9 @@ function TestLabPanel() {
       <p className="mt-1 max-w-3xl text-xs text-zinc-500">
         Real tests against the real system, scoped to TEST so customer state is never damaged. Every run is recorded. Destructive paths (failover) only touch isTest sessions.
       </p>
+      <div className="mt-5">
+        <GatewayServiceCard />
+      </div>
       <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {TESTS.map((t) => (
           <Card key={t.kind} className="border-zinc-800 bg-zinc-950">

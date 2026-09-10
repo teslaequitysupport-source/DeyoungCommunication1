@@ -57,12 +57,17 @@ async function failOrphanedSessions() {
   const { db } = await import("@/lib/db");
   const { endSession } = await import("@/lib/scheduler");
   const cutoff = new Date(Date.now() - 90_000);
+  // Includes TEST sessions on purpose: the FAILOVER test drains a worker with
+  // a TEST session attached and expects the loop to end it. The alive-worker
+  // check below protects genuinely live sessions in both cases.
   const stuck = await db.conversionSession.findMany({
-    where: { status: { in: ["CONNECTING", "ACTIVE"] }, isTest: false, updatedAt: { lt: cutoff } },
+    where: { status: { in: ["CONNECTING", "ACTIVE"] }, updatedAt: { lt: cutoff } },
     include: { assignments: { where: { state: { in: ["ASSIGNED", "CONNECTING", "ACTIVE"] } }, include: { worker: true } } },
   });
   for (const s of stuck) {
     const alive = s.assignments.some((a) =>
+      // DRAINING/UNHEALTHY workers are not accepting audio; they must not
+      // keep orphaned sessions alive (drain implies failover).
       ["READY", "ACTIVE", "IDLE"].includes(a.worker.status) &&
       a.worker.lastHeartbeatAt && Date.now() - a.worker.lastHeartbeatAt.getTime() < 120_000
     );
