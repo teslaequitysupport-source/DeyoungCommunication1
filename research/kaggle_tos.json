@@ -1,0 +1,38 @@
+[
+  {
+    "url": "https://www.kaggle.com",
+    "name": "Runtime limit on Kaggle notebooks?",
+    "snippet": "Kaggle Notebooks have a runtime limit of 9 hours for GPU sessions . After this, the notebook will time out. This limit applies to both CPU and GPU runtimes.",
+    "host_name": "www.kaggle.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://blog.paperspace.com",
+    "name": "Comparing the Free GPU Access and Available Resources",
+    "snippet": "GPU /TPU access is limited to 30 hours per week for each type of processor on Kaggle . Each free- GPU instance will shut down after 6 hours of runtime, but has ...",
+    "host_name": "blog.paperspace.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://developer.nvidia.com",
+    "name": "How Kaggle Makes GPUs Accessible to 5 Million Data",
+    "snippet": "Oct 26, 2020 — Kaggle is a great place to learn how to train deep learning models using GPUs . Engineers and designers at Kaggle work hard behind the scenes ...",
+    "host_name": "developer.nvidia.com",
+    "rank": 2,
+    "date": "Oct 26, 2020",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.luminoai.in",
+    "name": "Kaggle T4 6-Hour LLM Training Limits (2025–2026) | Lumino AI",
+    "snippet": "Weekly GPU allowance: generally 30 hours, sometimes higher, and it resets weekly ; Single session cap: 12 hours for CPU and GPU notebooks ; Interactive idle ... Read more",
+    "host_name": "www.luminoai.in",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  }
+]

@@ -1,0 +1,56 @@
+[
+  {
+    "url": "https://github.com",
+    "name": "yxlllc/DDSP-SVC",
+    "snippet": "DDSP-SVC is an open source singing voice conversion project dedicated to the development of free AI voice changer software that can be popularized on personal ...",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://arxiv.org",
+    "name": "HQ-SVC: Towards High-Quality Zero-Shot Singing Voice",
+    "snippet": "Nov 15, 2025 — Zero-shot singing voice conversion (SVC ) transforms a source singer's timbre to an unseen target speaker's voice while preserving melodic ... Read more",
+    "host_name": "arxiv.org",
+    "rank": 1,
+    "date": "Nov 15, 2025",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co",
+    "name": "Nagase-Kotono/DDSP-SVC",
+    "snippet": "DDSP-SVC is a new open source singing voice conversion project dedicated to the development of free AI voice changer software that can be popularized on ...",
+    "host_name": "huggingface.co",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://pypi.org",
+    "name": "seed-vc",
+    "snippet": "Real- time voice conversion is support, with algorithm delay of ~300ms and device side delay of ~100ms, suitable for online meetings, gaming and live streaming. Read more",
+    "host_name": "pypi.org",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.aimodels.fyi",
+    "name": "Seed-VC: Audio-to-Audio model — overview, use cases,",
+    "snippet": "Apr 17, 2026 — Seed - VC is an audio -to- audio model created by Plachta that performs voice conversion tasks. license permits commercial use",
+    "host_name": "www.aimodels.fyi",
+    "rank": 4,
+    "date": "Apr 17, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.researchgate.net",
+    "name": "End-to-End Zero-Shot Voice Conversion Using a DDSP",
+    "snippet": "DDSP integrates traditional DSP elements, such as filters and synthesiser oscillators, into deep neural networks, with the neural network itself generating the ... Read more",
+    "host_name": "www.researchgate.net",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  }
+]

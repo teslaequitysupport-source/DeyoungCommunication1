@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://en.wikipedia.org/wiki/Retrieval-based_Voice_Conversion",
+    "name": "Retrieval-based Voice Conversion - Wikipedia",
+    "snippet": "Retrieval-based Voice Conversion (RVC) is an open source voice conversion AI algorithm that enables realistic speech-to-speech transformations,",
+    "host_name": "en.wikipedia.org",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=5i_Pyw0gH-M",
+    "name": "RVC V2 Tutorial - Retrieval-based Voice Conversion - YouTube",
+    "snippet": "Jun 4, 2023 · aivoices #aivoice #ai #aitutorial #rvc #rvcproject #rvcgui, RVC WebUI, RVC AI Tutorial, RVC GUI Tutorial, RVC Project Tutorial, AI Voice ...",
+    "host_name": "www.youtube.com",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI/blob/main/LICENSE",
+    "name": "Retrieval-based-Voice-Conversion-WebUI/LICENSE at main · RVC",
+    "snippet": "MIT License. A short and simple permissive license with conditions only ... Permissions. Commercial use. Modification. Distribution. Private use. Limitations.",
+    "host_name": "github.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/StableDiffusion/comments/1ngictg/how_do_i_find_good_quality_rvc_voice_models",
+    "name": "How do I find good quality RVC voice models? : r/StableDiffusion",
+    "snippet": "Sep 14, 2025 · I've been experimenting with RVC (Retrieval-based Voice Conversion) recently, and I'm trying to figure out how people find good quality voice ...",
+    "host_name": "www.reddit.com",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://gudgud96.github.io/2024/09/26/annotated-rvc",
+    "name": "Understanding RVC - Retrieval-based Voice Conversion",
+    "snippet": "Sep 26, 2024 · RVC provides a rather permissive license to use its source code and pretrained models, and an easy-to-use, beginner-friendly Web UI for fine- ...",
+    "host_name": "gudgud96.github.io",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.threads.com/@githubprojects/post/Dbi9DxwmEXK/rvc-is-an-open-source-voice-conversion-framework-that-now-supports-real-time",
+    "name": "RVC is an open-source voice conversion framework that now",
+    "snippet": "Aug 2, 2026 · RVC is an open-source voice conversion framework that now supports real-time conversion down to 90ms end-to-end latency using ASIO input/output ...",
+    "host_name": "www.threads.com",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://substack.com/home/post/p-157573545?utm_campaign=post&utm_medium=web",
+    "name": "Demo of AI song covers using RVC (Retrieval-based Voice",
+    "snippet": "Feb 22, 2025 · RVC stands for Retrieval-based Voice Conversion, an open-source AI algorithm that enables speech-to-speech transformation with remarkable ...",
+    "host_name": "substack.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/AEmotionStudio/rvc-models",
+    "name": "AEmotionStudio/rvc-models - Hugging Face",
+    "snippet": "RVC (Retrieval-based Voice Conversion) converts vocals from one voice to another: Batch mode — Upload audio → convert → download result Real-time mode",
+    "host_name": "huggingface.co",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]

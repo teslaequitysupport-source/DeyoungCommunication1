@@ -1,0 +1,333 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import { apiGet, Me } from "@/lib/client/api";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast";
+import LandingView from "@/components/app/landing";
+import AuthView from "@/components/app/auth-view";
+import DashboardView from "@/components/app/dashboard";
+import StudioView from "@/components/app/studio";
+import ModelsView from "@/components/app/models-view";
+import BillingView from "@/components/app/billing-view";
+import SupportView from "@/components/app/support-view";
+import AccountView from "@/components/app/account-view";
+import LegalView from "@/components/app/legal";
+import AdminShell from "@/components/admin/admin-shell";
+
+export interface SiteConfig {
+  siteName: string;
+  tagline: string;
+  announcement: string | null;
+  announcementLevel: "INFO" | "WARN";
+  maintenanceMode: boolean;
+  studioEnabled: boolean;
+  uploadsEnabled: boolean;
+  registrationEnabled: boolean;
+  supportEnabled: boolean;
+  animationIntensity: "OFF" | "SUBTLE" | "FULL";
+}
+
+export interface RouteInfo {
+  path: string; // e.g. "admin/workers"
+  query: URLSearchParams;
+}
+
+function parseHash(): RouteInfo {
+  const raw = window.location.hash.replace(/^#\/?/, "");
+  const [pathPart, queryPart] = raw.split("?");
+  return { path: pathPart || "", query: new URLSearchParams(queryPart || "") };
+}
+
+export default function AppShell() {
+  const [route, setRoute] = useState<RouteInfo>({ path: "", query: new URLSearchParams() });
+  const [me, setMe] = useState<Me | null>(null);
+  const [config, setConfig] = useState<SiteConfig | null>(null);
+  const [booted, setBooted] = useState(false);
+  const { toast } = useToast();
+
+  const refreshMe = useCallback(async () => {
+    try {
+      const data = await apiGet<Me>("/api/auth/me");
+      setMe(data);
+    } catch {
+      setMe({ user: null });
+    }
+  }, []);
+
+  useEffect(() => {
+    const onHash = () => setRoute(parseHash());
+    window.addEventListener("hashchange", onHash);
+    // Initial route: parse lazily inside the async boot to avoid a
+    // synchronous setState in the effect body.
+    (async () => {
+      setRoute(parseHash());
+      await Promise.all([refreshMe(), apiGet<{ config: SiteConfig }>("/api/public/config").then((d) => setConfig(d.config)).catch(() => setConfig(null))]);
+      setBooted(true);
+    })();
+    return () => window.removeEventListener("hashchange", onHash);
+  }, [refreshMe]);
+
+  const navigate = useCallback((to: string) => {
+    window.location.hash = to.startsWith("#") ? to : `#/${to.replace(/^\//, "")}`;
+  }, []);
+
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }).catch(() => {});
+    await refreshMe();
+    navigate("");
+    toast({ title: "Signed out", description: "Your session cookie was cleared." });
+  };
+
+  if (!booted) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <div className="flex items-center gap-3 text-sm text-zinc-500">
+          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" aria-hidden />
+          Loading platform
+        </div>
+      </div>
+    );
+  }
+
+  const user = me?.user ?? null;
+  const isAdmin = user?.role === "ADMIN";
+  const isStaff = isAdmin || user?.role === "SUPPORT";
+
+  // Legal views are public.
+  if (route.path.startsWith("legal/")) {
+    return (
+      <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+        <LegalView slug={route.path.replace("legal/", "")} navigate={navigate} />
+      </Shell>
+    );
+  }
+
+  // Admin area: separate visual language, separate gate.
+  if (route.path.startsWith("admin")) {
+    if (!user) {
+      return (
+        <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+          <AuthView navigate={navigate} refreshMe={refreshMe} mode="login" config={config} note="Sign in with an administrator account to open the command centre." />
+        </Shell>
+      );
+    }
+    if (!isAdmin) {
+      return (
+        <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+          <AccessDenied isAdmin={false} navigate={navigate} />
+        </Shell>
+      );
+    }
+    return (
+      <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+        <AdminShell route={route.path.replace("admin", "").replace(/^\//, "") || "overview"} navigate={navigate} />
+      </Shell>
+    );
+  }
+
+  // Public routes.
+  if (route.path === "" || route.path === "home") {
+    return (
+      <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+        <LandingView navigate={navigate} config={config} user={user} />
+      </Shell>
+    );
+  }
+  if (route.path.startsWith("auth")) {
+    const mode = route.path.split("/")[1] === "register" ? "register" : "login";
+    return (
+      <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+        <AuthView navigate={navigate} refreshMe={refreshMe} mode={mode} config={config} note={route.query.get("note") ?? undefined} />
+      </Shell>
+    );
+  }
+
+  // Authenticated user routes.
+  if (!user) {
+    return (
+      <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+        <AuthView navigate={navigate} refreshMe={refreshMe} mode="login" config={config} note="Sign in to open this area." />
+      </Shell>
+    );
+  }
+
+  if (user.status === "SUSPENDED") {
+    return (
+      <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+        <AccessDenied isAdmin={false} navigate={navigate} suspended />
+      </Shell>
+    );
+  }
+
+  switch (route.path) {
+    case "studio":
+      return (
+        <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+          <StudioView navigate={navigate} refreshMe={refreshMe} config={config} />
+        </Shell>
+      );
+    case "models":
+      return (
+        <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+          <ModelsView config={config} />
+        </Shell>
+      );
+    case "billing":
+      return (
+        <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+          <BillingView />
+        </Shell>
+      );
+    case "support":
+      return (
+        <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+          <SupportView config={config} />
+        </Shell>
+      );
+    case "account":
+      return (
+        <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+          <AccountView refreshMe={refreshMe} navigate={navigate} />
+        </Shell>
+      );
+    case "dashboard":
+    default:
+      return (
+        <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+          <DashboardView navigate={navigate} me={me} refreshMe={refreshMe} />
+        </Shell>
+      );
+  }
+}
+
+function AccessDenied({ isAdmin, navigate, suspended }: { isAdmin: boolean; navigate: (to: string) => void; suspended?: boolean }) {
+  return (
+    <div className="mx-auto max-w-xl px-4 py-24 text-center">
+      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{suspended ? "Account suspended" : "Administrator access required"}</h1>
+      <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+        {suspended
+          ? "Your account has been suspended by an administrator. Contact support from the legal and contact pages for assistance."
+          : "The command centre is restricted to administrator accounts. All access attempts are recorded as security events."}
+      </p>
+      <div className="mt-6 flex justify-center gap-3">
+        <Button variant="outline" onClick={() => navigate("dashboard")}>Go to dashboard</Button>
+        <Button variant="ghost" onClick={() => navigate("")}>Back to home</Button>
+      </div>
+      {!isAdmin && !suspended ? (
+        <p className="mt-8 font-mono text-xs text-zinc-400">SECURITY EVENT LOGGED: PERMISSION_DENIED</p>
+      ) : null}
+    </div>
+  );
+}
+
+function Shell({
+  config, me, navigate, logout, user, isAdmin, children,
+}: {
+  config: SiteConfig | null;
+  me: Me | null;
+  navigate: (to: string) => void;
+  logout: () => void;
+  user: Me["user"];
+  isAdmin: boolean;
+  children: React.ReactNode;
+}) {
+  const inAdmin = typeof window !== "undefined" && window.location.hash.startsWith("#/admin");
+  return (
+    <div className={cn("flex min-h-screen flex-col", inAdmin ? "bg-zinc-950 text-zinc-100" : "bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100")}>
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-violet-600 focus:px-3 focus:py-2 focus:text-white">
+        Skip to content
+      </a>
+      <header className={cn(
+        "sticky top-0 z-40 border-b backdrop-blur",
+        inAdmin ? "border-zinc-800 bg-zinc-950/90" : "border-zinc-200 bg-white/85 dark:border-zinc-800 dark:bg-zinc-950/85",
+      )}>
+        <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
+          <button onClick={() => navigate("")} className="flex items-center gap-2 font-semibold tracking-tight" aria-label="Go to home">
+            <span className={cn("flex h-7 w-7 items-center justify-center rounded-lg font-mono text-xs font-bold", isAdmin ? "bg-violet-500 text-white" : "bg-violet-600 text-white")}>VX</span>
+            <span className={cn("text-sm", inAdmin && "text-zinc-100")}>{config?.siteName ?? "VoxCore"}</span>
+            {isAdmin && window.location.hash.startsWith("#/admin") ? (
+              <span className="ml-1 rounded border border-violet-800 bg-violet-950 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-violet-300">command centre</span>
+            ) : null}
+          </button>
+
+          <nav className="ml-auto flex items-center gap-1" aria-label="Main">
+            {inAdmin ? (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => navigate("")} className="text-zinc-300 hover:text-white">Public site</Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" onClick={() => navigate("studio")} className="hidden sm:inline-flex">Studio</Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate("models")} className="hidden sm:inline-flex">Voices</Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate("support")} className="hidden md:inline-flex">Support</Button>
+                {user ? (
+                  <>
+                    <Button variant="ghost" size="sm" onClick={() => navigate("dashboard")} className="hidden sm:inline-flex">Dashboard</Button>
+                    {isAdmin ? (
+                      <Button size="sm" className="bg-violet-600 hover:bg-violet-500" onClick={() => navigate("admin/overview")}>Command centre</Button>
+                    ) : null}
+                    <Button variant="outline" size="sm" onClick={logout}>Sign out</Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" size="sm" onClick={() => navigate("auth/login")}>Sign in</Button>
+                    <Button size="sm" className="bg-violet-600 hover:bg-violet-500" onClick={() => navigate("auth/register")}>Create account</Button>
+                  </>
+                )}
+              </>
+            )}
+          </nav>
+        </div>
+        {config?.announcement ? (
+          <div className={cn("border-t px-4 py-1.5 text-center text-xs",
+            config.announcementLevel === "WARN"
+              ? "border-amber-800 bg-amber-950/60 text-amber-200"
+              : "border-violet-800 bg-violet-950/50 text-violet-200")}
+            role="status">
+            {config.announcement}
+          </div>
+        ) : null}
+        {config?.maintenanceMode ? (
+          <div className="border-t border-rose-800 bg-rose-950/70 px-4 py-1.5 text-center text-xs text-rose-200" role="alert">
+            Maintenance mode: new sessions and uploads are paused by the administrator.
+          </div>
+        ) : null}
+      </header>
+
+      <main id="main" className="flex-1">{children}</main>
+
+      <footer className={cn(
+        "mt-auto border-t",
+        inAdmin ? "border-zinc-800" : "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950",
+      )}>
+        <div className={cn("mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-xs sm:flex-row sm:items-center sm:justify-between", inAdmin && "text-zinc-400")}>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <span className="font-medium">{config?.siteName ?? "VoxCore"}</span>
+            {[
+              ["legal/terms", "Terms"],
+              ["legal/privacy", "Privacy"],
+              ["legal/cookies", "Cookies"],
+              ["legal/refund", "Refund"],
+              ["legal/acceptable-use", "Acceptable Use"],
+              ["legal/voice-rights", "Voice Rights"],
+              ["legal/copyright", "Copyright"],
+              ["legal/contact", "Contact"],
+            ].map(([to, label]) => (
+              <button key={to} onClick={() => navigate(to)} className={cn("transition-colors hover:text-violet-600 dark:hover:text-violet-400", inAdmin ? "text-zinc-400" : "text-zinc-500 dark:text-zinc-400")}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <div className="text-zinc-400 dark:text-zinc-500">
+            Real-time AI voice conversion. Infrastructure core build, September 2026. No fabricated metrics: all numbers shown anywhere in this product are measured live.
+          </div>
+        </div>
+      </footer>
+      <Toaster />
+      <span className="hidden">{me?.creditBalanceCents}</span>
+    </div>
+  );
+}

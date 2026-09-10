@@ -1,0 +1,680 @@
+// VOXCORE PLATFORM - DATABASE SCHEMA
+// SQLite for the MVP deployment, structured to migrate to PostgreSQL
+// without model changes (no SQLite-only features are used).
+// Conventions:
+// - State fields are Strings (SQLite has no native enums). Allowed values are
+//   documented per field and enforced in application validation (src/lib/validate.ts).
+// - Money is stored as integer cents (or milli-cents for rates). Never floats.
+// - Metadata blobs are JSON-serialized Strings (Prisma scalar lists are not
+//   supported on SQLite and are avoided for portability).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// IDENTITY AND ACCESS
+// ---------------------------------------------------------------------------
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  passwordHash     String
+  name             String?
+  role             String    @default("USER") // USER | SUPPORT | ADMIN
+  status           String    @default("PENDING_VERIFICATION") // PENDING_VERIFICATION | ACTIVE | SUSPENDED | DELETED
+  failedLoginCount Int       @default(0)
+  lockedUntil      DateTime?
+  lastLoginAt      DateTime?
+  emailVerifiedAt  DateTime?
+  deletionRequestedAt DateTime?
+  anonymizedAt     DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  authSessions     AuthSession[]
+  verificationTokens VerificationToken[]
+  subscription     Subscription?
+  creditEntries    CreditLedgerEntry[]
+  usageRecords     UsageRecord[]
+  conversionSessions ConversionSession[]
+  voiceModels      VoiceModel[]
+  tickets          SupportTicket[]
+  ticketMessages   TicketMessage[]
+  notifications    Notification[]
+  consents         ConsentRecord[]
+  payments         Payment[]
+  reports          AbuseReport[]
+  testRuns         TestRun[]
+
+  @@index([status])
+  @@index([role])
+}
+
+model AuthSession {
+  id          String    @id @default(cuid())
+  userId      String
+  tokenHash   String    @unique
+  deviceLabel String?
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+  lastSeenAt  DateTime  @default(now())
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  revokedReason String?
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model VerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  purpose   String    // EMAIL_VERIFY | PASSWORD_RESET
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+}
+
+// ---------------------------------------------------------------------------
+// PLANS, SUBSCRIPTIONS, CREDITS, USAGE, PAYMENTS
+// ---------------------------------------------------------------------------
+
+model Plan {
+  id                  String  @id @default(cuid())
+  code                String  @unique // FREE | PRO | PREMIUM | BUSINESS
+  name                String
+  priceCents          Int?    // null means pricing not published yet (cost model pending)
+  currency            String  @default("USD")
+  billingPeriod       String  @default("MONTH")
+  maxConcurrentSessions Int   @default(1)
+  maxMinutesPerDay    Int     @default(10)
+  maxMinutesPerMonth  Int     @default(60)
+  maxModelUploads     Int     @default(0) // user-uploaded voice models allowed
+  monthlyFreeCreditCents Int  @default(0) // infrastructure credit allowance, admin-tunable
+  priority            Int     @default(0) // higher is scheduled first
+  allowedTiers        String  @default("[\"DSP_CPU\"]") // JSON array of DSP_CPU | RVC_GPU
+  description         String?
+  isActive            Boolean @default(true)
+  sort                Int     @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  subscriptions       Subscription[]
+}
+
+model Subscription {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  planId           String
+  status           String    @default("ACTIVE") // ACTIVE | CANCELED | PAST_DUE
+  source           String    @default("MANUAL") // MANUAL | PSP (PSP reserved for future provider)
+  startedAt        DateTime  @default(now())
+  currentPeriodEnd DateTime?
+  cancelAtPeriodEnd Boolean  @default(false)
+  canceledAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan             Plan      @relation(fields: [planId], references: [id])
+
+  @@index([planId])
+}
+
+model CreditLedgerEntry {
+  id            String   @id @default(cuid())
+  userId        String
+  deltaCents    Int      // positive = grant, negative = consumption
+  balanceAfterCents Int
+  reason        String   // ADMIN_GRANT | SESSION_USAGE | MONTHLY_ALLOWANCE | ADJUSTMENT | REFUND | EXPIRY
+  refType       String?  // ConversionSession | Payment | ...
+  refId         String?
+  idempotencyKey String? @unique
+  actorId       String?  // admin who granted
+  note          String?
+  createdAt     DateTime @default(now())
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([reason])
+}
+
+model UsageRecord {
+  id           String   @id @default(cuid())
+  userId       String
+  sessionId    String?
+  workerId     String?
+  modelId      String?
+  kind         String   // SESSION_MINUTES | AUDIO_SECONDS | GPU_MILLI_HOURS | STORAGE_MB
+  quantity     Float
+  rateMilliUsd Float    // milli-USD per unit at time of metering
+  costCents    Int      // computed cost in cents
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([sessionId])
+}
+
+model Payment {
+  id         String   @id @default(cuid())
+  userId     String
+  amountCents Int
+  currency   String   @default("USD")
+  status     String   @default("RECORDED") // RECORDED (manual entry only until a PSP is wired) | REFUNDED | VOID
+  provider   String   @default("MANUAL") // MANUAL (PSP adapters reserved for future)
+  providerRef String?
+  note       String?
+  recordedById String?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// VOICE MODELS (catalog, open upload, moderation, takedown)
+// ---------------------------------------------------------------------------
+
+model VoiceModel {
+  id               String    @id @default(cuid())
+  name             String
+  kind             String    // SYSTEM_DSP | RVC_UPLOAD
+  engine           String    // DSP | RVC
+  status           String    @default("PENDING_REVIEW") // PENDING_REVIEW | APPROVED | REJECTED | TAKEN_DOWN | DISABLED
+  ownerId          String?   // null for system models
+  description      String?
+  engineParams     String?   // JSON: DSP pitch/formant params or RVC inference params
+  sampleRate       Int       @default(16000)
+  version          Int       @default(1)
+  // Licensing (mandatory fields, may be UNVERIFIED which blocks publication)
+  licenseName      String    @default("UNVERIFIED")
+  licenseUrl       String?
+  licenseVerified  Boolean   @default(false)
+  // Rights attestation (required for user uploads)
+  rightsAttested   Boolean   @default(false)
+  attestationText  String?
+  consentEvidenceHash String?
+  // File (RVC uploads)
+  fileName         String?
+  fileSize         Int?
+  fileSha256       String?
+  filePath         String?
+  // Moderation
+  rejectionReason  String?
+  reviewedById     String?
+  reviewedAt       DateTime?
+  takedownReason   String?
+  takenDownAt      DateTime?
+  downloadCount    Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  owner            User?     @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  conversionSessions ConversionSession[]
+  events           VoiceModelEvent[]
+  reports          AbuseReport[]
+
+  @@index([status])
+  @@index([ownerId])
+}
+
+model VoiceModelEvent {
+  id        String   @id @default(cuid())
+  modelId   String
+  kind      String   // SUBMITTED | APPROVED | REJECTED | TAKEN_DOWN | DISABLED | ENABLED | UPDATED | REPORTED
+  actorId   String?
+  detail    String?
+  createdAt DateTime @default(now())
+
+  model     VoiceModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+
+  @@index([modelId, createdAt])
+}
+
+model AbuseReport {
+  id            String    @id @default(cuid())
+  modelId       String
+  reporterId    String
+  reason        String    // IMPERSONATION | NO_RIGHTS | FRAUD | HARASSMENT | OTHER
+  detail        String?
+  status        String    @default("OPEN") // OPEN | REVIEWED | ACTIONED | DISMISSED
+  resolution    String?
+  resolvedById  String?
+  resolvedAt    DateTime?
+  createdAt     DateTime  @default(now())
+
+  model         VoiceModel @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  reporter      User       @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+model ConsentRecord {
+  id           String   @id @default(cuid())
+  userId       String
+  kind         String   // TERMS | PRIVACY | RIGHTS_ATTESTATION | MODEL_UPLOAD
+  modelId      String?
+  textVersion  String
+  evidenceHash String
+  ip           String?
+  userAgent    String?
+  acceptedAt   DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+}
+
+// ---------------------------------------------------------------------------
+// WORKER FLEET (registry, heartbeats, commands, events, provisioning)
+// ---------------------------------------------------------------------------
+
+model Worker {
+  id               String    @id @default(cuid())
+  name             String
+  providerCode     String    // LOCAL | KAGGLE_ASSISTED | future: RUNPOD | MODAL | ...
+  costKind         String    @default("FREE") // FREE | PAID
+  region           String?
+  gpuName          String?
+  vramMb           Int?
+  ramMb            Int?
+  cpuCores         Int?
+  os               String?
+  cudaVersion      String?
+  pythonVersion    String?
+  agentVersion     String?
+  status           String    @default("BOOTING") // BOOTING | LOADING_MODEL | WARMING | READY | ACTIVE | IDLE | DRAINING | STOPPING | STOPPED | UNHEALTHY | FAILED | RESTARTING | QUARANTINED
+  capabilities     String?   // JSON
+  tiers            String    @default("[]") // JSON array: DSP_CPU | RVC_GPU
+  loadedModels     String?   // JSON array of model ids resident in memory
+  maxSessions      Int       @default(1)
+  activeSessions   Int       @default(0)
+  totalSessions    Int       @default(0)
+  lastHeartbeatAt  DateTime?
+  registeredAt     DateTime  @default(now())
+  startedAt        DateTime?
+  lastError        String?
+  tokenHash        String    @unique
+  tokenRotatedAt   DateTime?
+  managedById      String?   // admin who registered/provisioned
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  heartbeats       WorkerHeartbeat[]
+  commands         WorkerCommand[]
+  events           WorkerEvent[]
+  workerSessions   WorkerSessionAssignment[]
+
+  @@index([status])
+  @@index([providerCode])
+  @@index([lastHeartbeatAt])
+}
+
+model WorkerHeartbeat {
+  id             String   @id @default(cuid())
+  workerId       String
+  status         String
+  gpuUtilPct     Float?
+  vramUsedMb     Int?
+  ramUsedMb      Int?
+  cpuUtilPct     Float?
+  activeSessions Int      @default(0)
+  inferP50Ms     Float?
+  inferP95Ms     Float?
+  errorCount     Int      @default(0)
+  uptimeSec      Int?
+  createdAt      DateTime @default(now())
+
+  worker         Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@index([workerId, createdAt])
+}
+
+model WorkerCommand {
+  id           String    @id @default(cuid())
+  workerId     String
+  kind         String    // PING | LOAD_MODEL | EVICT_MODEL | START_SESSION | STOP_SESSION | RESTART | DRAIN | SHUTDOWN | TEST_JOB
+  payload      String?   // JSON
+  status       String    @default("PENDING") // PENDING | DELIVERED | COMPLETED | FAILED | EXPIRED
+  result       String?   // JSON
+  createdAt    DateTime  @default(now())
+  deliveredAt  DateTime?
+  completedAt  DateTime?
+
+  worker       Worker    @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@index([workerId, status, createdAt])
+}
+
+model WorkerEvent {
+  id        String   @id @default(cuid())
+  workerId  String
+  level     String   @default("INFO") // INFO | WARN | ERROR
+  kind      String
+  message   String
+  data      String?  // JSON
+  createdAt DateTime @default(now())
+
+  worker    Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@index([workerId, createdAt])
+  @@index([level])
+}
+
+model WorkerSessionAssignment {
+  id         String    @id @default(cuid())
+  sessionId  String
+  workerId   String
+  state      String    @default("ASSIGNED") // ASSIGNED | CONNECTING | ACTIVE | ENDED | FAILED
+  assignedAt DateTime  @default(now())
+  startedAt  DateTime?
+  endedAt    DateTime?
+  endReason  String?
+
+  session    ConversionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  worker     Worker            @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@index([workerId, state])
+  @@index([sessionId])
+}
+
+model Provider {
+  code        String  @id
+  name        String
+  costKind    String  @default("FREE") // FREE | PAID
+  enabled     Boolean @default(true)
+  automation  String  // AUTONOMOUS | ASSISTED | MANUAL
+  rateMilliUsdPerHour Int @default(0)
+  notes       String?
+  config      String? // JSON
+}
+
+model ProvisionRequest {
+  id            String    @id @default(cuid())
+  providerCode  String
+  status        String    @default("ISSUED") // ISSUED | ASSUMED | EXPIRED | CANCELED | FAILED
+  tokenHash     String    @unique
+  payload       String?   // JSON: params embedded in the generated script
+  issuedById    String
+  assumedById   String?   // worker id that assumed this request
+  script        String?   // generated setup script snapshot
+  createdAt     DateTime  @default(now())
+  expiresAt     DateTime
+  resolvedAt    DateTime?
+
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// CONVERSION SESSIONS AND QUEUE
+// ---------------------------------------------------------------------------
+
+model ConversionSession {
+  id             String    @id @default(cuid())
+  userId         String
+  modelId        String
+  requestedTier  String    @default("AUTO") // AUTO | DSP_CPU | RVC_GPU
+  resolvedTier   String?
+  status         String    @default("QUEUED") // QUEUED | ASSIGNING | CONNECTING | ACTIVE | ENDING | ENDED | FAILED | CANCELLED
+  endReason      String?   // USER_ENDED | IDLE_TIMEOUT | WORKER_LOST | BUDGET | ERROR | ADMIN_STOP | FAILED_HEALTH
+  updatedAt      DateTime  @updatedAt
+  queuedAt       DateTime  @default(now())
+  assignedAt     DateTime?
+  startedAt      DateTime?
+  endedAt        DateTime?
+  durationSec    Float?
+  audioSeconds   Float     @default(0)
+  gatewayTokenHash String?
+  clientInfo     String?   // JSON
+  metrics        String?   // JSON: latency percentiles and packet stats measured in the gateway
+  isTest         Boolean   @default(false)
+
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  model          VoiceModel @relation(fields: [modelId], references: [id])
+  assignments    WorkerSessionAssignment[]
+
+  @@index([userId, status])
+  @@index([status])
+  @@index([isTest])
+}
+
+model QueueEntry {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  priority  Int      @default(0)
+  status    String   @default("WAITING") // WAITING | SERVED | CANCELLED
+  enqueuedAt DateTime @default(now())
+
+  @@index([status, priority, enqueuedAt])
+}
+
+// ---------------------------------------------------------------------------
+// COST CONTROL
+// ---------------------------------------------------------------------------
+
+model BudgetPolicy {
+  id            String   @id @default(cuid())
+  scope         String   @default("GLOBAL") // GLOBAL | PROVIDER
+  providerCode  String?
+  dailyBudgetCents   Int?
+  monthlyBudgetCents Int?
+  maxConcurrentPaidWorkers Int?
+  maxPaidSessions    Int?
+  onThreshold   String   @default("WARN") // WARN | QUEUE_ONLY | EMERGENCY_STOP
+  emergencyStop Boolean  @default(false)
+  updatedById   String?
+  updatedAt     DateTime @updatedAt
+  createdAt     DateTime @default(now())
+}
+
+model CostRecord {
+  id            String   @id @default(cuid())
+  workerId      String?
+  sessionId     String?
+  providerCode  String
+  gpuMilliHours Float
+  rateMilliUsdPerHour Int
+  costCents     Int
+  day           String   // YYYY-MM-DD
+  month         String   // YYYY-MM
+  createdAt     DateTime @default(now())
+
+  @@index([day])
+  @@index([month])
+  @@index([providerCode])
+}
+
+// ---------------------------------------------------------------------------
+// SUPPORT, NOTIFICATIONS
+// ---------------------------------------------------------------------------
+
+model SupportTicket {
+  id         String    @id @default(cuid())
+  userId     String
+  subject    String
+  status     String    @default("OPEN") // OPEN | IN_PROGRESS | WAITING_USER | RESOLVED | CLOSED
+  priority   String    @default("NORMAL") // LOW | NORMAL | HIGH | URGENT
+  assignedTo String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  closedAt   DateTime?
+
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages   TicketMessage[]
+
+  @@index([status])
+  @@index([userId])
+}
+
+model TicketMessage {
+  id         String   @id @default(cuid())
+  ticketId   String
+  authorId   String
+  authorRole String   // USER | SUPPORT | ADMIN | SYSTEM
+  body       String
+  internal   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  ticket     SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author     User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  kind      String    // SYSTEM | SUPPORT | SESSION | BILLING | SECURITY
+  title     String
+  body      String
+  data      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
+
+// ---------------------------------------------------------------------------
+// SECURITY, AUDIT, RATE LIMITING
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actorRole  String?
+  action     String
+  targetType String?
+  targetId   String?
+  before     String?  // JSON
+  after      String?  // JSON
+  reason     String?
+  ip         String?
+  userAgent  String?
+  prevHash   String?
+  hash       String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([action])
+}
+
+model SecurityEvent {
+  id        String   @id @default(cuid())
+  kind      String   // LOGIN_FAILED | ACCOUNT_LOCKED | RATE_LIMITED | CSRF_REJECTED | WORKER_AUTH_FAILED | PERMISSION_DENIED | SUSPICIOUS_LOGIN | TOKEN_REPLAY | INVALID_INPUT
+  userId    String?
+  ip        String?
+  userAgent String?
+  severity  String   @default("INFO") // INFO | WARN | CRITICAL
+  detail    String?  // JSON
+  createdAt DateTime @default(now())
+
+  @@index([kind, createdAt])
+  @@index([severity])
+}
+
+model RateLimitCounter {
+  key         String
+  windowStart DateTime
+  count       Int      @default(0)
+
+  @@id([key, windowStart])
+  @@index([windowStart])
+}
+
+// ---------------------------------------------------------------------------
+// SITE CONFIGURATION
+// ---------------------------------------------------------------------------
+
+model SiteSetting {
+  key       String   @id
+  value     String   // JSON
+  updatedById String?
+  updatedAt DateTime @updatedAt
+}
+
+model SettingVersion {
+  id         String   @id @default(cuid())
+  key        String
+  value      String   // JSON
+  action     String   // PUBLISH | ROLLBACK
+  note       String?
+  actorId    String?
+  createdAt  DateTime @default(now())
+
+  @@index([key, createdAt])
+}
+
+model FeatureFlag {
+  key         String   @id
+  enabled     Boolean  @default(false)
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// OBSERVABILITY AND ALERTS
+// ---------------------------------------------------------------------------
+
+model Alert {
+  id        String    @id @default(cuid())
+  kind      String    // WORKER_STALE | WORKER_FAILED | QUEUE_OVERLOAD | BUDGET_THRESHOLD | HIGH_ERROR_RATE | SECURITY_CRITICAL | DB_ISSUE | SERVICE_DEGRADED
+  severity  String    @default("WARN") // INFO | WARN | CRITICAL
+  title     String
+  detail    String?
+  sourceRef String?
+  status    String    @default("OPEN") // OPEN | ACK | RESOLVED
+  createdAt DateTime  @default(now())
+  ackAt     DateTime?
+  resolvedAt DateTime?
+
+  @@index([status, severity, createdAt])
+}
+
+model RequestMetric {
+  id         String   @id @default(cuid())
+  route      String
+  method     String
+  status     Int
+  durationMs Int
+  userId     String?
+  createdAt  DateTime @default(now())
+
+  @@index([route, createdAt])
+}
+
+model TestRun {
+  id          String    @id @default(cuid())
+  kind        String    // WORKER_HEALTH | CONVERSION | RATE_LIMIT | FAILOVER | SCALE_TO_ZERO | TRANSPORT
+  scope       String    @default("TEST") // TEST (never mutates production state destructively)
+  status      String    @default("RUNNING") // RUNNING | PASSED | FAILED
+  params      String?   // JSON
+  result      String?   // JSON
+  startedById String
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  user        User      @relation(fields: [startedById], references: [id], onDelete: Cascade)
+
+  @@index([kind, createdAt])
+}

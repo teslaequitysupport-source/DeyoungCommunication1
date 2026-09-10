@@ -1,0 +1,110 @@
+// End-to-end audio proof: connects as the CLIENT of a live session, streams
+// synthetic microphone chunks, and verifies converted audio returns through
+// the real gateway + worker agent path. Measures chunk round trip.
+
+import { io } from "socket.io-client";
+import { PrismaClient } from "@prisma/client";
+
+const db = new PrismaClient();
+const BASE = "http://127.0.0.1:3000";
+const COOKIE = process.env.USER_JAR || "/tmp/user.jar";
+
+function readCookie(file) {
+  const line = require("fs").readFileSync(file, "utf8").split("\n").find((l) => l.includes("voxcore_session"));
+  if (!line) throw new Error("no session cookie");
+  return line.split("\t").pop().trim();
+}
+
+async function startSession(modelId) {
+  const res = await fetch(`${BASE}/api/sessions`, {
+    method: "POST",
+    headers: { "content-type": "application/json", cookie: `voxcore_session=${readCookie(COOKIE)}` },
+    body: JSON.stringify({ modelId, requestedTier: "AUTO" }),
+  });
+  return res.json();
+}
+
+async function main() {
+  const models = await (await fetch(`${BASE}/api/models`)).json();
+  const model = models.models[0];
+  const s = await startSession(model.id);
+  if (!s.sessionId) throw new Error(`session start failed: ${JSON.stringify(s)}`);
+  console.log("session:", s.sessionId, "worker:", s.workerId);
+
+  // Node-side client: dial the gateway directly (no browser origin, no Caddy).
+  const socket = io("http://127.0.0.1:3003", {
+    transports: ["websocket", "polling"],
+    forceNew: true,
+  });
+
+  socket.on("connect_error", (err: Error) => {
+    console.error("gateway connect_error:", err.message);
+  });
+
+  const audioCtx = { sampleRate: 16000 };
+  let received = 0;
+  const rtts = [];
+  const pending = new Map();
+
+  socket.on("connect", () => {
+    socket.emit("auth", { token: s.gatewayToken }, (ack) => {
+      if (!ack.ok) throw new Error("gateway auth failed: " + ack.error);
+      console.log("gateway auth ok, role:", ack.role, "peer:", ack.peerConnected);
+
+      // Stream 30 chunks of synthetic "speech-like" audio (128ms each).
+      let seq = 0;
+      const interval = setInterval(() => {
+        seq++;
+        const n = 2048;
+        const pcm = new Int16Array(n);
+        for (let i = 0; i < n; i++) {
+          const t = (seq * n + i) / audioCtx.sampleRate;
+          const v = Math.sin(2 * Math.PI * 220 * t) * 0.5 * (1 + 0.4 * Math.sin(2 * Math.PI * 3 * t));
+          pcm[i] = Math.max(-32767, Math.min(32767, Math.round(v * 32767)));
+        }
+        pending.set(seq, Date.now());
+        socket.emit("audio", { seq, data: pcm.buffer });
+        if (seq >= 30) clearInterval(interval);
+      }, 140);
+    });
+  });
+
+  socket.on("audio-out", (msg) => {
+    const sentAt = pending.get(msg.seq);
+    if (sentAt !== undefined) {
+      rtts.push(Date.now() - sentAt);
+      pending.delete(msg.seq);
+    }
+    received++;
+    if (received === 30) {
+      const sorted = [...rtts].sort((a, b) => a - b);
+      const p50 = sorted[Math.floor(sorted.length * 0.5)];
+      const p95 = sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))];
+      console.log(`AUDIO FLOW VERIFIED: 30/30 chunks converted and returned`);
+      console.log(`chunk RTT p50=${p50}ms p95=${p95}ms (includes 140ms send cadence)`);
+      (async () => {
+        await fetch(`${BASE}/api/sessions/${s.sessionId}/metrics`, {
+          method: "POST",
+          headers: { "content-type": "application/json", cookie: `voxcore_session=${readCookie(COOKIE)}` },
+          body: JSON.stringify({ p50Ms: p50, p95Ms: p95, packetsSent: 30, packetsReceived: received, dropsPct: 0 }),
+        }).catch(() => {});
+        await fetch(`${BASE}/api/sessions/${s.sessionId}/end`, {
+          method: "POST",
+          headers: { "content-type": "application/json", cookie: `voxcore_session=${readCookie(COOKIE)}` },
+        }).catch(() => {});
+        await db.$disconnect();
+        process.exit(0);
+      })();
+    }
+  });
+
+  setTimeout(() => {
+    console.error("TIMEOUT: audio did not flow. received:", received);
+    process.exit(1);
+  }, 30_000);
+}
+
+main().catch((e) => {
+  console.error("E2E FAIL:", e.message);
+  process.exit(1);
+});

@@ -1,0 +1,74 @@
+[
+  {
+    "url": "https://discuss.huggingface.co/t/what-is-the-quota-on-zerogpu-for-pro-users/94203",
+    "name": "What is the Quota on ZeroGPU for PRO users? - Beginners",
+    "snippet": "Jun 26, 2024 · The quota on ZeroGPU for PRO users limits GPU usage to a specified time per session. often tied to overall resource availability.",
+    "host_name": "discuss.huggingface.co",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://huggingface.co/docs/hub/en/spaces-zerogpu",
+    "name": "Spaces ZeroGPU: Dynamic GPU Allocation for Spaces - Hugging Face",
+    "snippet": "PRO users get x8 more daily usage quota, highest priority in GPU queues, and can go beyond their daily quota using pre-paid credits when using any ZeroGPU ...",
+    "host_name": "huggingface.co",
+    "rank": 1,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discuss.huggingface.co/t/error-using-zerogpu-falling-back-to-ip-based-quotas-even-as-a-pro-user/175089",
+    "name": "Error using ZeroGpu: “Falling back to IP-based quotas” Even as a",
+    "snippet": "Apr 8, 2026 · Hugging Face explicitly states that PRO users can continue above their included daily quota by purchasing prepaid credits, at $1 per 10 minutes ...",
+    "host_name": "discuss.huggingface.co",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discuss.huggingface.co/t/usage-quota-exceeded/106619",
+    "name": "Usage quota exceeded - Beginners - Hugging Face Forums",
+    "snippet": "Sep 13, 2024 · when i try to use a space, it gives me an error saying “You have exceeded your GPU quota (59s left vs. 120s requested).",
+    "host_name": "discuss.huggingface.co",
+    "rank": 3,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://thamizhelango.medium.com/zerogpu-on-hugging-face-run-open-models-for-almost-free-2a3c9d87fcdf",
+    "name": "ZeroGPU on Hugging Face: Run Open Models for (Almost) Free",
+    "snippet": "Nov 12, 2025 · Hugging Face PRO is listed at $9/month and explicitly includes: “8× ZeroGPU quota and highest queue priority,” plus the ability to host ZeroGPU ...",
+    "host_name": "thamizhelango.medium.com",
+    "rank": 4,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://discuss.huggingface.co/t/zerogpu-usage-issues-for-pro-user/139385",
+    "name": "Zerogpu usage issues for pro user - Spaces - Hugging Face Forums",
+    "snippet": "Feb 6, 2025 · ZeroGPU Pro users can run their applications for a significantly longer duration compared to free users due to a larger daily usage quota, but ...",
+    "host_name": "discuss.huggingface.co",
+    "rank": 5,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.youtube.com/watch?v=rDUza4lYyjY",
+    "name": "How to Get Free GPU with ZeroGPU - YouTube",
+    "snippet": "Apr 5, 2024 · This video shows how to use ZeroGPU in hugging face spaces to host and run LLMs for free.",
+    "host_name": "www.youtube.com",
+    "rank": 6,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://www.reddit.com/r/huggingface/comments/1f71ygi/is_there_a_daily_limit_for_zero_gpu_for_pro_users",
+    "name": "Is there a daily limit for Zero GPU for Pro users? : r/huggingface",
+    "snippet": "Sep 2, 2024 · I want to subscribe to pro to use the Zero GPU spaces, but I can't find any information on GPU daily limits? Is it unlimited?",
+    "host_name": "www.reddit.com",
+    "rank": 7,
+    "date": "",
+    "favicon": ""
+  }
+]

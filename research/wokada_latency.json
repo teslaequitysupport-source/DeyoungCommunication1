@@ -1,0 +1,38 @@
+[
+  {
+    "url": "https://github.com",
+    "name": "voice-changer/README_en.md at master · w-okada",
+    "snippet": "This is a client software for performing real-time voice conversion using various Voice Conversion (VC) AI. The supported AI for voice conversion are as follows ... Read more",
+    "host_name": "github.com",
+    "rank": 0,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://voicechanger.easeus.com",
+    "name": "2026 Full Guide on W-Okada Voice Changer & Alternative💮",
+    "snippet": "Aug 14, 2026 — Supports importing custom-trained RVC models to create personalized voice filters. Processes and transforms voice profiles in true real - time ... Read more",
+    "host_name": "voicechanger.easeus.com",
+    "rank": 1,
+    "date": "Aug 14, 2026",
+    "favicon": ""
+  },
+  {
+    "url": "https://context7.com",
+    "name": "Realtime Voice Changer (w-okada/voice-changer)",
+    "snippet": "VCClient is a real-time AI-powered voice changer software that supports various AI models and multiple platforms, offering both standalone and network ...",
+    "host_name": "context7.com",
+    "rank": 2,
+    "date": "",
+    "favicon": ""
+  },
+  {
+    "url": "https://sourceforge.net",
+    "name": "VCClient download",
+    "snippet": "Mar 23, 2026 — Real-time voice conversion with low latency processing · Support for multiple models such as RVC and neural voice systems · GPU acceleration for ... Read more",
+    "host_name": "sourceforge.net",
+    "rank": 3,
+    "date": "Mar 23, 2026",
+    "favicon": ""
+  }
+]
