@@ -15,8 +15,22 @@ Checked: 2026-09-10.
 - DATABASE_URL, NEXTAUTH_SECRET (also gateway token secret fallback),
   GATEWAY_SECRET, BACKEND_URL (agent), EMAIL_MODE (none|smtp), PORT,
   VOXCORE_GATEWAY_PORT (3003), worker heartbeat timeout override.
+- VOXCORE_AGENT_PYTHON (added 2026-09-11): absolute path to the Python
+  interpreter the LocalProvider should spawn. Bare "python3" resolves
+  against the SERVER process PATH, which can differ from the operator
+  shell PATH (observed live: the server spawned /usr/bin/python3 while
+  the operator's venv python held the agent dependencies). Pin it in
+  production.
 - Worker agents receive BACKEND_URL and a one-time token at launch; they
   never hold other secrets.
+
+## Worker agent dependencies (required on the agent interpreter)
+- requests, websocket-client, numpy, psutil, python-socketio[client].
+- Missing deps are reported honestly at startup (FATAL exit) and at
+  session time (session-ready rejected with the reason), never silently.
+- Debian/Ubuntu system Pythons are PEP 668 externally managed; either use
+  a venv and point VOXCORE_AGENT_PYTHON at it, or install with
+  --break-system-packages in disposable containers only.
 
 ## Start order
 1. Database reachable; prisma db push; seed (scripts/seed.ts) on fresh DBs.

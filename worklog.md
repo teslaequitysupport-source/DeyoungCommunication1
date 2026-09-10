@@ -45,3 +45,24 @@ Stage Summary:
 - Root causes fixed, not hidden: pre-peer silent drops, heartbeat status clobbering, testlab kind field misuse, window-straddling rate test, gateway health probe via engine.io handshake.
 - Documentation reflects the real system with dated evidence; honest gaps recorded (mobile not built, MFA not enforced, live billing deferred, legal review required).
 - Credentials: admin@voxcore.local / VoxCore#2026Admin, test@example.com / TestPass123x (dev seed).
+
+---
+Task ID: 3 (continuation session, 2026-09-11)
+Agent: main (Super Z)
+Task: Re-verify E2E audio after environment drift, finish testlab suite, update docs for protocol changes.
+
+Work Log:
+- Environment drift found after the session gap: worker fleet UNHEALTHY, cookie jars cleared, python deps missing from the interpreter the dev server actually spawns (/usr/bin/python3, PEP 668 locked) while the operator shell used /home/z/.venv/bin/python3.
+- Provisioned local-agent-8 after installing requests/websocket-client/numpy/psutil/python-socketio[client] into the system python; E2E audio then PASSED: 30/30 chunks converted and returned, RTT p50 3 ms, p95 21 ms.
+- Robustness fixes landed: (1) provision.ts spawns VOXCORE_AGENT_PYTHON (configurable interpreter) instead of bare python3; (2) gateway rejects missing/empty auth token gracefully instead of throwing on token.split; (3) e2e-audio.ts fails fast and ends the session when no worker/token is issued, freeing the plan concurrency slot.
+- WORKER_HEALTH initially failed: PING stuck DELIVERED forever (lost ack), later commands completed. Root-caused to at-most-once command delivery with no redelivery or expiry for stuck DELIVERED rows.
+- Fixed command queue to at-least-once: redeliver DELIVERED-unacked after 30 s, expire anything unresolved after 10 min; agent retries the result POST 3x with backoff; START_SESSION made idempotent (repeat ignored while session is live); WORKER_HEALTH wait raised 15 s to 45 s to honestly cover one redelivery cycle. WORKER_HEALTH then PASSED (rtt 7 s incl poll interval).
+- RATE_LIMIT PASSED (300 burst aligned to one 60 s window: exactly 240 x 200 + 60 x 429, zero other statuses). SCALE_TO_ZERO PASSED (0 idle paid workers, 0 active paid). FAILOVER PASSED for real via scripts/verify-failover.ts: orphaned TEST session ended WORKER_LOST at ~120 s, worker DRAINING -> STOPPING -> reactivated READY.
+- TRANSPORT PASSED (gateway engine.io handshake open, http 55 ms). CONVERSION PASSED (inferMs 0.22).
+- Docs updated with dated changes: 12-WORKER-PROTOCOL.md (delivery semantics section), 38-DEPLOYMENT.md (VOXCORE_AGENT_PYTHON, agent dependency list, PEP 668 note). Lint clean after all changes.
+
+Stage Summary:
+- Full testlab suite green on 2026-09-11: WORKER_HEALTH, CONVERSION, TRANSPORT, RATE_LIMIT, SCALE_TO_ZERO, FAILOVER; E2E audio 30/30 with real DSP conversion through gateway + agent.
+- Command queue is now at-least-once with bounded lifetime; workers are idempotent for repeatable commands; lost acks self-heal in seconds.
+- Remaining honest gaps unchanged: mobile not built, MFA not enforced, billing architecture only (PSP deferred per user decision), Kaggle is ASSISTED capacity, legal review required before any commercial launch.
+- Credentials: admin@voxcore.local / VoxCore#2026Admin, test@example.com / TestPass123x (dev seed only).

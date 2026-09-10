@@ -71,7 +71,11 @@ async function testWorkerHealth(workerId?: string) {
   if (!worker) throw new Error("No worker available for the health test. Provision one first.");
   const started = Date.now();
   const cmdId = await createWorkerCommand(worker.id, "PING", { ts: started });
-  const completed = await waitForCommand(cmdId, 15_000);
+  // 45s covers the command protocol's worst realistic path: one lost ack,
+  // backend redelivery after 30s, and the worker's 1.5s poll interval. A
+  // healthy round trip finishes in a few seconds; the timeout only binds
+  // when the worker or the backend is genuinely degraded.
+  const completed = await waitForCommand(cmdId, 45_000);
   return {
     worker: worker.name,
     workerId: worker.id,

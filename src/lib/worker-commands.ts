@@ -41,20 +41,51 @@ export async function createWorkerCommand(
   return cmd.id;
 }
 
+// Delivery semantics: at-least-once within a bounded lifetime. A command is
+// DELIVERED on handoff and COMPLETED when the worker posts its result. If the
+// poll response or the result POST is lost, a DELIVERED command with no
+// completion is redelivered after REDELIVER_AFTER_MS. Anything unresolved
+// after 10 minutes is EXPIRED so the queue can never wedge. Workers make
+// command handlers idempotent (e.g. START_SESSION ignores an already-running
+// session) because at-least-once delivery can repeat work.
+const REDELIVER_AFTER_MS = 30_000;
+const COMMAND_LIFETIME_MS = 10 * 60_000;
+
 export async function pendingCommands(workerId: string, limit = 10) {
+  const now = new Date();
+  const lifetimeCutoff = new Date(now.getTime() - COMMAND_LIFETIME_MS);
+  const redeliveryCutoff = new Date(now.getTime() - REDELIVER_AFTER_MS);
+
+  // Expire commands that were never resolved within their lifetime (covers
+  // both never-delivered PENDING and DELIVERED-but-never-acked).
+  await db.workerCommand.updateMany({
+    where: {
+      workerId,
+      status: { in: ["PENDING", "DELIVERED"] },
+      createdAt: { lt: lifetimeCutoff },
+      completedAt: null,
+    },
+    data: { status: "EXPIRED" },
+  });
+
+  // PENDING commands, plus DELIVERED commands whose result never arrived
+  // within the redelivery window (lost response or lost ack).
   const cmds = await db.workerCommand.findMany({
-    where: { workerId, status: "PENDING" },
+    where: {
+      workerId,
+      OR: [
+        { status: "PENDING" },
+        { status: "DELIVERED", deliveredAt: { lt: redeliveryCutoff } },
+      ],
+    },
     orderBy: { createdAt: "asc" },
     take: limit,
   });
-  // Expire stale commands (older than 10 minutes) so the queue never wedges.
-  const cutoff = new Date(Date.now() - 10 * 60_000);
-  const stale = cmds.filter((c) => c.createdAt < cutoff);
-  if (stale.length > 0) {
+  if (cmds.length > 0) {
     await db.workerCommand.updateMany({
-      where: { id: { in: stale.map((c) => c.id) } },
-      data: { status: "EXPIRED" },
+      where: { id: { in: cmds.map((c) => c.id) } },
+      data: { status: "DELIVERED", deliveredAt: now },
     });
   }
-  return cmds.filter((c) => c.createdAt >= cutoff);
+  return cmds;
 }

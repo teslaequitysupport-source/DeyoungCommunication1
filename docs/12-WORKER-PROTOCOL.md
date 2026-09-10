@@ -32,6 +32,25 @@ worker-agent/worker_agent.py.
 - SHUTDOWN / RESTART: lifecycle; agent exits or respawns cleanly.
 - Every command completes with result or error; completion is audited.
 
+### Delivery semantics (fixed 2026-09-11)
+Delivery is at-least-once within a bounded lifetime. The original design
+marked a command DELIVERED on handoff and never revisited it, so a lost
+poll response or a lost result POST wedged the command forever (observed
+live: a PING stuck DELIVERED while later commands completed). Current
+behaviour, implemented in src/lib/worker-commands.ts:
+- A DELIVERED command with no completion for 30 s is redelivered on the
+  next poll (fresh deliveredAt stamp each cycle).
+- Any command unresolved 10 minutes after creation is EXPIRED.
+- The agent retries the result POST up to 3 times with backoff, so a
+  transient backend stall heals in seconds instead of waiting for
+  redelivery (worker_agent.py complete_command).
+- Because redelivery can repeat work, START_SESSION is idempotent on the
+  agent: a repeated START_SESSION for an already-running session is
+  ignored (SESSIONS map check).
+- The WORKER_HEALTH test-lab wait is 45 s, covering one lost ack plus a
+  full redelivery cycle; a healthy PING round trip is a few seconds
+  (measured 7 s including poll interval, 2026-09-11).
+
 ## Session streaming (gateway, socket.io)
 - Agent connects (websocket), emits auth {token} (worker role), waits for
   session-start, then handles audio-in {seq, ts, audio} and emits audio

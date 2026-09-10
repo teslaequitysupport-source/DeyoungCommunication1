@@ -124,7 +124,12 @@ io.on("connection", (socket: Socket) => {
     console.log(JSON.stringify({ level: "info", msg: "socket_disconnected", id: socket.id, authed: !!claims, role: claims?.role, sid: claims?.sid, reason }));
   });
 
-  socket.on("auth", ({ token }: { token: string }, ack?: (r: { ok: boolean; error?: string; role?: string; sid?: string; peerConnected?: boolean }) => void) => {
+  socket.on("auth", ({ token }: { token?: string }, ack?: (r: { ok: boolean; error?: string; role?: string; sid?: string; peerConnected?: boolean }) => void) => {
+    if (typeof token !== "string" || token.length === 0) {
+      ack?.({ ok: false, error: "Missing session token" });
+      socket.disconnect(true);
+      return;
+    }
     claims = verifyToken(token);
     if (!claims) {
       ack?.({ ok: false, error: "Invalid or expired session token" });

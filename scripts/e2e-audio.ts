@@ -30,6 +30,13 @@ async function main() {
   const model = models.models[0];
   const s = await startSession(model.id);
   if (!s.sessionId) throw new Error(`session start failed: ${JSON.stringify(s)}`);
+  if (!s.workerId || !s.gatewayToken) {
+    // Fail fast and end the session so the plan's concurrency slot is freed.
+    console.error(`no worker/token issued (status=${s.status ?? "?"}) — not dialing the gateway`);
+    if (s.sessionId) await fetch(`${BASE}/api/sessions/${s.sessionId}/end`, { method: "POST", headers: { cookie: `voxcore_session=${readCookie(COOKIE)}` } }).catch(() => {});
+    await db.$disconnect();
+    process.exit(1);
+  }
   console.log("session:", s.sessionId, "worker:", s.workerId);
 
   // Node-side client: dial the gateway directly (no browser origin, no Caddy).

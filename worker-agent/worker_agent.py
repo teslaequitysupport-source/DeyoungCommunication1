@@ -270,15 +270,26 @@ def command_loop():
 
 
 def complete_command(cmd_id, ok, result=None, error=None):
-    try:
-        requests.post(
-            f"{BACKEND}/api/worker/commands/{cmd_id}",
-            headers=auth_headers(),
-            json={"ok": ok, "result": result, "error": error},
-            timeout=API_TIMEOUT,
-        )
-    except Exception as e:
-        log("warn", "CMD_ACK_FAILED", str(e)[:200])
+    # The result POST is retried with backoff: a lost ack leaves the command
+    # stuck DELIVERED until the backend's redelivery window elapses, which
+    # wastes up to 30 seconds and can double-execute the handler. Three
+    # bounded attempts cover a transient backend stall.
+    last_err = None
+    for attempt in range(3):
+        try:
+            resp = requests.post(
+                f"{BACKEND}/api/worker/commands/{cmd_id}",
+                headers=auth_headers(),
+                json={"ok": ok, "result": result, "error": error},
+                timeout=API_TIMEOUT,
+            )
+            if resp.status_code < 500:
+                return
+            last_err = f"HTTP {resp.status_code}"
+        except Exception as e:
+            last_err = str(e)[:200]
+        time.sleep(2 * (attempt + 1))
+    log("warn", "CMD_ACK_FAILED", str(last_err)[:200])
 
 
 def handle_command(cmd):
@@ -448,6 +459,11 @@ def run_test_job(payload: dict) -> dict:
 
 def start_session(payload: dict):
     session_id = payload["sessionId"]
+    # Idempotency guard: the command queue is at-least-once (redelivery on
+    # lost acks), so a repeated START_SESSION must not spawn a second loop.
+    if session_id in SESSIONS:
+        log("info", "SESSION_ALREADY_ACTIVE", f"session {session_id} already running; ignoring repeated START_SESSION")
+        return
     token = payload["gatewayToken"]
     # Same-host workers dial the gateway directly; remote workers (Kaggle)
     # dial the public origin where the edge gateway maps XTransformPort.
