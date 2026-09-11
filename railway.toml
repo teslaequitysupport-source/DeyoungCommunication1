@@ -29,7 +29,7 @@ builder = "NIXPACKS"
 NIXPACKS_NODE_VERSION = "20"
 
 [deploy]
-startCommand = "prisma db push --skip-generate && bun scripts/seed-if-empty.ts && NODE_ENV=production bun server.ts"
+startCommand = "bun scripts/env-doctor.ts && bunx prisma db push --skip-generate && bun scripts/seed-if-empty.ts && NODE_ENV=production bun server.ts"
 healthcheckPath = "/api/models"
 healthcheckTimeout = 120
 restartPolicyType = "ON_FAILURE"
