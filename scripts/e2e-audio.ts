@@ -7,7 +7,7 @@ import { PrismaClient } from "@prisma/client";
 import { readFileSync } from "fs";
 
 const db = new PrismaClient();
-const BASE = "http://127.0.0.1:3000";
+const BASE = process.env.E2E_BASE || "http://127.0.0.1:3000";
 const COOKIE = process.env.USER_JAR || "/tmp/user.jar";
 
 function readCookie(file: string) {
@@ -39,8 +39,12 @@ async function main() {
   }
   console.log("session:", s.sessionId, "worker:", s.workerId);
 
-  // Node-side client: dial the gateway directly (no browser origin, no Caddy).
-  const socket = io("http://127.0.0.1:3003", {
+  // Dial the gateway the scheduler told us about. One socket.io contract for
+  // both modes: path "/gateway"; gatewayUrl "" (or missing) means same origin.
+  const gwRaw = s.gatewayUrl || "";
+  const gwOrigin = gwRaw === "" ? BASE : gwRaw.startsWith("http") ? gwRaw : BASE;
+  const socket = io(gwOrigin, {
+    path: s.gatewayPath || "/gateway",
     transports: ["websocket", "polling"],
     forceNew: true,
   });
@@ -121,7 +125,12 @@ async function main() {
 
   setTimeout(() => {
     console.error("TIMEOUT: audio did not flow. received:", received);
-    process.exit(1);
+    // End the session so the plan's concurrency slot is not wedged by a
+    // failed test run.
+    fetch(`${BASE}/api/sessions/${s.sessionId}/end`, {
+      method: "POST",
+      headers: { cookie: `voxcore_session=${readCookie(COOKIE)}` },
+    }).catch(() => {}).finally(() => { db.$disconnect(); process.exit(1); });
   }, 30_000);
 }
 

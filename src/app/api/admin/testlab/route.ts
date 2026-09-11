@@ -128,13 +128,18 @@ async function testConversion(workerId?: string, modelId?: string) {
 
 async function testTransport() {
   const started = Date.now();
-  // engine.io handshake probe: with socket.io path "/", engine.io owns every
-  // URL, so the health probe is a real polling handshake (returns an open packet).
-  const res = await fetch("http://127.0.0.1:3003/socket.io/?EIO=4&transport=polling").catch(() => null);
-  if (!res || !res.ok) throw new Error("Audio gateway did not answer on port 3003");
+  // engine.io handshake probe: a real polling handshake (returns an open
+  // packet). UNIFIED mode probes the in-process gateway at /gateway on this
+  // server's own port; STANDALONE probes the standalone gateway on 3003 at
+  // the same /gateway path (one socket.io contract in both modes).
+  const url = process.env.VOXCORE_GATEWAY_INPROCESS === "1"
+    ? `http://127.0.0.1:${process.env.PORT || 3000}/gateway/?EIO=4&transport=polling`
+    : "http://127.0.0.1:3003/gateway/?EIO=4&transport=polling";
+  const res = await fetch(url).catch(() => null);
+  if (!res || !res.ok) throw new Error(`Audio gateway did not answer the engine.io handshake at ${url}`);
   const body = await res.text();
   if (!body.startsWith("0")) throw new Error("Gateway answered but the engine.io handshake was malformed");
-  return { gateway: "port 3003", httpMs: Date.now() - started, handshake: "open", ok: true };
+  return { gateway: process.env.VOXCORE_GATEWAY_INPROCESS === "1" ? "in-process /gateway" : "port 3003", httpMs: Date.now() - started, handshake: "open", ok: true };
 }
 
 async function testRateLimit(burst?: number) {

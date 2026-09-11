@@ -66,3 +66,21 @@ Stage Summary:
 - Command queue is now at-least-once with bounded lifetime; workers are idempotent for repeatable commands; lost acks self-heal in seconds.
 - Remaining honest gaps unchanged: mobile not built, MFA not enforced, billing architecture only (PSP deferred per user decision), Kaggle is ASSISTED capacity, legal review required before any commercial launch.
 - Credentials: admin@voxcore.local / VoxCore#2026Admin, test@example.com / TestPass123x (dev seed only).
+
+---
+Task ID: 4 (Railway readiness, 2026-09-11)
+Agent: main (Super Z)
+Task: Make the platform deployable to Railway (single public port) without breaking local dev.
+
+Work Log:
+- Architecture change: unified server entry (server.ts) runs Next.js AND the audio gateway in ONE process on $PORT; gateway refactored into mini-services/audio-gateway/attach.ts (attachGateway(httpServer, opts)); index.ts is now a thin standalone wrapper for dev/Services card. One socket.io contract in both modes: path /gateway (the legacy "/" hijack and the ?XTransformPort edge trick are retired).
+- Scheduler: gatewayMode()/gatewayEndpoints() helpers; START_SESSION payload gains gatewayPath; session API response gains gatewayUrl ("" = same origin) + gatewayPath; VOXCORE_GATEWAY_PUBLIC_URL overrides the remote gateway base for edge setups. Studio and e2e no longer hardcode URLs.
+- Agent: passes payload gatewayPath to python-socketio (socketio_path); all deps (requests, websocket-client, numpy, psutil, python-socketio[client]) installed into BOTH interpreters; interpreter pinnable via VOXCORE_AGENT_PYTHON (.env sets /usr/bin/python3).
+- E2E hardened: dial endpoints come from the session response; timeout path ends the session (no more wedged concurrency slot).
+- Railway files: railway.toml (NIXPACKS, startCommand = prisma db push + seed-if-empty + NODE_ENV=production bun server.ts, healthcheck /api/models), requirements.txt at root (agent deps -> Nixpacks python provider), .env.example, scripts/seed-if-empty.ts (seeds only an empty DB), package.json scripts (postinstall prisma generate, start = unified server, db:deploy without --accept-data-loss), next.config standalone output removed.
+- Verified: production build compiles (all routes dynamic, no DB at build); NODE_ENV=production bun server.ts on :3100 passed full E2E audio (30/30 chunks, p50 3 ms p95 6 ms) with a real spawned worker dialing ws://127.0.0.1:3100/gateway; legacy mode (next dev 3000 + standalone gateway 3003 at /gateway) also passed (30/30, p50 4 ms); TRANSPORT probe updated to /gateway and passed (32 ms); WORKER_HEALTH passed (15 s rtt incl. one redelivery cycle); lint clean.
+- Docs: 38-DEPLOYMENT.md gained a full Railway section (variables, SQLite volume + single-instance honesty, capacity provisioning, mode summary); 12-WORKER-PROTOCOL.md documents the /gateway contract and endpoint handoff.
+
+Stage Summary:
+- Push-to-Railway checklist: GitHub push -> Railway deploy from repo -> set DATABASE_URL (SQLite volume at /data or Postgres with provider switch), GATEWAY_SECRET, NEXTAUTH_SECRET, APP_ORIGIN, ADMIN_EMAIL, ADMIN_PASSWORD -> deploy -> provision capacity (LOCAL or KAGGLE_ASSISTED) -> run the admin Test lab suite.
+- Local dev unchanged: bun run dev (3000) + Services-card gateway (3003), now also speaking /gateway.

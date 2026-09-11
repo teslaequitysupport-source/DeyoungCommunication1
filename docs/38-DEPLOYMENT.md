@@ -43,3 +43,52 @@ Checked: 2026-09-10.
 ## Rollback
 - Keep the previous build directory; swap the symlink; DB migrations are
   additive in this milestone (db push), so rollback is a symlink swap.
+
+## Railway deployment (added 2026-09-11)
+
+Verified live before this section was written: production entry
+`NODE_ENV=production bun server.ts` passed the full E2E audio flow
+(30/30 chunks, RTT p50 3 ms / p95 6 ms) with a real worker agent through
+the in-process gateway, and the production build (`bun run build`) compiles
+clean with all routes dynamic.
+
+Architecture on Railway: ONE service. server.ts runs Next.js and the audio
+gateway in the same process on $PORT; the gateway lives at socket.io path
+/gateway. Nothing needs a second port. LocalProvider workers spawned inside
+the container dial ws://127.0.0.1:$PORT/gateway; Kaggle workers dial
+wss://<service>.up.railway.app/gateway over outbound connections only.
+
+Steps:
+1. Push the repo to GitHub; Railway new project, deploy from repo.
+   Nixpacks detects bun (bun.lock) and python (requirements.txt at root,
+   which are the worker-agent dependencies for LocalProvider). If python
+   detection causes trouble, delete requirements.txt and use
+   KAGGLE_ASSISTED capacity only - LocalProvider will then fail loudly
+   (FATAL exit on missing deps), never silently.
+2. Set variables: DATABASE_URL, GATEWAY_SECRET, NEXTAUTH_SECRET,
+   APP_ORIGIN (https://<service>.up.railway.app), ADMIN_EMAIL,
+   ADMIN_PASSWORD. Generate secrets with `openssl rand -base64 32`.
+3. SQLite: mount a Railway volume (default /data is fine), set
+   DATABASE_URL=file:/data/voxcore.db. SQLite means ONE instance - scale
+   horizontally later requires the Postgres provider switch documented
+   above. This limitation is stated, not hidden.
+4. railway.toml (committed) sets: NIXPACKS builder; startCommand
+   `prisma db push --skip-generate && bun scripts/seed-if-empty.ts &&
+   NODE_ENV=production bun server.ts`; healthcheck /api/models;
+   restart on failure. seed-if-empty seeds ONLY an empty database;
+   the bootstrap admin comes from ADMIN_EMAIL/ADMIN_PASSWORD.
+5. Deploy. Health check turns green when /api/models answers 200.
+6. Provision capacity: LOCAL (in-container python workers) or
+   KAGGLE_ASSISTED (paste the generated cell into a Kaggle GPU notebook;
+   the worker registers over outbound-only connections). Verify with the
+   admin Test lab: WORKER_HEALTH, CONVERSION, TRANSPORT (in-process
+   /gateway probe), RATE_LIMIT, SCALE_TO_ZERO, FAILOVER.
+
+Mode summary (both use socket.io path /gateway):
+- UNIFIED (server.ts, Railway): browser uses same origin; scheduler sends
+  gatewayUrl "" + gatewayPath "/gateway"; client code resolves "" to
+  window.location.origin.
+- STANDALONE (next dev + admin Services card): gateway on
+  VOXCORE_GATEWAY_PORT (3003) at /gateway; local browsers get
+  http://<app-host>:3003 as the gateway origin; set
+  VOXCORE_GATEWAY_PUBLIC_URL when the gateway is served from another host.

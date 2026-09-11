@@ -1,0 +1,26 @@
+# Railway deployment configuration.
+# Build: Nixpacks detects bun (bun.lock) for the Node build and python
+# (requirements.txt) for the worker-agent dependencies used by LocalProvider.
+# Deploy: one service, one port. server.ts runs Next.js AND the audio gateway
+# in the same process, so Railway's single public port is sufficient.
+#
+# Required variables (set in the Railway dashboard, never committed):
+#   DATABASE_URL      e.g. file:/data/voxcore.db with a volume mounted at /data,
+#                     or a managed Postgres/MySQL URL (provider switch required
+#                     in prisma/schema.prisma - see docs/38-DEPLOYMENT.md)
+#   GATEWAY_SECRET    random 32+ byte string (signs session gateway tokens)
+#   NEXTAUTH_SECRET   random 32+ byte string
+#   APP_ORIGIN        https://<your-service>.up.railway.app
+#   ADMIN_EMAIL / ADMIN_PASSWORD  bootstrap admin (seed-if-empty consumes them)
+#
+# Optional: VOXCORE_AGENT_PYTHON (pin the agent interpreter), EMAIL_MODE=smtp.
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "prisma db push --skip-generate && bun scripts/seed-if-empty.ts && NODE_ENV=production bun server.ts"
+healthcheckPath = "/api/models"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

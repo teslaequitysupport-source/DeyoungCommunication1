@@ -465,11 +465,14 @@ def start_session(payload: dict):
         log("info", "SESSION_ALREADY_ACTIVE", f"session {session_id} already running; ignoring repeated START_SESSION")
         return
     token = payload["gatewayToken"]
+    # socket.io path (unified deployments mount the gateway at /gateway; the
+    # standalone gateway keeps "/"). The scheduler decides, the agent obeys.
+    gw_path = payload.get("gatewayPath") or "/"
     # Same-host workers dial the gateway directly; remote workers (Kaggle)
     # dial the public origin where the edge gateway maps XTransformPort.
     urls = [payload.get("gatewayLocal"), payload.get("gatewayRemote"), payload.get("gatewayUrl")]
     urls = [u for u in urls if u]
-    t = threading.Thread(target=session_loop, args=(session_id, urls, token), daemon=True)
+    t = threading.Thread(target=session_loop, args=(session_id, urls, token, gw_path), daemon=True)
     t.start()
 
 
@@ -484,7 +487,7 @@ def stop_session(session_id, reason):
 SESSIONS = {}
 
 
-def session_loop(session_id, gateway_urls, token):
+def session_loop(session_id, gateway_urls, token, gw_path="/"):
     try:
         import socketio  # python-socketio client
     except ImportError:
@@ -544,7 +547,7 @@ def session_loop(session_id, gateway_urls, token):
         last_err = None
         for url in gateway_urls:
             try:
-                sio.connect(url, transports=["websocket"], wait_timeout=10)
+                sio.connect(url, transports=["websocket"], wait_timeout=10, socketio_path=gw_path)
                 connected_url = url
                 break
             except Exception as e:

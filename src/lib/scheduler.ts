@@ -21,9 +21,43 @@ export interface AssignResult {
   sessionId: string;
   workerId?: string;
   gatewayUrl?: string;
+  gatewayPath?: string;
   gatewayToken?: string;
   queuePosition?: number;
   reason?: string;
+}
+
+// Gateway deployment mode. UNIFIED (server.ts): Next.js and the audio gateway
+// share one HTTP port, socket.io lives at "/gateway", and the platform's
+// public domain serves both. STANDALONE (next dev + Services card): the
+// gateway runs on its own port behind an edge that maps /?XTransformPort.
+// See docs/38-DEPLOYMENT.md.
+export function gatewayMode(): "UNIFIED" | "STANDALONE" {
+  return process.env.VOXCORE_GATEWAY_INPROCESS === "1" ? "UNIFIED" : "STANDALONE";
+}
+
+export function gatewayEndpoints() {
+  if (gatewayMode() === "UNIFIED") {
+    const port = process.env.PORT || "3000";
+    return {
+      workerLocalUrl: `ws://127.0.0.1:${port}`,
+      // "" means "same origin as the app". The socket.io path is separate
+      // (gatewayPath): passing "/gateway" as a URL would make socket.io
+      // treat it as a namespace instead of the engine.io path.
+      browserUrl: "",
+      path: "/gateway",
+    };
+  }
+  return {
+    workerLocalUrl: `ws://127.0.0.1:${process.env.VOXCORE_GATEWAY_PORT || 3003}`,
+    // Browser origin for the standalone gateway. Local dev: same host with
+    // the gateway port. Remote deployments set VOXCORE_GATEWAY_PUBLIC_URL
+    // (e.g. https://gateway.example.com) when an edge routes /gateway.
+    browserUrl:
+      process.env.VOXCORE_GATEWAY_PUBLIC_URL ||
+      env.appOrigin.replace(/\/$/, "").replace(/:\d+$/, `:${process.env.VOXCORE_GATEWAY_PORT || 3003}`),
+    path: "/gateway",
+  };
 }
 
 interface Candidate {
@@ -195,14 +229,20 @@ export async function assignWorker(sessionId: string, workerId: string, userId: 
   const workerToken = signGatewayToken({ sid: sessionId, uid: userId, wid: workerId, mid: session.modelId, role: "worker", exp }, env.gatewaySecret);
   await db.conversionSession.update({ where: { id: sessionId }, data: { gatewayTokenHash: hashToken(clientToken) } });
 
+  const gw = gatewayEndpoints();
+  // Remote workers (Kaggle) dial the public origin over outbound connections
+  // only. VOXCORE_GATEWAY_PUBLIC_URL overrides the base when the gateway is
+  // served from a different host than the app.
+  const remoteBase =
+    process.env.VOXCORE_GATEWAY_PUBLIC_URL?.replace(/^http/, "ws") || env.appOrigin.replace(/^http/, "ws");
   await createWorkerCommand(workerId, "START_SESSION", {
     sessionId,
     modelId: session.modelId,
-    // Workers on this machine reach the gateway directly; remote workers
-    // (Kaggle) go through the public origin, where the Caddy gateway maps
-    // XTransformPort to the gateway port.
-    gatewayLocal: "ws://127.0.0.1:3003",
-    gatewayRemote: env.appOrigin.replace(/^http/, "ws") + "/?XTransformPort=3003",
+    // Workers on this machine reach the gateway directly; both URLs use the
+    // same socket.io path handed over via gatewayPath.
+    gatewayLocal: gw.workerLocalUrl,
+    gatewayRemote: remoteBase + gw.path,
+    gatewayPath: gw.path,
     gatewayToken: workerToken,
     sampleRate: env.audioSampleRate,
     chunkMs: env.audioChunkMs,
@@ -213,7 +253,8 @@ export async function assignWorker(sessionId: string, workerId: string, userId: 
     sessionId,
     workerId,
     gatewayToken: clientToken,
-    gatewayUrl: "/?XTransformPort=3003",
+    gatewayUrl: gw.browserUrl,
+    gatewayPath: gw.path,
   };
 }
 

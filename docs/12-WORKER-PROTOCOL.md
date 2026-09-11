@@ -52,6 +52,15 @@ behaviour, implemented in src/lib/worker-commands.ts:
   (measured 7 s including poll interval, 2026-09-11).
 
 ## Session streaming (gateway, socket.io)
+- One socket.io contract in both deployment modes (2026-09-11): the gateway
+  lives at path /gateway. UNIFIED (Railway, server.ts): same origin as the
+  app, gateway attached in-process; STANDALONE (dev Services card): port
+  VOXCORE_GATEWAY_PORT. The scheduler hands each side its endpoints:
+  the START_SESSION payload carries gatewayLocal/gatewayRemote URLs plus
+  gatewayPath, and the session API response carries gatewayUrl ("" means
+  same origin) + gatewayPath. The agent passes gatewayPath to
+  python-socketio as socketio_path; browsers pass it as the io() path
+  option. Never hardcode a path at the edges.
 - Agent connects (websocket), emits auth {token} (worker role), waits for
   session-start, then handles audio-in {seq, ts, audio} and emits audio
   {seq, audio} back. Frames arrive at a 128 ms cadence.

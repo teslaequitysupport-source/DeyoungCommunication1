@@ -1,0 +1,10 @@
+# Worker agent dependencies (worker-agent/worker_agent.py).
+# Listed at the repo ROOT so Nixpacks' python provider installs them into the
+# Railway image, enabling LocalProvider to spawn in-container workers.
+# If you deploy without local workers (Kaggle-assisted capacity only), this
+# file can be removed from the root to skip the python build phase.
+requests
+websocket-client
+numpy
+psutil
+python-socketio[client]

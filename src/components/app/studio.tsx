@@ -26,6 +26,7 @@ interface SessionStart {
   sessionId: string;
   workerId?: string;
   gatewayUrl?: string;
+  gatewayPath?: string;
   gatewayToken?: string;
   queuePosition?: number;
   reason?: string;
@@ -208,8 +209,14 @@ export default function StudioView({ navigate, refreshMe, config }: { navigate: 
       source.connect(analyser);
       playback.connect(ctx.destination);
 
-      // Gateway socket
-      const socket = io("/?XTransformPort=3003", {
+      // Gateway socket. The scheduler decides the URL and socket.io path for
+      // the deployment mode: unified (same-origin, gateway at /gateway,
+      // Railway-ready) or standalone edge (?XTransformPort). An empty
+      // gatewayUrl means "same origin as this page". Never hardcode one here.
+      const gwUrl = !res.gatewayUrl || res.gatewayUrl === "" ? window.location.origin : res.gatewayUrl;
+      const gwPath = res.gatewayPath || "/gateway";
+      const socket = io(gwUrl, {
+        path: gwPath,
         transports: ["websocket", "polling"],
         forceNew: true,
         reconnection: true,
