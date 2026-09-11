@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { env } from "@/lib/env";
 
 // Site settings and feature flags, cached in-process with a short TTL.
 // Admin publishes changes through the settings API which writes a version
@@ -15,6 +16,9 @@ export interface PublicSiteConfig {
   registrationEnabled: boolean;
   supportEnabled: boolean;
   animationIntensity: "OFF" | "SUBTLE" | "FULL";
+  // Env-derived, never stored in the DB: Google sign-in is only advertised
+  // when the deployment actually configured the OAuth client.
+  googleEnabled: boolean;
 }
 
 const DEFAULTS: PublicSiteConfig = {
@@ -28,6 +32,7 @@ const DEFAULTS: PublicSiteConfig = {
   registrationEnabled: true,
   supportEnabled: true,
   animationIntensity: "SUBTLE",
+  googleEnabled: false,
 };
 
 export const SETTING_KEY = "public.site";
@@ -40,6 +45,8 @@ export async function getSiteConfig(force = false): Promise<PublicSiteConfig> {
   try {
     const row = await db.siteSetting.findUnique({ where: { key: SETTING_KEY } });
     const value = row ? { ...DEFAULTS, ...(JSON.parse(row.value) as Partial<PublicSiteConfig>) } : DEFAULTS;
+    // googleEnabled is env-derived: always recompute, never trust stored JSON.
+    value.googleEnabled = env.googleEnabled;
     cache = { value, expires: Date.now() + 15_000 };
     return value;
   } catch {

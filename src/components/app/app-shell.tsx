@@ -28,6 +28,7 @@ export interface SiteConfig {
   registrationEnabled: boolean;
   supportEnabled: boolean;
   animationIntensity: "OFF" | "SUBTLE" | "FULL";
+  googleEnabled?: boolean;
 }
 
 export interface RouteInfo {

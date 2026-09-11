@@ -1,19 +1,21 @@
 // VOXCORE PLATFORM - DATABASE SCHEMA
-// SQLite for the MVP deployment, structured to migrate to PostgreSQL
-// without model changes (no SQLite-only features are used).
+// Provider: PostgreSQL (switched from SQLite on 2026-09-12 for Railway +
+// Supabase deployment). The schema deliberately uses no SQLite-only features
+// (no enums, JSON as serialized Strings, money as integer cents), so the
+// switch required only the datasource provider change.
 // Conventions:
-// - State fields are Strings (SQLite has no native enums). Allowed values are
-//   documented per field and enforced in application validation (src/lib/validate.ts).
+// - State fields are Strings. Allowed values are documented per field and
+//   enforced in application validation (src/lib/validate.ts).
 // - Money is stored as integer cents (or milli-cents for rates). Never floats.
-// - Metadata blobs are JSON-serialized Strings (Prisma scalar lists are not
-//   supported on SQLite and are avoided for portability).
+// - Metadata blobs are JSON-serialized Strings (scalar lists are avoided for
+//   portability).
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

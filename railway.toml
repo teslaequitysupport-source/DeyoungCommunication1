@@ -5,15 +5,17 @@
 # in the same process, so Railway's single public port is sufficient.
 #
 # Required variables (set in the Railway dashboard, never committed):
-#   DATABASE_URL      e.g. file:/data/voxcore.db with a volume mounted at /data,
-#                     or a managed Postgres/MySQL URL (provider switch required
-#                     in prisma/schema.prisma - see docs/38-DEPLOYMENT.md)
+#   DATABASE_URL      PostgreSQL (e.g. Supabase session-mode pooler):
+#                     postgresql://postgres.<ref>:<URL-ENCODED-PASSWORD>@aws-1-<region>.pooler.supabase.com:5432/postgres?sslmode=require
+#                     Password characters like # $ , ) & must be URL-encoded.
 #   GATEWAY_SECRET    random 32+ byte string (signs session gateway tokens)
 #   NEXTAUTH_SECRET   random 32+ byte string
 #   APP_ORIGIN        https://<your-service>.up.railway.app
-#   ADMIN_EMAIL / ADMIN_PASSWORD  bootstrap admin (seed-if-empty consumes them)
+#   ADMIN_EMAIL / ADMIN_PASSWORD  bootstrap admin (seed-if-empty consumes them;
+#                     there are NO default admin credentials in the codebase)
 #
-# Optional: VOXCORE_AGENT_PYTHON (pin the agent interpreter), EMAIL_MODE=smtp.
+# Optional: VOXCORE_AGENT_PYTHON (pin the agent interpreter), EMAIL_MODE=smtp,
+# GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET (enables Google sign-in).
 
 [build]
 builder = "NIXPACKS"

@@ -1,6 +1,6 @@
 // Central environment configuration.
 // All tunables live here or in the database (BudgetPolicy, SiteSetting, FeatureFlag).
-// Secrets are read from env vars and are never committed. See docs/48-DEPLOYMENT.md.
+// Secrets are read from env vars and are never committed. See docs/38-DEPLOYMENT.md.
 
 function num(v: string | undefined, fallback: number): number {
   const n = Number(v);
@@ -48,4 +48,13 @@ export const env = {
   // Bootstrap admin (consumed by the seed script only).
   bootstrapAdminEmail: process.env.ADMIN_EMAIL || "",
   bootstrapAdminPassword: process.env.ADMIN_PASSWORD || "",
+
+  // Google sign-in (OAuth 2.0 web flow). Disabled unless BOTH variables are set,
+  // so deployments without a Google Cloud OAuth client simply never see the
+  // button - an unconfigured provider is never advertised.
+  googleClientId: process.env.GOOGLE_CLIENT_ID || "",
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+  googleEnabled: Boolean(
+    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+  ),
 } as const;

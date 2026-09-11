@@ -25,6 +25,9 @@ is burst capacity only (never 24/7); limitations are stated, not hidden.
 
 ## Quick start (dev)
 
+Requires a PostgreSQL database (the schema provider is postgresql as of
+2026-09-12; Supabase works well).
+
 ```bash
 cp .env.example .env          # then edit DATABASE_URL / secrets
 bun install                   # runs prisma generate
@@ -35,8 +38,9 @@ bun run dev                   # Next.js on :3000
 # or POST /api/admin/services/gateway — it listens on VOXCORE_GATEWAY_PORT (3003)
 ```
 
-Seed users (dev only, seeded only into an empty database):
-`admin@voxcore.local / VoxCore#2026Admin` and `test@example.com / TestPass123x`.
+There are NO default admin credentials in the codebase (deliberate). The first
+admin is created by `seed-if-empty` from `ADMIN_EMAIL` / `ADMIN_PASSWORD` on an
+empty database - set them before the first boot.
 
 Provision a local worker from **Admin → capacity → provision** (LocalProvider spawns
 `VOXCORE_AGENT_PYTHON worker-agent/worker_agent.py`). The agent needs:
@@ -55,12 +59,14 @@ healthcheck `/api/models`.
 1. Push this repo to GitHub → Railway "New project → Deploy from repo".
 2. Set variables: `DATABASE_URL`, `GATEWAY_SECRET`, `NEXTAUTH_SECRET`,
    `APP_ORIGIN`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` (secrets: `openssl rand -base64 32`).
-3. Mount a volume at `/data`, set `DATABASE_URL=file:/data/voxcore.db`.
-4. Deploy, then provision capacity (LOCAL in-container worker or KAGGLE_ASSISTED
+   For Supabase, use the session-mode pooler URL (port 5432) with
+   `?sslmode=require` and URL-encode special characters in the password.
+3. Deploy, then provision capacity (LOCAL in-container worker or KAGGLE_ASSISTED
    notebook) and run the test lab.
 
-Full guide with honest limitation notes (SQLite = one instance; LocalProvider
-Python deps in containers; PEP 668; Kaggle burst-only): **`docs/38-DEPLOYMENT.md`**.
+Full guide with honest limitation notes (Supabase Postgres setup, one-instance
+gateway note, LocalProvider Python deps, PEP 668, Kaggle burst-only):
+**`docs/38-DEPLOYMENT.md`**.
 
 ## Key docs
 
@@ -72,8 +78,9 @@ Python deps in containers; PEP 668; Kaggle burst-only): **`docs/38-DEPLOYMENT.md
 
 ## Known limitations (stated, not hidden)
 
-- **SQLite** = single instance. Horizontal scale requires the documented Postgres
-  provider switch.
+- **One app instance**: the audio gateway and LocalProvider live in the same
+  process as the web app, so run a single instance. The database is Postgres
+  (Supabase in this deployment) and does not limit scaling; the gateway does.
 - **Kaggle** is burst capacity only (KAGGLE_ASSISTED); it is never a 24/7 worker.
 - **Billing** is architecture + credit ledger only; PSP adapters are interfaces,
   deliberately not connected.

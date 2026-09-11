@@ -68,10 +68,29 @@ Steps:
 2. Set variables: DATABASE_URL, GATEWAY_SECRET, NEXTAUTH_SECRET,
    APP_ORIGIN (https://<service>.up.railway.app), ADMIN_EMAIL,
    ADMIN_PASSWORD. Generate secrets with `openssl rand -base64 32`.
-3. SQLite: mount a Railway volume (default /data is fine), set
-   DATABASE_URL=file:/data/voxcore.db. SQLite means ONE instance - scale
-   horizontally later requires the Postgres provider switch documented
-   above. This limitation is stated, not hidden.
+3. Database: PostgreSQL. The schema provider was switched from SQLite to
+   postgresql (2026-09-12); the schema never used SQLite-only features, so the
+   switch required no model changes. Verified live against Supabase: `prisma
+   db push` applied the full schema and a production `bun server.ts` booted
+   with /api/health reporting db.ok=true.
+   Supabase notes (verified):
+   - Use the SESSION-MODE pooler host, port 5432:
+     postgresql://postgres.<ref>:<PASSWORD>@aws-1-<region>.pooler.supabase.com:5432/postgres?sslmode=require
+   - Password special characters (# $ , ) & etc.) MUST be URL-encoded
+     (# -> %23, $ -> %24, , -> %2C, ) -> %29, & -> %26) or Prisma cannot parse
+     the URL - an unencoded URL crashes the container at start.
+   - The direct db.<ref>.supabase.co host is IPv6-only unless the IPv4 add-on
+     is purchased; the pooler host resolves over IPv4, which is why it is the
+     default recommendation here.
+   - Port 6543 is the TRANSACTION-mode pooler; if you switch to it, append
+     &pgbouncer=true to the URL (Prisma must disable prepared statements).
+   - The Supabase anon key / API key are NOT needed for a direct Postgres
+     connection; never paste them into DATABASE_URL.
+   - A Railway volume is no longer required (state lives in Postgres).
+   - Single-instance note, restated honestly: Postgres removes the DB-side
+     scaling limit, but the deployment still assumes ONE app instance because
+     the audio gateway and LocalProvider live in the same process. Scale to
+     multiple instances only after splitting the gateway out.
 4. railway.toml (committed) sets: NIXPACKS builder; startCommand
    `prisma db push --skip-generate && bun scripts/seed-if-empty.ts &&
    NODE_ENV=production bun server.ts`; healthcheck /api/models;
@@ -92,3 +111,31 @@ Mode summary (both use socket.io path /gateway):
   VOXCORE_GATEWAY_PORT (3003) at /gateway; local browsers get
   http://<app-host>:3003 as the gateway origin; set
   VOXCORE_GATEWAY_PUBLIC_URL when the gateway is served from another host.
+
+## Google sign-in (added 2026-09-12)
+
+Optional OAuth 2.0 web flow at /api/auth/google/start -> /api/auth/google/callback.
+Enabled ONLY when both GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set; an
+unconfigured deployment never shows the button (site config flag
+googleEnabled is env-derived and recomputed, never stored).
+
+Setup:
+1. Google Cloud console -> APIs & Services -> Credentials -> Create OAuth
+   client ID, type "Web application".
+2. Authorized redirect URI (must match APP_ORIGIN exactly):
+   https://<your-domain>/api/auth/google/callback
+3. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET on the deployment.
+
+Behavior (all verified against the flow implementation):
+- Sign-in with an existing email links the accounts; Google-verified emails
+  mark the platform account verified; PENDING_VERIFICATION accounts become
+  ACTIVE.
+- Sign-UP creates the account with a random unusable password hash (Google is
+  the only sign-in path until a password reset is performed).
+- Terms consent is captured honestly: the register page requires the consent
+  checkbox BEFORE the Google button works, and the callback records a
+  ConsentRecord with the same evidence format as password registration. Consent
+  is never implied by an OAuth round trip.
+- CSRF: state parameter bound to an httpOnly cookie (SameSite=Lax - required,
+  because the Google redirect back is a cross-site top-level GET navigation).
+- All failure paths redirect to the auth page with a specific, honest note.
