@@ -7,7 +7,9 @@
 # Required variables (set in the Railway dashboard, never committed):
 #   DATABASE_URL      PostgreSQL (e.g. Supabase session-mode pooler):
 #                     postgresql://postgres.<ref>:<URL-ENCODED-PASSWORD>@aws-1-<region>.pooler.supabase.com:5432/postgres?sslmode=require
-#                     Password characters like # $ , ) & must be URL-encoded.
+#                     Raw '# $ , ) &' in the password truncate the URL ->
+#                     host/password are wrong - boot.ts auto-encodes them, but
+#                     paste the encoded form to keep logs clean.
 #   GATEWAY_SECRET    random 32+ byte string (signs session gateway tokens)
 #   NEXTAUTH_SECRET   random 32+ byte string
 #   APP_ORIGIN        https://<your-service>.up.railway.app
@@ -29,8 +31,19 @@ builder = "NIXPACKS"
 NIXPACKS_NODE_VERSION = "20"
 
 [deploy]
-startCommand = "bun scripts/env-doctor.ts && bunx prisma db push --skip-generate && bun scripts/seed-if-empty.ts && NODE_ENV=production bun server.ts"
-healthcheckPath = "/api/models"
+# boot.ts = one orchestrator process:
+#   auto-repair DATABASE_URL (raw '#'/'$'/','/')'/'&' in the password get
+#   percent-encoded automatically, idempotent) -> env-doctor fail-fast ->
+#   prisma db push with 3 retries -> seed (best-effort, never blocks
+#   serving) -> unified server in-process on $PORT.
+startCommand = "NODE_ENV=production bun scripts/boot.ts"
+# /api/health always returns HTTP 200 while the process is up (the body
+# honestly reports db status as ok/degraded). A DB blip therefore can never
+# fail a rollout; use /api/health for humans, this for the platform.
+healthcheckPath = "/api/health"
 healthcheckTimeout = 120
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 3
+# ALWAYS (not ON_FAILURE+maxRetries): with maxRetries the deployment is left
+# DEAD after 3 failed restarts - that turned every transient boot error into
+# a permanent 502. ALWAYS restarts indefinitely; combined with boot.ts
+# retries the service self-heals when Supabase blips.
+restartPolicyType = "ALWAYS"

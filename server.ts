@@ -15,6 +15,31 @@ import next from "next";
 // Must be set before any control-plane module reads it.
 process.env.VOXCORE_GATEWAY_INPROCESS = "1";
 
+// Availability guard: a background error (gateway metrics post, socket.io
+// callback, database blip in an async path) must never take the listener
+// down - that is what a 502 is. Log loudly and keep serving; boot failures
+// below are still fatal via main().catch.
+process.on("unhandledRejection", (reason) => {
+  console.error(
+    JSON.stringify({
+      level: "error",
+      msg: "unhandled_rejection_contained",
+      err: reason instanceof Error ? (reason.stack ?? reason.message) : String(reason),
+      ts: new Date().toISOString(),
+    })
+  );
+});
+process.on("uncaughtException", (err) => {
+  console.error(
+    JSON.stringify({
+      level: "error",
+      msg: "uncaught_exception_contained",
+      err: err instanceof Error ? (err.stack ?? err.message) : String(err),
+      ts: new Date().toISOString(),
+    })
+  );
+});
+
 const dev = process.env.NODE_ENV !== "production";
 const port = Number(process.env.PORT || 3000);
 
@@ -53,9 +78,22 @@ async function main() {
     }
   }
 
-  server.listen(port, () => {
-    console.log(JSON.stringify({ level: "info", msg: "voxcore_listening", port, dev, gateway: "/gateway" }));
+  // Bind 0.0.0.0 explicitly: single-port platforms (Railway) route to the
+  // container's IPv4 interface; never bind to a loopback host here.
+  server.listen(port, "0.0.0.0", () => {
+    console.log(JSON.stringify({ level: "info", msg: "voxcore_listening", port, host: "0.0.0.0", dev, gateway: "/gateway" }));
   });
+
+  // Graceful platform shutdown (SIGTERM on redeploy/scale): stop accepting
+  // new connections, finish in-flight ones, exit cleanly instead of a hard
+  // kill that can orphan requests.
+  const shutdown = (signal: string) => {
+    console.log(JSON.stringify({ level: "info", msg: "voxcore_shutdown", signal }));
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(0), 5_000).unref();
+  };
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 main().catch((err) => {

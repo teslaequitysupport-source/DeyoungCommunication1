@@ -53,8 +53,9 @@ components and reports honest pass/fail with measured numbers.
 ## Deploy to Railway
 
 `railway.toml` is committed and ready: Nixpacks build, single service,
-`prisma db push → seed-if-empty → NODE_ENV=production bun server.ts`,
-healthcheck `/api/models`.
+`NODE_ENV=production bun scripts/boot.ts` (DATABASE_URL auto-repair +
+env-doctor + `prisma db push` with retries + best-effort seed + unified
+server on one port), healthcheck `/api/health`, restart policy ALWAYS.
 
 1. Push this repo to GitHub → Railway "New project → Deploy from repo".
 2. Set variables: `DATABASE_URL`, `GATEWAY_SECRET`, `NEXTAUTH_SECRET`,

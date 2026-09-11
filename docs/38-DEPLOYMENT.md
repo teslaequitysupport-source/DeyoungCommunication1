@@ -92,11 +92,17 @@ Steps:
      the audio gateway and LocalProvider live in the same process. Scale to
      multiple instances only after splitting the gateway out.
 4. railway.toml (committed) sets: NIXPACKS builder; startCommand
-   `prisma db push --skip-generate && bun scripts/seed-if-empty.ts &&
-   NODE_ENV=production bun server.ts`; healthcheck /api/models;
-   restart on failure. seed-if-empty seeds ONLY an empty database;
-   the bootstrap admin comes from ADMIN_EMAIL/ADMIN_PASSWORD.
-5. Deploy. Health check turns green when /api/models answers 200.
+   `NODE_ENV=production bun scripts/boot.ts` - one orchestrator that
+   auto-repairs raw special characters in the DATABASE_URL password
+   (idempotent), runs env-doctor fail-fast, applies the schema with
+   prisma db push (3 retries), seeds best-effort (never blocks serving),
+   then starts the unified server in-process. Healthcheck /api/health
+   (always HTTP 200 while the process is up; the body honestly reports
+   db status) and restart policy ALWAYS - a transient boot error can no
+   longer leave the deployment dead after 3 retries (the old permanent-502
+   failure mode). seed-if-empty seeds ONLY an empty database; the bootstrap
+   admin comes from ADMIN_EMAIL/ADMIN_PASSWORD.
+5. Deploy. Health check turns green when /api/health answers 200.
 6. Provision capacity: LOCAL (in-container python workers) or
    KAGGLE_ASSISTED (paste the generated cell into a Kaggle GPU notebook;
    the worker registers over outbound-only connections). Verify with the
