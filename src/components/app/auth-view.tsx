@@ -36,6 +36,7 @@ export default function AuthView({
   const [error, setError] = useState<string | null>(null);
   const [problems, setProblems] = useState<string[]>([]);
   const [devToken, setDevToken] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
   const [touched, setTouched] = useState<{ email: boolean; password: boolean }>({ email: false, password: false });
 
   // Live password policy - the same rules the server enforces (src/lib/auth.ts).
@@ -84,12 +85,22 @@ export default function AuthView({
     setDevToken(null);
     try {
       if (mode === "register") {
-        const res = await apiSend<{ ok: boolean; devVerificationToken?: string; emailModeNote?: string }>("/api/auth/register", "POST", {
+        const res = await apiSend<{ ok: boolean; devVerificationToken?: string; emailModeNote?: string; emailMode?: string }>("/api/auth/register", "POST", {
           email: email.trim(), password, name: name.trim() || undefined, acceptTerms: accept,
         });
         if (res.devVerificationToken) {
           setDevToken(res.devVerificationToken);
-          await apiSend("/api/auth/verify-email", "POST", { token: res.devVerificationToken }).catch(() => {});
+          // Verify BEFORE navigating: a swallowed failure here used to leave
+          // the account pending forever with the token alert already gone.
+          try {
+            await apiSend("/api/auth/verify-email", "POST", { token: res.devVerificationToken });
+          } catch {
+            toast({
+              title: "One more step",
+              description: "Automatic verification failed - press \"Verify now\" below. Your account exists and is signed in.",
+            });
+            return; // stay on the auth view; devToken alert + Verify button remain visible
+          }
         }
         toast({ title: "Account created", description: res.emailModeNote ?? "Welcome." });
         await refreshMe();
@@ -123,6 +134,22 @@ export default function AuthView({
   };
 
   const googleAvailable = config?.googleEnabled === true;
+
+  const verifyNow = async () => {
+    if (!devToken) return;
+    setVerifying(true);
+    setError(null);
+    try {
+      await apiSend("/api/auth/verify-email", "POST", { token: devToken });
+      toast({ title: "Email verified" });
+      await refreshMe();
+      navigate("dashboard");
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.message : "Verification failed - try again");
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   return (
     <div className="mx-auto flex max-w-md flex-col justify-center px-4 py-16">
@@ -161,8 +188,13 @@ export default function AuthView({
           {devToken ? (
             <Alert className="mb-4 border-amber-800 bg-amber-950/40">
               <AlertTitle className="text-amber-200">Dev-mode email verification</AlertTitle>
-              <AlertDescription className="break-all font-mono text-[11px] text-amber-100">
-                SMTP is not configured in this deployment, so the verification token is shown once: {devToken}
+              <AlertDescription className="space-y-2">
+                <p className="break-all font-mono text-[11px] text-amber-100">
+                  SMTP is not configured in this deployment, so the verification token is shown once: {devToken}
+                </p>
+                <Button type="button" size="sm" variant="outline" className="border-amber-700 text-amber-200 hover:bg-amber-950" onClick={verifyNow} disabled={verifying}>
+                  {verifying ? "Verifying..." : "Verify now"}
+                </Button>
               </AlertDescription>
             </Alert>
           ) : null}
@@ -242,6 +274,11 @@ export default function AuthView({
                 </p>
               ) : null}
             </>
+          ) : config ? (
+            <p className="mt-4 text-center text-[11px] text-zinc-500">
+              Google sign-in is not configured on this deployment (the operator must set GOOGLE_CLIENT_ID and
+              GOOGLE_CLIENT_SECRET, then redeploy). Use email sign-up above.
+            </p>
           ) : null}
           <div className="mt-4 text-center text-xs text-zinc-500">
             {mode === "login" ? (
