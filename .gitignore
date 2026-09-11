@@ -52,3 +52,14 @@ prompt
 server.log
 # Skills directory
 /skills/
+# local databases (created by prisma db push + seed-if-empty on deploy)
+db/*.db
+db/*.db-journal
+
+# sandbox working artifacts (not part of the product)
+upload/
+download/
+tool-results/
+.zscripts/
+agent-ctx/
+worklog.md

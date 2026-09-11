@@ -45,7 +45,7 @@ const AGENT_DIR = path.join(process.cwd(), "worker-agent");
 const AGENT_ENTRY = path.join(AGENT_DIR, "worker_agent.py");
 const localProcesses = new Map<string, ChildProcess>();
 
-// Interpreter is pinned by deployments via VOXCORE_AGENT_PYTHON (see docs/48-DEPLOYMENT.md).
+// Interpreter is pinned by deployments via VOXCORE_AGENT_PYTHON (see docs/38-DEPLOYMENT.md).
 // Bare "python3" resolves against the SERVER process PATH, which may differ from the
 // operator shell PATH (e.g. a venv python with deps vs a bare system python without).
 const AGENT_PYTHON = process.env.VOXCORE_AGENT_PYTHON || "python3";
