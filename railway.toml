@@ -18,6 +18,14 @@
 [build]
 builder = "NIXPACKS"
 
+# Pin the Node major for Nixpacks. Without this Nixpacks defaulted to Node 18,
+# which nixpkgs has removed (EOL) - the build failed in nix-env with
+# "Node.js 18.x has reached End-Of-Life and has been removed".
+# NIXPACKS_NODE_VERSION takes priority over .nvmrc and package.json engines
+# (both also pinned to 20 as fallbacks).
+[variables]
+NIXPACKS_NODE_VERSION = "20"
+
 [deploy]
 startCommand = "prisma db push --skip-generate && bun scripts/seed-if-empty.ts && NODE_ENV=production bun server.ts"
 healthcheckPath = "/api/models"
