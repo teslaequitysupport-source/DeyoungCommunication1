@@ -7,6 +7,7 @@ import { apiGet, CatalogModel, Me, PlanInfo, ApiClientError } from "@/lib/client
 import { SiteConfig } from "@/components/app/app-shell";
 import Vox3D from "@/components/app/vox-3d";
 import { TiltCard, Reveal, Skeleton, SkeletonCards, SkeletonStats, EmptyState } from "@/components/app/ui-bits";
+import AppsSection from "@/components/app/apps-section";
 import {
   AudioWaveform, ServerCog, ShieldCheck, UploadCloud, Gauge,
   ArrowRight, ChevronDown, EyeOff, Scale, ScanEye, FileLock2, DatabaseZap,
@@ -20,7 +21,7 @@ import {
 
 const COMPAT_MATRIX = [
   { target: "Browser apps (this studio)", status: "SUPPORTED", note: "Chrome, Edge, Firefox: microphone capture and converted playback in-browser, measured live in the studio." },
-  { target: "Discord / OBS / Zoom (Windows)", status: "DESKTOP COMPANION", note: "Requires the Windows client with a virtual microphone (VB-CABLE route). Planned phase 2; not shipped in this build." },
+  { target: "Discord / OBS / Zoom (Windows)", status: "DESKTOP COMPANION", note: "Direct routing needs the Windows companion (planned). A manual virtual-audio-cable path works today; the walkthrough lives in the Guides page." },
   { target: "Third-party apps (Android)", status: "PARTIAL", note: "Android 10+ restricts unverified microphone injection. In-app conversion works; system-wide routing does not." },
   { target: "Third-party apps (iOS)", status: "UNSUPPORTED", note: "iOS sandboxing does not permit replacing the system microphone. In-app conversion only." },
 ];
@@ -82,7 +83,7 @@ const FAQ = [
   },
   {
     q: "Can I use it in Discord, OBS or Zoom?",
-    a: "Not yet in this build. The browser studio works today in Chrome, Edge and Firefox. System-wide voice routing needs the Windows desktop companion with a virtual microphone; it is planned, and it is labeled as not shipped rather than promised with a date.",
+    a: "Two different answers, both honest. Direct system-wide routing needs the Windows desktop companion with a virtual microphone, and that is planned, not shipped. What works today is manual routing: a free virtual audio cable carries the studio's converted output into OBS, Discord or Zoom as an ordinary microphone. The Guides page walks through every click, including the latency tradeoffs you should measure yourself.",
   },
   {
     q: "Who can upload voices, and how are they reviewed?",
@@ -95,6 +96,10 @@ const FAQ = [
   {
     q: "What happens to my voice data?",
     a: "Microphone audio is captured in your browser, chunked, and processed in memory. Nothing is recorded to disk; your session telemetry (latency percentiles, packet stats) is stored so the numbers you see are real. You can end a session at any time and delete your account from the account page.",
+  },
+  {
+    q: "Is there a mobile app?",
+    a: "Not yet. Native Android and iOS apps are in design, and the web studio already works in modern mobile browsers. A phone cannot legally replace the system microphone for other apps, so in-app conversion is the honest shape of the mobile product. You can join the notify list in the apps section below; it is used exactly once.",
   },
   {
     q: "Why are some numbers on this page replaced with dashes?",
@@ -257,7 +262,7 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
       <section className="border-b border-white/10 bg-black">
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32">
           <Reveal>
-            <p className="label-kicker text-red-600">Principle 01 — no fabrication</p>
+            <p className="label-kicker text-red-600">Principle 01: no fabrication</p>
             <p className="mt-8 max-w-5xl font-display text-3xl font-medium leading-[1.15] tracking-[-0.02em] text-white sm:text-5xl">
               Every number here is <span className="text-red-600">measured</span> from real sessions. Every capability
               is labeled <span className="font-medium">SUPPORTED</span>,{" "}
@@ -304,6 +309,50 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
               </Reveal>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ======================= TRANSFORMATION ========================= */}
+      <section className="border-b border-white/10 bg-black">
+        <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
+          <SectionHead
+            kicker="The transformation"
+            title={<>One microphone.<br />A different voice.</>}
+            lede="The most requested conversion: you speak with your own voice, and a different voice comes out. The built-in DSP voices get there by shifting pitch and formants in 128 ms chunks, the two acoustic cues listeners use to read a voice as masculine or feminine."
+          />
+          <div className="mt-14 grid items-center gap-6 md:grid-cols-[1fr_auto_1fr]">
+            <Reveal>
+              <figure className="relative overflow-hidden rounded-[var(--radius)] border border-white/10">
+                <img src="/img/man-mic.png" alt="A man speaking into a studio microphone, lit by red rim light" className="aspect-[3/4] w-full object-cover" loading="lazy" />
+                <figcaption className="absolute bottom-0 left-0 right-0 bg-black/70 px-4 py-2 text-xs font-medium uppercase tracking-widest text-zinc-300 backdrop-blur">
+                  Your microphone
+                </figcaption>
+              </figure>
+            </Reveal>
+            <div className="flex flex-col items-center gap-3 py-2 md:py-0" aria-hidden>
+              <span className="hidden h-px w-16 bg-red-600 md:block" />
+              <span className="grid h-12 w-12 place-items-center rounded-full border border-red-600 bg-red-950/50 text-red-500">
+                <ArrowRight className="h-5 w-5 rotate-90 md:rotate-0" />
+              </span>
+              <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-red-500">converted</span>
+              <span className="hidden h-px w-16 bg-red-600 md:block" />
+            </div>
+            <Reveal delay={120}>
+              <figure className="relative overflow-hidden rounded-[var(--radius)] border border-white/10">
+                <img src="/img/woman-mic.png" alt="A woman speaking into a studio microphone, lit by red rim light" className="aspect-[3/4] w-full object-cover" loading="lazy" />
+                <figcaption className="absolute bottom-0 left-0 right-0 bg-black/70 px-4 py-2 text-xs font-medium uppercase tracking-widest text-zinc-300 backdrop-blur">
+                  The converted output
+                </figcaption>
+              </figure>
+            </Reveal>
+          </div>
+          <p className="mt-8 max-w-3xl text-xs leading-relaxed text-zinc-500">
+            Illustrative imagery, generated for this page. It represents a male voice being converted to a
+            female-sounding voice, which is what the pitch and formant engines do; it is not a screenshot of one
+            specific model. Open the studio, pick a built-in voice, and the result and latency you see there are
+            measured from your own session. Voices beyond the built-in DSP set depend on approved models in the
+            catalog.
+          </p>
         </div>
       </section>
 
@@ -708,6 +757,8 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
         </div>
       </section>
 
+      <AppsSection />
+
       {/* ========================== FINAL CTA =========================== */}
       <section className="relative overflow-hidden bg-black">
         <div className="grid-lines grid-lines-fade absolute inset-0" aria-hidden />
@@ -727,6 +778,11 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
               </Button>
               <Button size="lg" variant="outline" className="h-12 border-white/30 bg-transparent px-8 font-display text-sm font-bold uppercase tracking-widest text-white hover:bg-white hover:text-black" onClick={() => navigate("legal/voice-rights")}>
                 Voice rights policy
+              </Button>
+            </div>
+            <div className="mt-6">
+              <Button variant="ghost" className="h-11 text-zinc-400 hover:text-white" onClick={() => navigate("guides")}>
+                New here? Read the step-by-step guides first <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </Reveal>

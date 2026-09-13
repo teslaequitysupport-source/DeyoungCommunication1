@@ -22,6 +22,8 @@ export const RATE_RULES = {
   workerRegister: { name: "worker:register", limit: 30, windowSec: 300 },
   workerHeartbeat: { name: "worker:heartbeat", limit: 30, windowSec: 60 },
   supportCreate: { name: "support:create", limit: 5, windowSec: 3600 },
+  supportContact: { name: "support:contact", limit: 3, windowSec: 3600 },
+  waitlistJoin: { name: "waitlist:join", limit: 3, windowSec: 3600 },
   supportReply: { name: "support:reply", limit: 30, windowSec: 600 },
   adminWrite: { name: "admin:write", limit: 120, windowSec: 60 },
   testLab: { name: "admin:testlab", limit: 20, windowSec: 60 },

@@ -17,6 +17,8 @@ import BillingView from "@/components/app/billing-view";
 import SupportView from "@/components/app/support-view";
 import AccountView from "@/components/app/account-view";
 import LegalView from "@/components/app/legal";
+import GuidesView from "@/components/app/guides";
+import PublicSupportView from "@/components/app/public-support";
 import AdminShell from "@/components/admin/admin-shell";
 
 export interface SiteConfig {
@@ -216,6 +218,25 @@ export default function AppShell() {
     );
   }
 
+  // Public guides hub (no account required).
+  if (route.path === "guides") {
+    return (
+      <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+        <GuidesView navigate={navigate} />
+      </Shell>
+    );
+  }
+
+  // Support is public: signed-out visitors get quick answers plus the
+  // referenced contact form; signed-in users get the full ticket system.
+  if (route.path === "support" && !user) {
+    return (
+      <Shell config={config} me={me} navigate={navigate} logout={logout} user={user} isAdmin={isAdmin}>
+        <PublicSupportView navigate={navigate} />
+      </Shell>
+    );
+  }
+
   // Authenticated user routes.
   if (!user) {
     return (
@@ -332,6 +353,7 @@ function Shell({
   const mobileLinks: [string, string][] = [
     ["studio", "Studio"],
     ["models", "Voices"],
+    ["guides", "Guides"],
     ["support", "Support"],
     ...(user ? [["dashboard", "Dashboard"] as [string, string]] : []),
   ];
@@ -358,6 +380,7 @@ function Shell({
               </>
             ) : (
               <>
+                <Button variant="ghost" size="sm" onClick={() => go("guides")} className="hidden lg:inline-flex">Guides</Button>
                 <Button variant="ghost" size="sm" onClick={() => go("studio")} className="hidden sm:inline-flex">Studio</Button>
                 <Button variant="ghost" size="sm" onClick={() => go("models")} className="hidden sm:inline-flex">Voices</Button>
                 <Button variant="ghost" size="sm" onClick={() => go("support")} className="hidden md:inline-flex">Support</Button>
@@ -441,6 +464,8 @@ function Shell({
               {config?.siteName ?? "VoxCore"}
             </span>
             {[
+              ["guides", "Guides"],
+              ["support", "Help"],
               ["legal/terms", "Terms"],
               ["legal/privacy", "Privacy"],
               ["legal/cookies", "Cookies"],

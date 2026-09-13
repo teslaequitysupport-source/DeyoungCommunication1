@@ -57,6 +57,23 @@ export const ticketCreateSchema = z.object({
   priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).default("NORMAL"),
 });
 
+// Anonymous (signed-out) contact form. "website" is a honeypot field that
+// must stay empty: humans never see it, bots fill it.
+export const supportContactSchema = z.object({
+  name: z.string().trim().max(80).optional().or(z.literal("")),
+  email: emailSchema,
+  subject: z.string().trim().min(4).max(150),
+  body: z.string().trim().min(10).max(5000),
+  website: z.literal("", { message: "Rejected as spam" }).optional(),
+});
+
+// Mobile app waitlist (honest coming-soon capture).
+export const waitlistJoinSchema = z.object({
+  email: emailSchema,
+  platform: z.enum(["IOS", "ANDROID", "ANY"]).default("ANY"),
+  website: z.literal("", { message: "Rejected as spam" }).optional(),
+});
+
 export const ticketReplySchema = z.object({
   body: z.string().trim().min(1).max(5000),
   internal: z.boolean().default(false),

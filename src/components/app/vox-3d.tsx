@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-// Vox3D — dependency-free 3D renderer for the hero. A fibonacci-distributed
+// Vox3D: dependency-free 3D renderer for the hero. A fibonacci-distributed
 // sphere of radial bars whose lengths pulse in layered waves, like a voice
 // waveform wrapped around a globe. Perspective projection, mouse parallax,
 // depth-shaded red/white palette, drawn as glowing line segments.

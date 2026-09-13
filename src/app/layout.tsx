@@ -18,7 +18,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "VoxCore — Real-Time AI Voice Conversion",
+  title: "VoxCore: Real-Time AI Voice Conversion",
   description:
     "Speak into your microphone and hear a converted voice come back in real time. A worker fleet, a self-healing scheduler, open model uploads with human moderation, and a scale-to-zero cost model. Every number shown is measured, never marketed.",
   keywords: ["voice conversion", "real-time", "AI voice", "RVC", "streaming audio"],
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     icon: "/logo.svg",
   },
   openGraph: {
-    title: "VoxCore — Real-Time AI Voice Conversion",
+    title: "VoxCore: Real-Time AI Voice Conversion",
     description: "Real-time voice conversion with measured latency, honest capability labels, and open uploads under human review.",
     siteName: "VoxCore",
     type: "website",

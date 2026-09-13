@@ -542,6 +542,36 @@ model TicketMessage {
   @@index([ticketId, createdAt])
 }
 
+// Public contact submissions from signed-out visitors (the /#/help form).
+// Anonymous intake keeps the door open for people who cannot sign in
+// (locked out, deliverability issues, pre-signup questions). Triaged by
+// staff; spam filtering is rule-based + honeypot, never a third party.
+model SupportRequest {
+  id        String   @id @default(cuid())
+  ref       String   @unique // short human reference, e.g. VC-4F7K2Q
+  name      String?
+  email     String
+  subject   String
+  body      String
+  status    String   @default("NEW") // NEW | TRIAGED | RESOLVED | SPAM
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([status, createdAt])
+  @@index([email])
+}
+
+// Mobile app "notify me" list (honest coming-soon capture, no marketing use).
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  platform  String   @default("ANY") // IOS | ANDROID | ANY
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 model Notification {
   id        String    @id @default(cuid())
   userId    String

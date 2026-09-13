@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 // than invented (directive 41). Each page notes where professional legal
 // review is required before commercial launch.
 
-const UPDATED = "September 10, 2026";
+const UPDATED = "September 14, 2026";
 
 export default function LegalView({ slug, navigate }: { slug: string; navigate: (to: string) => void }) {
   const doc = DOCS[slug] ?? DOCS["terms"];
@@ -84,16 +84,20 @@ const DOCS: Record<string, { nav: string; title: string; review?: string; body: 
         <p><strong>Usage and metering.</strong> Session durations, engine tier, worker identifier, computed cost. Purpose: entitlement enforcement, credit ledger integrity, capacity planning. Retention: 12 months.</p>
         <p><strong>Upload attestations.</strong> For each model upload we store your attestation text, a cryptographic evidence hash and request metadata. Purpose: voice-rights enforcement and takedown defense. Retention: life of the model record plus legal window.</p>
         <p><strong>Audit and security events.</strong> Administrative actions with actor, target, before/after state, and a hash chain for tamper evidence; security events such as failed logins. Purpose: security, accountability. Retention: audit records are long-lived by design; security events 90 days.</p>
-        <H>2. What we do not do</H>
+        <p><strong>Contact form messages (signed-out visitors).</strong> Optional name, email address, message, plus IP and user agent kept for abuse filtering. Purpose: answering support questions from people who cannot sign in. Retention: 12 months, then deleted. The reference code shown to you (format VC-XXXXXX) is the only identifier you need to cite.</p>
+        <p><strong>Mobile app waitlist.</strong> Email address and platform choice, deduplicated. Purpose: exactly one notification when the mobile app ships, then deletion unless you ask us to keep the address. It is never used for marketing and never shared.</p>
+        <H>2. How your data is used, in one paragraph</H>
+        <p>Your account data authenticates you. Session and security data keep your account safe and stop abuse. Voice audio converts and returns; the platform does not bank it. Metering data keeps free limits and credit math honest. Attestation data protects the people whose voices could be cloned. Contact and waitlist data exist only to answer you or to tell you the app shipped. Nothing on this list is used for advertising, profiling, or model training, and no data is sold.</p>
+        <H>3. What we do not do</H>
         <p>No advertising pixels. No third-party analytics. No profiling. No sale of data. No external fonts or scripts at runtime. Cookies are strictly necessary (session) plus interface preferences; see the Cookie Policy.</p>
-        <H>3. Third parties</H>
+        <H>4. Third parties</H>
         <p>Currently none receive your data outside of this deployment's own infrastructure. GPU workers are platform-operated components; when third-party providers are introduced, this section will list each with purpose, data, and commercial terms.</p>
-        <H>4. Your rights</H>
-        <p>Access: the dashboard shows your data directly. Portability: usage and ledger records are exportable on request. Erasure: self-service account deletion is immediate. Objection and rectification: open a support ticket. If local law grants you a complaint route (for example the NDPC in Nigeria), you may use it; we ask you to contact us first so we can fix the problem.</p>
-        <H>5. Children</H>
+        <H>5. Your rights</H>
+        <p>Access: the dashboard shows your data directly. Portability: usage and ledger records are exportable on request. Erasure: self-service account deletion is immediate; waitlist addresses are deleted on request or after the launch notification. Objection and rectification: open a support ticket. If local law grants you a complaint route (for example the NDPC in Nigeria), you may use it; we ask you to contact us first so we can fix the problem.</p>
+        <H>6. Children</H>
         <p>The service is not directed at children. Accounts require an email address; we delete accounts we learn belong to children below the local digital-consent age.</p>
-        <H>6. Contact</H>
-        <p>Privacy questions and data-subject requests: use the Contact page. Requests are handled through the support system and are visible to you as tickets.</p>
+        <H>7. Contact</H>
+        <p>Privacy questions and data-subject requests: use the Contact page. Signed-in requests run through the ticket system so you can track progress. Signed-out requests go through the referenced contact form on the Support page.</p>
       </>
     ),
   },
@@ -109,6 +113,8 @@ const DOCS: Record<string, { nav: string; title: string; review?: string; body: 
         <p><strong>Theme preference.</strong> Stored locally (not a cookie) so the interface respects your light/dark choice. Not used for tracking.</p>
         <H>What we do not use</H>
         <p>No tracking pixels, no fingerprinting scripts, no external font CDNs that could log requests, no consent-adjacent data sharing. Because only strictly necessary storage is used, no consent banner is shown; a consent banner that trickles non-essential scripts would be dishonest here.</p>
+        <H>Browser cache</H>
+        <p>Standard HTTP caching stores this site's static assets (page code, stylesheets, self-hosted fonts, images) on your device so repeat visits load faster. Cached files are readable only by this site and are removed when you clear your browser cache; there is no offline mode and no service worker holding content. Clearing cache and cookies signs you out and removes everything the site stored on your device, because session state lives in the cookie above and nowhere else.</p>
       </>
     ),
   },
@@ -194,6 +200,9 @@ const DOCS: Record<string, { nav: string; title: string; review?: string; body: 
       <>
         <H>Support</H>
         <p>Signed-in users: the Support page creates a real ticket visible in your ticket list, with replies delivered as notifications. This is the fastest path for account, billing, session and takedown matters.</p>
+        <p>Signed-out visitors: the same Support page offers a contact form that returns a reference code (format VC-XXXXXX). The team replies to the email address you leave; the code is what you cite in follow-ups so your message history can be found.</p>
+        <H>How-to questions</H>
+        <p>Before writing in: the Guides page answers the most common setup questions with step-by-step instructions for the studio, OBS, Discord, Zoom, recording and mobile use.</p>
         <H>Privacy and data-subject requests</H>
         <p>Open a ticket tagged privacy in the first line. Requests under data protection law (including the Nigeria Data Protection Act) are handled through the ticket so you can track progress.</p>
         <H>Security disclosure</H>
