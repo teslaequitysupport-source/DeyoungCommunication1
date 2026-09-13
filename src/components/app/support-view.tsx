@@ -65,13 +65,13 @@ export default function SupportView({ config }: { config: SiteConfig | null }) {
           <h1 className="text-2xl font-semibold tracking-tight">Support</h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Real ticketing: threaded conversations, status tracking and notifications. Replies from staff appear inline.</p>
         </div>
-        <Button className="bg-violet-600 hover:bg-violet-500" onClick={() => setOpen((v) => !v)} disabled={config?.supportEnabled === false}>
+        <Button className="bg-red-600 hover:bg-red-500" onClick={() => setOpen((v) => !v)} disabled={config?.supportEnabled === false}>
           {open ? "Close form" : "New ticket"}
         </Button>
       </div>
 
       {config?.supportEnabled === false ? (
-        <p className="mt-4 rounded-lg border border-amber-800 bg-amber-950/30 p-3 text-sm text-amber-200">Support intake is temporarily closed by an administrator.</p>
+        <p className="mt-4 rounded-lg border border-white/25 bg-white/5 p-3 text-sm text-zinc-100">Support intake is temporarily closed by an administrator.</p>
       ) : null}
 
       {open ? (
@@ -102,7 +102,7 @@ export default function SupportView({ config }: { config: SiteConfig | null }) {
                 <Label htmlFor="t-body">Details</Label>
                 <Textarea id="t-body" name="body" required minLength={10} maxLength={5000} rows={5} />
               </div>
-              <Button type="submit" className="bg-violet-600 hover:bg-violet-500" disabled={busy}>{busy ? <Spinner /> : "Open ticket"}</Button>
+              <Button type="submit" className="bg-red-600 hover:bg-red-500" disabled={busy}>{busy ? <Spinner /> : "Open ticket"}</Button>
             </form>
           </CardContent>
         </Card>
@@ -128,7 +128,7 @@ export default function SupportView({ config }: { config: SiteConfig | null }) {
               </CardHeader>
               <CardContent className="space-y-3">
                 {t.messages.map((m) => (
-                  <div key={m.id} className={`rounded-lg border p-3 text-sm ${m.role === "USER" ? "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/60" : "border-violet-800 bg-violet-950/30"}`}>
+                  <div key={m.id} className={`rounded-lg border p-3 text-sm ${m.role === "USER" ? "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/60" : "border-red-800 bg-red-950/30"}`}>
                     <div className="mb-1 flex justify-between text-[11px] text-zinc-400">
                       <span className="font-mono uppercase">{m.role === "USER" ? "you" : m.role}</span>
                       <span>{formatDate(m.createdAt)}</span>
@@ -156,7 +156,7 @@ function ReplyBox({ onSend, canClose }: { onSend: (body: string, close: boolean)
     <div className="space-y-2">
       <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={2} placeholder="Write a reply..." maxLength={5000} aria-label="Reply text" />
       <div className="flex gap-2">
-        <Button size="sm" className="bg-violet-600 hover:bg-violet-500" onClick={() => { onSend(body, false); setBody(""); }}>Send reply</Button>
+        <Button size="sm" className="bg-red-600 hover:bg-red-500" onClick={() => { onSend(body, false); setBody(""); }}>Send reply</Button>
         {canClose ? (
           <Button size="sm" variant="outline" onClick={() => { onSend(body || "Closing this ticket.", true); setBody(""); }}>Close ticket</Button>
         ) : null}

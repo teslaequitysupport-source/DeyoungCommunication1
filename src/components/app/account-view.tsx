@@ -95,7 +95,7 @@ export default function AccountView({ refreshMe, navigate }: { refreshMe: () => 
                 <Input id="next" name="next" type="password" required autoComplete="new-password" minLength={10} />
                 <p className="text-xs text-zinc-500">10+ characters, upper and lower case, and a digit.</p>
               </div>
-              <Button type="submit" className="bg-violet-600 hover:bg-violet-500">Update password</Button>
+              <Button type="submit" className="bg-red-600 hover:bg-red-500">Update password</Button>
             </form>
           </CardContent>
         </Card>
@@ -138,7 +138,7 @@ export default function AccountView({ refreshMe, navigate }: { refreshMe: () => 
                     <td className="px-4 py-2.5 text-xs text-zinc-400">{formatDate(s.lastSeenAt)}</td>
                     <td className="px-4 py-2.5">
                       <StatusBadge status={s.current ? "ACTIVE" : s.revoked ? "CLOSED" : "IDLE"} />
-                      {s.current ? <span className="ml-2 text-xs text-emerald-500">this device</span> : null}
+                      {s.current ? <span className="ml-2 text-xs text-white">this device</span> : null}
                     </td>
                     <td className="px-4 py-2.5 text-right">
                       {!s.revoked && !s.current ? (
@@ -153,9 +153,9 @@ export default function AccountView({ refreshMe, navigate }: { refreshMe: () => 
         </CardContent>
       </Card>
 
-      <Card className="mt-6 border-rose-900/50 dark:border-rose-900/50">
+      <Card className="mt-6 border-red-900/50 dark:border-red-900/50">
         <CardHeader>
-          <CardTitle className="text-base text-rose-500">Delete account</CardTitle>
+          <CardTitle className="text-base text-red-500">Delete account</CardTitle>
           <CardDescription>
             Immediate erasure: identity is anonymized, uploads are removed from disk, sessions are ended and personal content is deleted. This cannot be undone. Audit entries retain a minimal, non-identifying record.
           </CardDescription>
@@ -176,7 +176,7 @@ export default function AccountView({ refreshMe, navigate }: { refreshMe: () => 
                 <Input name="password" type="password" required placeholder="Your password" autoComplete="current-password" aria-label="Password confirmation" />
                 <AlertDialogFooter>
                   <AlertDialogCancel>Keep my account</AlertDialogCancel>
-                  <AlertDialogAction type="submit" className="bg-rose-600 hover:bg-rose-500">Delete permanently</AlertDialogAction>
+                  <AlertDialogAction type="submit" className="bg-red-600 hover:bg-red-500">Delete permanently</AlertDialogAction>
                 </AlertDialogFooter>
               </form>
             </AlertDialogContent>

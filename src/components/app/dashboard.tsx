@@ -61,14 +61,14 @@ export default function DashboardView({ navigate, me, refreshMe }: { navigate: (
           </p>
         </div>
         <div className="flex gap-2">
-          <Button className="bg-violet-600 hover:bg-violet-500" onClick={() => navigate("studio")}>Open studio</Button>
+          <Button className="bg-red-600 hover:bg-red-500" onClick={() => navigate("studio")}>Open studio</Button>
           <Button variant="outline" onClick={() => navigate("account")}>Account</Button>
         </div>
       </div>
 
       {!user?.emailVerifiedAt ? (
-        <Alert className="mt-6 border-amber-800 bg-amber-950/30">
-          <AlertDescription className="text-amber-200">
+        <Alert className="mt-6 border-white/25 bg-white/5">
+          <AlertDescription className="text-zinc-100">
             Your email is not verified yet. Sessions work, but model uploads stay locked until verification. If you lost the token, use resend verification on the account page.
           </AlertDescription>
         </Alert>
@@ -139,7 +139,7 @@ export default function DashboardView({ navigate, me, refreshMe }: { navigate: (
                     </td>
                     <td className="px-4 py-3 tabular-nums text-xs">
                       {s.metrics ? `${Math.round(s.metrics.p50Ms ?? 0)} / ${Math.round(s.metrics.p95Ms ?? 0)} ms` : "-"}
-                      {s.metrics?.dropsPct ? <div className="text-amber-500">{s.metrics.dropsPct}% drops</div> : null}
+                      {s.metrics?.dropsPct ? <div className="text-zinc-300">{s.metrics.dropsPct}% drops</div> : null}
                     </td>
                     <td className="px-4 py-3 tabular-nums text-xs">{s.durationSec ? `${Math.round(s.durationSec)}s` : "-"}</td>
                     <td className="px-4 py-3 text-xs text-zinc-400">{formatDate(s.queuedAt)}</td>

@@ -389,7 +389,7 @@ export default function StudioView({ navigate, refreshMe, config }: { navigate: 
 
             <div className="flex flex-wrap items-center gap-3">
               {phase === "IDLE" ? (
-                <Button className="bg-violet-600 hover:bg-violet-500" onClick={start} disabled={!modelId}>
+                <Button className="bg-red-600 hover:bg-red-500" onClick={start} disabled={!modelId}>
                   Start session
                 </Button>
               ) : (
@@ -411,7 +411,7 @@ export default function StudioView({ navigate, refreshMe, config }: { navigate: 
                 <span>{phase === "LIVE" ? "capturing" : "idle"}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-                <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${Math.min(100, micLevel * 140)}%` }} />
+                <div className="h-full rounded-full bg-white transition-all" style={{ width: `${Math.min(100, micLevel * 140)}%` }} />
               </div>
             </div>
           </CardContent>

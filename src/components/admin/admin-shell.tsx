@@ -55,7 +55,7 @@ export default function AdminShell({ route, navigate }: { route: string; navigat
             onClick={() => navigate(`admin/${n.key}`)}
             className={cn(
               "rounded-md px-3 py-2 text-left text-sm transition-colors",
-              section === n.key ? "bg-violet-950/60 font-medium text-violet-200" : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200",
+              section === n.key ? "bg-red-950/60 font-medium text-red-200" : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200",
             )}
             aria-current={section === n.key ? "page" : undefined}
           >
@@ -67,7 +67,7 @@ export default function AdminShell({ route, navigate }: { route: string; navigat
         <div className="mb-4 flex flex-wrap gap-1.5 lg:hidden">
           {NAV.map((n) => (
             <button key={n.key} onClick={() => navigate(`admin/${n.key}`)}
-              className={cn("rounded-md border px-2.5 py-1 text-xs", section === n.key ? "border-violet-800 bg-violet-950/60 text-violet-200" : "border-zinc-800 text-zinc-400")}>
+              className={cn("rounded-md border px-2.5 py-1 text-xs", section === n.key ? "border-red-800 bg-red-950/60 text-red-200" : "border-zinc-800 text-zinc-400")}>
               {n.label}
             </button>
           ))}
@@ -199,7 +199,7 @@ export function WorkersPanel() {
           <p className="mt-1 text-xs text-zinc-500">Registry, heartbeats, lifecycle actions. Workers poll commands over outbound connections only.</p>
         </div>
         <Dialog open={provisionOpen} onOpenChange={setProvisionOpen}>
-          <DialogTrigger asChild><Button className="bg-violet-600 hover:bg-violet-500">Provision worker</Button></DialogTrigger>
+          <DialogTrigger asChild><Button className="bg-red-600 hover:bg-red-500">Provision worker</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Provision capacity</DialogTitle>
@@ -235,14 +235,14 @@ export function WorkersPanel() {
               {script ? (
                 <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-3">
                   <p className="mb-2 text-xs text-zinc-400">Paste-ready artifact (registration token is embedded and single-use):</p>
-                  <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-all font-mono text-[10px] text-emerald-300">{script}</pre>
+                  <pre className="max-h-48 overflow-auto whitespace-pre-wrap break-all font-mono text-[10px] text-zinc-100">{script}</pre>
                   <Button size="sm" variant="outline" className="mt-2" onClick={() => { navigator.clipboard?.writeText(script); toast({ title: "Copied" }); }}>Copy</Button>
                 </div>
               ) : null}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => { setProvisionOpen(false); setScript(null); }}>Close</Button>
-              <Button className="bg-violet-600 hover:bg-violet-500" onClick={provision} disabled={busy}>{busy ? <Spinner /> : "Provision"}</Button>
+              <Button className="bg-red-600 hover:bg-red-500" onClick={provision} disabled={busy}>{busy ? <Spinner /> : "Provision"}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -273,7 +273,7 @@ export function WorkersPanel() {
                     <td className="px-3 py-2.5">
                       <div className="font-medium">{w.name}</div>
                       <div className="font-mono text-[10px] text-zinc-500">{w.providerCode} / {w.costKind} / {w.region ?? "?"}</div>
-                      {w.lastError ? <div className="text-[10px] text-rose-400">{w.lastError.slice(0, 90)}</div> : null}
+                      {w.lastError ? <div className="text-[10px] text-red-400">{w.lastError.slice(0, 90)}</div> : null}
                     </td>
                     <td className="px-3 py-2.5"><StatusBadge status={w.status} /></td>
                     <td className="px-3 py-2.5 text-xs text-zinc-400">
@@ -282,12 +282,12 @@ export function WorkersPanel() {
                     </td>
                     <td className="px-3 py-2.5">
                       <div className="flex gap-1">
-                        {w.tiers.map((t) => <span key={t} className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-violet-300">{t}</span>)}
+                        {w.tiers.map((t) => <span key={t} className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-[10px] text-red-300">{t}</span>)}
                       </div>
                     </td>
                     <td className="px-3 py-2.5 tabular-nums text-xs">{w.activeSessions}/{w.maxSessions}<div className="text-[10px] text-zinc-500">{w.totalSessions} total</div></td>
                     <td className="px-3 py-2.5 text-xs text-zinc-400">{w.lastHeartbeatAt ? formatDate(w.lastHeartbeatAt) : "never"}
-                      {w.pendingCommands > 0 ? <div className="text-[10px] text-amber-400">{w.pendingCommands} pending cmd</div> : null}
+                      {w.pendingCommands > 0 ? <div className="text-[10px] text-zinc-200">{w.pendingCommands} pending cmd</div> : null}
                     </td>
                     <td className="px-3 py-2.5">
                       <div className="flex flex-wrap gap-1">
@@ -296,7 +296,7 @@ export function WorkersPanel() {
                         <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => action(w.id, "restart")}>Restart</Button>
                         <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => action(w.id, "stop")}>Stop</Button>
                         {w.status !== "QUARANTINED" ? (
-                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs text-rose-300" onClick={() => action(w.id, "quarantine")}>Quarantine</Button>
+                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs text-red-300" onClick={() => action(w.id, "quarantine")}>Quarantine</Button>
                         ) : (
                           <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => action(w.id, "activate")}>Reactivate</Button>
                         )}

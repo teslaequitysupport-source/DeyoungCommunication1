@@ -164,8 +164,8 @@ export default function AuthView({
         </CardHeader>
         <CardContent>
           {note ? (
-            <Alert className="mb-4 border-violet-800 bg-violet-950/30">
-              <AlertDescription className="text-xs text-violet-200">{note}</AlertDescription>
+            <Alert className="mb-4 border-red-800 bg-red-950/30">
+              <AlertDescription className="text-xs text-red-200">{note}</AlertDescription>
             </Alert>
           ) : null}
           {error ? (
@@ -186,13 +186,13 @@ export default function AuthView({
             </Alert>
           ) : null}
           {devToken ? (
-            <Alert className="mb-4 border-amber-800 bg-amber-950/40">
-              <AlertTitle className="text-amber-200">Dev-mode email verification</AlertTitle>
+            <Alert className="mb-4 border-white/25 bg-white/5">
+              <AlertTitle className="text-zinc-100">Dev-mode email verification</AlertTitle>
               <AlertDescription className="space-y-2">
-                <p className="break-all font-mono text-[11px] text-amber-100">
+                <p className="break-all font-mono text-[11px] text-zinc-100">
                   SMTP is not configured in this deployment, so the verification token is shown once: {devToken}
                 </p>
-                <Button type="button" size="sm" variant="outline" className="border-amber-700 text-amber-200 hover:bg-amber-950" onClick={verifyNow} disabled={verifying}>
+                <Button type="button" size="sm" variant="outline" className="border-white/30 text-zinc-100 hover:bg-white/5" onClick={verifyNow} disabled={verifying}>
                   {verifying ? "Verifying..." : "Verify now"}
                 </Button>
               </AlertDescription>
@@ -232,7 +232,7 @@ export default function AuthView({
                 <div id="pw-help" className="space-y-1">
                   <ul className="space-y-0.5">
                     {pwRules.map((r) => (
-                      <li key={r.label} className={`flex items-center gap-1.5 text-xs ${r.ok ? "text-emerald-500" : "text-zinc-500"}`}>
+                      <li key={r.label} className={`flex items-center gap-1.5 text-xs ${r.ok ? "text-white" : "text-zinc-500"}`}>
                         <span aria-hidden>{r.ok ? "\u2713" : "\u25CB"}</span>
                         {r.label}
                       </li>
@@ -248,13 +248,13 @@ export default function AuthView({
                 <Checkbox id="accept" checked={accept} onCheckedChange={(v) => setAccept(v === true)} className="mt-1" required />
                 <Label htmlFor="accept" className="text-xs font-normal leading-relaxed text-zinc-500">
                   I accept the{" "}
-                  <button type="button" className="underline hover:text-violet-500" onClick={() => navigate("legal/terms")}>Terms</button>, the{" "}
-                  <button type="button" className="underline hover:text-violet-500" onClick={() => navigate("legal/privacy")}>Privacy Policy</button> and the{" "}
-                  <button type="button" className="underline hover:text-violet-500" onClick={() => navigate("legal/voice-rights")}>Voice Rights Policy</button> including its takedown terms.
+                  <button type="button" className="underline hover:text-red-500" onClick={() => navigate("legal/terms")}>Terms</button>, the{" "}
+                  <button type="button" className="underline hover:text-red-500" onClick={() => navigate("legal/privacy")}>Privacy Policy</button> and the{" "}
+                  <button type="button" className="underline hover:text-red-500" onClick={() => navigate("legal/voice-rights")}>Voice Rights Policy</button> including its takedown terms.
                 </Label>
               </div>
             ) : null}
-            <Button type="submit" className="w-full bg-violet-600 hover:bg-violet-500" disabled={busy}>
+            <Button type="submit" className="w-full bg-red-600 hover:bg-red-500" disabled={busy}>
               {busy ? "Working..." : mode === "login" ? "Sign in" : "Create account"}
             </Button>
           </form>
@@ -284,19 +284,19 @@ export default function AuthView({
             {mode === "login" ? (
               <>
                 No account?{" "}
-                <button className="underline hover:text-violet-500" onClick={() => navigate("auth/register")}>Create one</button>
+                <button className="underline hover:text-red-500" onClick={() => navigate("auth/register")}>Create one</button>
                 {" "}&middot;{" "}
-                <button className="underline hover:text-violet-500" onClick={() => navigate("auth/login")}>Forgot your password?</button>
+                <button className="underline hover:text-red-500" onClick={() => navigate("auth/login")}>Forgot your password?</button>
               </>
             ) : (
               <>
                 Already registered?{" "}
-                <button className="underline hover:text-violet-500" onClick={() => navigate("auth/login")}>Sign in</button>
+                <button className="underline hover:text-red-500" onClick={() => navigate("auth/login")}>Sign in</button>
               </>
             )}
           </div>
           {config?.registrationEnabled === false ? (
-            <p className="mt-4 text-center text-xs text-amber-500">Registration is temporarily closed by the administrator.</p>
+            <p className="mt-4 text-center text-xs text-zinc-300">Registration is temporarily closed by the administrator.</p>
           ) : null}
         </CardContent>
       </Card>

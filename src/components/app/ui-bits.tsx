@@ -1,56 +1,64 @@
 "use client";
 
 // Small shared UI atoms used across user and admin views.
+// Palette discipline: white = healthy/positive, hollow = pending/warning,
+// red = danger/action, neutral grays = terminal states. No other hues.
 
+import { useEffect, useRef, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+
+const GOOD = "bg-white text-zinc-950 border-white";
+const WARN = "bg-transparent text-zinc-100 border-white/35";
+const BAD = "bg-red-600 text-white border-red-500";
+const NEUTRAL = "bg-zinc-900 text-zinc-400 border-zinc-700";
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {
   const s = status.toUpperCase();
   const map: Record<string, string> = {
     // positive
-    ACTIVE: "bg-emerald-950 text-emerald-300 border-emerald-800",
-    READY: "bg-emerald-950 text-emerald-300 border-emerald-800",
-    APPROVED: "bg-emerald-950 text-emerald-300 border-emerald-800",
-    PASSED: "bg-emerald-950 text-emerald-300 border-emerald-800",
-    RESOLVED: "bg-emerald-950 text-emerald-300 border-emerald-800",
-    IDLE: "bg-emerald-950 text-emerald-300 border-emerald-800",
-    CONNECTED: "bg-emerald-950 text-emerald-300 border-emerald-800",
-    // warning
-    PENDING_REVIEW: "bg-amber-950 text-amber-300 border-amber-800",
-    QUEUED: "bg-amber-950 text-amber-300 border-amber-800",
-    ASSIGNING: "bg-amber-950 text-amber-300 border-amber-800",
-    CONNECTING: "bg-amber-950 text-amber-300 border-amber-800",
-    DRAINING: "bg-amber-950 text-amber-300 border-amber-800",
-    WARN: "bg-amber-950 text-amber-300 border-amber-800",
-    IN_PROGRESS: "bg-amber-950 text-amber-300 border-amber-800",
-    WAITING_USER: "bg-amber-950 text-amber-300 border-amber-800",
-    ACK: "bg-amber-950 text-amber-300 border-amber-800",
-    WARMING: "bg-amber-950 text-amber-300 border-amber-800",
-    LOADING_MODEL: "bg-amber-950 text-amber-300 border-amber-800",
-    BOOTING: "bg-amber-950 text-amber-300 border-amber-800",
-    RESTARTING: "bg-amber-950 text-amber-300 border-amber-800",
-    STOPPING: "bg-amber-950 text-amber-300 border-amber-800",
-    SUSPENDED: "bg-amber-950 text-amber-300 border-amber-800",
-    PENDING_VERIFICATION: "bg-amber-950 text-amber-300 border-amber-800",
+    ACTIVE: GOOD,
+    READY: GOOD,
+    APPROVED: GOOD,
+    PASSED: GOOD,
+    RESOLVED: GOOD,
+    IDLE: GOOD,
+    CONNECTED: GOOD,
+    // warning / in-flight
+    PENDING_REVIEW: WARN,
+    QUEUED: WARN,
+    ASSIGNING: WARN,
+    CONNECTING: WARN,
+    DRAINING: WARN,
+    WARN: WARN,
+    IN_PROGRESS: WARN,
+    WAITING_USER: WARN,
+    ACK: WARN,
+    WARMING: WARN,
+    LOADING_MODEL: WARN,
+    BOOTING: WARN,
+    RESTARTING: WARN,
+    STOPPING: WARN,
+    SUSPENDED: WARN,
+    PENDING_VERIFICATION: WARN,
     // danger
-    FAILED: "bg-rose-950 text-rose-300 border-rose-800",
-    UNHEALTHY: "bg-rose-950 text-rose-300 border-rose-800",
-    QUARANTINED: "bg-rose-950 text-rose-300 border-rose-800",
-    REJECTED: "bg-rose-950 text-rose-300 border-rose-800",
-    TAKEN_DOWN: "bg-rose-950 text-rose-300 border-rose-800",
-    CRITICAL: "bg-rose-950 text-rose-300 border-rose-800",
-    CANCELLED: "bg-rose-950 text-rose-300 border-rose-800",
-    CLOSED: "bg-rose-950 text-rose-300 border-rose-800",
-    EMERGENCY: "bg-rose-950 text-rose-300 border-rose-800",
+    FAILED: BAD,
+    UNHEALTHY: BAD,
+    QUARANTINED: BAD,
+    REJECTED: BAD,
+    TAKEN_DOWN: BAD,
+    CRITICAL: BAD,
+    CANCELLED: BAD,
+    CLOSED: BAD,
+    EMERGENCY: BAD,
     // neutral
-    STOPPED: "bg-zinc-800 text-zinc-300 border-zinc-700",
-    ENDED: "bg-zinc-800 text-zinc-300 border-zinc-700",
-    DISABLED: "bg-zinc-800 text-zinc-300 border-zinc-700",
-    OPEN: "bg-violet-950 text-violet-300 border-violet-800",
+    STOPPED: NEUTRAL,
+    ENDED: NEUTRAL,
+    DISABLED: NEUTRAL,
+    OPEN: WARN,
   };
   return (
-    <Badge variant="outline" className={cn("font-mono text-[11px] tracking-wide", map[s] ?? "bg-zinc-800 text-zinc-300 border-zinc-700", className)}>
+    <Badge variant="outline" className={cn("font-mono text-[11px] tracking-wide", map[s] ?? NEUTRAL, className)}>
       {s.replace(/_/g, " ")}
     </Badge>
   );
@@ -58,25 +66,25 @@ export function StatusBadge({ status, className }: { status: string; className?:
 
 export function StatCard({ label, value, sub, tone }: { label: string; value: React.ReactNode; sub?: React.ReactNode; tone?: "default" | "good" | "warn" | "bad" }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">{label}</div>
+    <div className="border border-zinc-200/10 bg-card p-4">
+      <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-500">{label}</div>
       <div className={cn(
         "mt-1.5 text-2xl font-semibold tabular-nums",
-        tone === "good" && "text-emerald-600 dark:text-emerald-400",
-        tone === "warn" && "text-amber-600 dark:text-amber-400",
-        tone === "bad" && "text-rose-600 dark:text-rose-400",
-        (!tone || tone === "default") && "text-zinc-900 dark:text-zinc-100",
+        tone === "good" && "text-white",
+        tone === "warn" && "text-red-400",
+        tone === "bad" && "text-red-500",
+        (!tone || tone === "default") && "text-white",
       )}>{value}</div>
-      {sub ? <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{sub}</div> : null}
+      {sub ? <div className="mt-1 text-xs text-zinc-500">{sub}</div> : null}
     </div>
   );
 }
 
 export function EmptyState({ title, body }: { title: string; body: string }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-300 p-10 text-center dark:border-zinc-700">
-      <p className="font-medium text-zinc-700 dark:text-zinc-300">{title}</p>
-      <p className="mt-1 max-w-md text-sm text-zinc-500 dark:text-zinc-400">{body}</p>
+    <div className="flex flex-col items-center justify-center border border-dashed border-zinc-700 p-10 text-center">
+      <p className="font-medium text-zinc-200">{title}</p>
+      <p className="mt-1 max-w-md text-sm text-zinc-500">{body}</p>
     </div>
   );
 }
@@ -95,7 +103,89 @@ export function Spinner({ className }: { className?: string }) {
     <span
       role="status"
       aria-label="Loading"
-      className={cn("inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent", className)}
+      className={cn("inline-block h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent", className)}
     />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// 3D tilt surface: mouse-tracked rotateX/rotateY with perspective. Disabled
+// for touch pointers and reduced-motion users (renders as a static card).
+// ---------------------------------------------------------------------------
+export function TiltCard({ className, children, max = 6 }: { className?: string; children: React.ReactNode; max?: number }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const enabledRef = useRef(false);
+
+  useEffect(() => {
+    const fine = window.matchMedia("(pointer: fine)").matches;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const animOff = document.documentElement.dataset.anim === "off";
+    enabledRef.current = fine && !reduced && !animOff;
+  }, []);
+
+  const onMove = useCallback(
+    (e: React.MouseEvent) => {
+      const el = ref.current;
+      if (!el || !enabledRef.current) return;
+      const rect = el.getBoundingClientRect();
+      const px = (e.clientX - rect.left) / rect.width - 0.5;
+      const py = (e.clientY - rect.top) / rect.height - 0.5;
+      el.style.transform = `perspective(900px) rotateX(${(-py * max).toFixed(2)}deg) rotateY(${(px * max).toFixed(2)}deg) translateY(-2px)`;
+      el.style.setProperty("--mx", `${(px * 100 + 50).toFixed(1)}%`);
+      el.style.setProperty("--my", `${(py * 100 + 50).toFixed(1)}%`);
+    },
+    [max]
+  );
+
+  const onLeave = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = "perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0)";
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      className={cn("tilt transition-transform duration-200 ease-out", className)}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Scroll reveal: adds .is-visible once when the element enters the viewport.
+// ---------------------------------------------------------------------------
+export function Reveal({ className, children, delay = 0 }: { className?: string; children: React.ReactNode; delay?: number }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.anim === "off") {
+      el.classList.add("is-visible");
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            el.classList.add("is-visible");
+            io.disconnect();
+          }
+        }
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className={cn("reveal", className)} style={delay ? { transitionDelay: `${delay}ms` } : undefined}>
+      {children}
+    </div>
   );
 }

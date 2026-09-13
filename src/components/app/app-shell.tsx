@@ -59,6 +59,14 @@ export default function AppShell() {
   }, []);
 
   useEffect(() => {
+    // Propagate the administrator animation switch to CSS/data hooks used by
+    // the 3D canvas, marquees and reveal animations.
+    if (config?.animationIntensity) {
+      document.documentElement.dataset.anim = config.animationIntensity === "OFF" ? "off" : "on";
+    }
+  }, [config?.animationIntensity]);
+
+  useEffect(() => {
     const onHash = () => setRoute(parseHash());
     window.addEventListener("hashchange", onHash);
     // Initial route: parse lazily inside the async boot to avoid a
@@ -84,9 +92,9 @@ export default function AppShell() {
 
   if (!booted) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-        <div className="flex items-center gap-3 text-sm text-zinc-500">
-          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" aria-hidden />
+      <div className="flex min-h-screen items-center justify-center bg-black">
+        <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-widest text-zinc-500">
+          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" aria-hidden />
           Loading platform
         </div>
       </div>
@@ -237,20 +245,17 @@ function Shell({
 }) {
   const inAdmin = typeof window !== "undefined" && window.location.hash.startsWith("#/admin");
   return (
-    <div className={cn("flex min-h-screen flex-col", inAdmin ? "bg-zinc-950 text-zinc-100" : "bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100")}>
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-violet-600 focus:px-3 focus:py-2 focus:text-white">
+    <div className="flex min-h-screen flex-col bg-black text-zinc-100">
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:bg-red-600 focus:px-3 focus:py-2 focus:text-white">
         Skip to content
       </a>
-      <header className={cn(
-        "sticky top-0 z-40 border-b backdrop-blur",
-        inAdmin ? "border-zinc-800 bg-zinc-950/90" : "border-zinc-200 bg-white/85 dark:border-zinc-800 dark:bg-zinc-950/85",
-      )}>
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-black/85 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
           <button onClick={() => navigate("")} className="flex items-center gap-2 font-semibold tracking-tight" aria-label="Go to home">
-            <span className={cn("flex h-7 w-7 items-center justify-center rounded-lg font-mono text-xs font-bold", isAdmin ? "bg-violet-500 text-white" : "bg-violet-600 text-white")}>VX</span>
-            <span className={cn("text-sm", inAdmin && "text-zinc-100")}>{config?.siteName ?? "VoxCore"}</span>
+            <span className="flex h-7 w-7 items-center justify-center bg-red-600 font-mono text-xs font-bold text-white">VX</span>
+            <span className="font-display text-sm font-bold uppercase tracking-widest">{config?.siteName ?? "VoxCore"}</span>
             {isAdmin && window.location.hash.startsWith("#/admin") ? (
-              <span className="ml-1 rounded border border-violet-800 bg-violet-950 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-violet-300">command centre</span>
+              <span className="ml-1 border border-red-700 bg-red-950/60 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-red-400">command centre</span>
             ) : null}
           </button>
 
@@ -268,14 +273,14 @@ function Shell({
                   <>
                     <Button variant="ghost" size="sm" onClick={() => navigate("dashboard")} className="hidden sm:inline-flex">Dashboard</Button>
                     {isAdmin ? (
-                      <Button size="sm" className="bg-violet-600 hover:bg-violet-500" onClick={() => navigate("admin/overview")}>Command centre</Button>
+                      <Button size="sm" className="bg-red-600 font-display font-bold uppercase tracking-wider hover:bg-red-500" onClick={() => navigate("admin/overview")}>Command centre</Button>
                     ) : null}
                     <Button variant="outline" size="sm" onClick={logout}>Sign out</Button>
                   </>
                 ) : (
                   <>
                     <Button variant="ghost" size="sm" onClick={() => navigate("auth/login")}>Sign in</Button>
-                    <Button size="sm" className="bg-violet-600 hover:bg-violet-500" onClick={() => navigate("auth/register")}>Create account</Button>
+                    <Button size="sm" className="bg-red-600 font-display font-bold uppercase tracking-wider hover:bg-red-500" onClick={() => navigate("auth/register")}>Create account</Button>
                   </>
                 )}
               </>
@@ -285,14 +290,14 @@ function Shell({
         {config?.announcement ? (
           <div className={cn("border-t px-4 py-1.5 text-center text-xs",
             config.announcementLevel === "WARN"
-              ? "border-amber-800 bg-amber-950/60 text-amber-200"
-              : "border-violet-800 bg-violet-950/50 text-violet-200")}
+              ? "border-red-700 bg-red-950/70 font-medium text-red-300"
+              : "border-white/10 bg-white/5 text-zinc-300")}
             role="status">
             {config.announcement}
           </div>
         ) : null}
         {config?.maintenanceMode ? (
-          <div className="border-t border-rose-800 bg-rose-950/70 px-4 py-1.5 text-center text-xs text-rose-200" role="alert">
+          <div className="border-t border-red-600 bg-red-600 px-4 py-1.5 text-center text-xs font-bold uppercase tracking-widest text-white" role="alert">
             Maintenance mode: new sessions and uploads are paused by the administrator.
           </div>
         ) : null}
@@ -300,11 +305,8 @@ function Shell({
 
       <main id="main" className="flex-1">{children}</main>
 
-      <footer className={cn(
-        "mt-auto border-t",
-        inAdmin ? "border-zinc-800" : "border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950",
-      )}>
-        <div className={cn("mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-xs sm:flex-row sm:items-center sm:justify-between", inAdmin && "text-zinc-400")}>
+      <footer className="mt-auto border-t border-white/10 bg-black">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-xs sm:flex-row sm:items-center sm:justify-between text-zinc-400">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <span className="font-medium">{config?.siteName ?? "VoxCore"}</span>
             {[
@@ -317,7 +319,7 @@ function Shell({
               ["legal/copyright", "Copyright"],
               ["legal/contact", "Contact"],
             ].map(([to, label]) => (
-              <button key={to} onClick={() => navigate(to)} className={cn("transition-colors hover:text-violet-600 dark:hover:text-violet-400", inAdmin ? "text-zinc-400" : "text-zinc-500 dark:text-zinc-400")}>
+              <button key={to} onClick={() => navigate(to)} className="font-mono uppercase tracking-wider text-zinc-500 transition-colors hover:text-red-500">
                 {label}
               </button>
             ))}

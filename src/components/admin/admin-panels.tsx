@@ -79,7 +79,7 @@ function ModerationPanel() {
       <div className="mt-4 flex flex-wrap gap-1.5">
         {statuses.map((s) => (
           <button key={s} onClick={() => setStatus(s)}
-            className={`rounded-md border px-2.5 py-1 text-xs ${status === s ? "border-violet-800 bg-violet-950/60 text-violet-200" : "border-zinc-800 text-zinc-400"}`}>
+            className={`rounded-md border px-2.5 py-1 text-xs ${status === s ? "border-red-800 bg-red-950/60 text-red-200" : "border-zinc-800 text-zinc-400"}`}>
             {s.replace(/_/g, " ")}
           </button>
         ))}
@@ -97,7 +97,7 @@ function ModerationPanel() {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <CardTitle className="text-base">{m.name}</CardTitle>
                   <div className="flex items-center gap-2">
-                    {m.openReports > 0 ? <StatusBadge status="FAILED" className="!bg-rose-950 !text-rose-300 !border-rose-800" /> : null}
+                    {m.openReports > 0 ? <StatusBadge status="FAILED" className="!bg-red-950 !text-red-300 !border-red-800" /> : null}
                     <StatusBadge status={m.status} />
                   </div>
                 </div>
@@ -109,7 +109,7 @@ function ModerationPanel() {
               <CardContent className="grid gap-3 text-xs text-zinc-400 lg:grid-cols-2">
                 <div className="space-y-1">
                   <p>{m.description ?? "No description"}</p>
-                  <p>License: <span className="text-zinc-200">{m.licenseName}</span>{m.licenseVerified ? " (verified)" : " (UNVERIFIED)"} {m.licenseUrl ? <a className="text-violet-400 underline" href={m.licenseUrl} target="_blank" rel="noreferrer noopener">link</a> : null}</p>
+                  <p>License: <span className="text-zinc-200">{m.licenseName}</span>{m.licenseVerified ? " (verified)" : " (UNVERIFIED)"} {m.licenseUrl ? <a className="text-red-400 underline" href={m.licenseUrl} target="_blank" rel="noreferrer noopener">link</a> : null}</p>
                   <p>Attestation: {m.rightsAttested ? "signed, evidence hashed" : "missing"}</p>
                 </div>
                 <div className="space-y-1 font-mono text-[10px]">
@@ -118,9 +118,9 @@ function ModerationPanel() {
                 </div>
                 {m.kind !== "SYSTEM_DSP" ? (
                   <div className="flex flex-wrap gap-2 lg:col-span-2">
-                    <Button size="sm" className="bg-emerald-700 hover:bg-emerald-600" onClick={() => act(m.id, "approve")}>Approve</Button>
+                    <Button size="sm" className="bg-white text-zinc-950 hover:bg-zinc-200" onClick={() => act(m.id, "approve")}>Approve</Button>
                     <Button size="sm" variant="outline" onClick={() => act(m.id, "reject")}>Reject</Button>
-                    <Button size="sm" variant="outline" className="text-rose-300" onClick={() => act(m.id, "takedown")}>Takedown</Button>
+                    <Button size="sm" variant="outline" className="text-red-300" onClick={() => act(m.id, "takedown")}>Takedown</Button>
                     <Button size="sm" variant="outline" onClick={() => act(m.id, "disable")}>Disable</Button>
                   </div>
                 ) : null}
@@ -139,7 +139,7 @@ function ModerationPanel() {
             <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-800 px-3 py-2 text-sm">
               <div>
                 <span className="font-medium">{r.model?.name ?? "model"}</span>
-                <span className="ml-2 font-mono text-xs text-amber-400">{r.reason}</span>
+                <span className="ml-2 font-mono text-xs text-zinc-200">{r.reason}</span>
                 <span className="ml-2 text-xs text-zinc-500">by {r.reporter?.email}</span>
                 {r.detail ? <div className="text-xs text-zinc-400">{r.detail}</div> : null}
               </div>
@@ -237,10 +237,10 @@ function UsersPanel() {
                         {u.status === "SUSPENDED" ? (
                           <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => act(u.id, "restore")}>Restore</Button>
                         ) : (
-                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs text-amber-300" onClick={() => { const r = window.prompt("Suspension reason (required):"); if (r) act(u.id, "suspend", { reason: r }); }}>Suspend</Button>
+                          <Button size="sm" variant="outline" className="h-7 px-2 text-xs text-zinc-100" onClick={() => { const r = window.prompt("Suspension reason (required):"); if (r) act(u.id, "suspend", { reason: r }); }}>Suspend</Button>
                         )}
                         <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => act(u.id, "force-logout")}>Force logout</Button>
-                        <Button size="sm" variant="outline" className="h-7 px-2 text-xs text-rose-300" onClick={() => { const r = window.prompt("Deletion reason (required, audit-logged):"); if (r) act(u.id, "delete", { reason: r }); }}>Delete</Button>
+                        <Button size="sm" variant="outline" className="h-7 px-2 text-xs text-red-300" onClick={() => { const r = window.prompt("Deletion reason (required, audit-logged):"); if (r) act(u.id, "delete", { reason: r }); }}>Delete</Button>
                       </div>
                     </td>
                   </tr>
@@ -354,7 +354,7 @@ function LedgerTable({ rows }: { rows: LedgerRow[] }) {
               <div key={e.id} className="flex items-center justify-between border-b border-zinc-900 py-1.5 text-xs">
                 <span className="text-zinc-300">{e.user.email}</span>
                 <span className="font-mono text-zinc-500">{e.reason}</span>
-                <span className={`font-mono tabular-nums ${e.deltaCents >= 0 ? "text-emerald-400" : "text-rose-400"}`}>
+                <span className={`font-mono tabular-nums ${e.deltaCents >= 0 ? "text-zinc-100" : "text-red-400"}`}>
                   {e.deltaCents >= 0 ? "+" : ""}{formatCents(e.deltaCents)} → {formatCents(e.balanceAfterCents)}
                 </span>
               </div>
@@ -417,7 +417,7 @@ function SupportPanel() {
             <CardContent className="space-y-2">
               <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
                 {t.messages.map((m) => (
-                  <div key={m.id} className={`rounded-md border p-2 text-xs ${m.internal ? "border-amber-800 bg-amber-950/30" : m.authorRole === "USER" ? "border-zinc-800 bg-zinc-900" : "border-violet-800 bg-violet-950/30"}`}>
+                  <div key={m.id} className={`rounded-md border p-2 text-xs ${m.internal ? "border-white/25 bg-white/5" : m.authorRole === "USER" ? "border-zinc-800 bg-zinc-900" : "border-red-800 bg-red-950/30"}`}>
                     <div className="mb-0.5 flex justify-between font-mono text-[10px] text-zinc-400">
                       <span>{m.authorRole}{m.internal ? " / internal" : ""}</span>
                       <span>{formatDate(m.createdAt)}</span>
@@ -441,7 +441,7 @@ function TicketReply({ onSend }: { onSend: (body: string, internal: boolean, sta
     <div className="space-y-2">
       <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={2} placeholder="Reply (or tick internal note)..." aria-label="Staff reply" />
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" className="bg-violet-600 hover:bg-violet-500" onClick={() => { onSend(body, false, "IN_PROGRESS"); setBody(""); }}>Reply</Button>
+        <Button size="sm" className="bg-red-600 hover:bg-red-500" onClick={() => { onSend(body, false, "IN_PROGRESS"); setBody(""); }}>Reply</Button>
         <Button size="sm" variant="outline" onClick={() => { onSend(body, true); setBody(""); }}>Internal note</Button>
         <Button size="sm" variant="outline" onClick={() => { onSend(body || "Closing.", false, "RESOLVED"); setBody(""); }}>Resolve</Button>
         <Button size="sm" variant="outline" onClick={() => { onSend(body || "Closing.", false, "CLOSED"); setBody(""); }}>Close</Button>
@@ -565,7 +565,7 @@ function AuditPanel() {
           <p className="mt-1 text-xs text-zinc-500">Hash-chained: each entry embeds the previous entry's hash, so removal or retro-editing breaks the chain.</p>
         </div>
         <div className="flex items-center gap-2">
-          {verifyResult ? <span className={`text-xs ${verifyResult.includes("BROKEN") ? "text-rose-400" : "text-emerald-400"}`}>{verifyResult}</span> : null}
+          {verifyResult ? <span className={`text-xs ${verifyResult.includes("BROKEN") ? "text-red-400" : "text-zinc-100"}`}>{verifyResult}</span> : null}
           <Button size="sm" variant="outline" onClick={verify} disabled={verifying}>{verifying ? <Spinner /> : "Verify chain"}</Button>
         </div>
       </div>
@@ -573,7 +573,7 @@ function AuditPanel() {
         {entries.map((e) => (
           <div key={e.id} className="rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-mono text-violet-300">{e.action}</span>
+              <span className="font-mono text-red-300">{e.action}</span>
               <span className="text-zinc-500">{e.actorRole ?? "system"} {e.actorId ? e.actorId.slice(0, 10) : ""} / {formatDate(e.createdAt)}</span>
             </div>
             <div className="mt-1 text-zinc-400">
@@ -660,7 +660,7 @@ function SettingsPanel() {
               <div className="flex gap-2 pt-1">
                 {(["INFO", "WARN"] as const).map((l) => (
                   <button key={l} onClick={() => setField("announcementLevel", l)}
-                    className={`rounded border px-2 py-0.5 text-[10px] ${config.announcementLevel === l ? "border-violet-700 text-violet-300" : "border-zinc-700 text-zinc-500"}`}>{l}</button>
+                    className={`rounded border px-2 py-0.5 text-[10px] ${config.announcementLevel === l ? "border-red-700 text-red-300" : "border-zinc-700 text-zinc-500"}`}>{l}</button>
                 ))}
               </div>
             </div>
@@ -687,7 +687,7 @@ function SettingsPanel() {
       </div>
 
       <div className="mt-4 flex items-center gap-3">
-        <Button className="bg-violet-600 hover:bg-violet-500" onClick={publish} disabled={busy}>{busy ? <Spinner /> : "Publish changes"}</Button>
+        <Button className="bg-red-600 hover:bg-red-500" onClick={publish} disabled={busy}>{busy ? <Spinner /> : "Publish changes"}</Button>
         <span className="text-xs text-zinc-500">Every publish records a version; destructive actions require admin session.</span>
       </div>
 
@@ -779,7 +779,7 @@ function BudgetsPanel() {
           <Label htmlFor="b-stop" className="text-sm font-normal">EMERGENCY STOP: refuse all new paid capacity immediately (applies within 30 seconds)</Label>
         </div>
         <div className="sm:col-span-2">
-          <Button type="submit" className="bg-violet-600 hover:bg-violet-500">Save policy</Button>
+          <Button type="submit" className="bg-red-600 hover:bg-red-500">Save policy</Button>
         </div>
       </form>
     </div>
@@ -904,7 +904,7 @@ function TestLabPanel() {
             <CardTitle className="text-sm">Last result: {lastResult.kind} {lastResult.passed ? "PASSED" : "FAILED"}</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-zinc-900 p-3 font-mono text-[10px] text-emerald-300">{JSON.stringify(lastResult.detail, null, 2)}</pre>
+            <pre className="max-h-56 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-zinc-900 p-3 font-mono text-[10px] text-zinc-100">{JSON.stringify(lastResult.detail, null, 2)}</pre>
           </CardContent>
         </Card>
       ) : null}

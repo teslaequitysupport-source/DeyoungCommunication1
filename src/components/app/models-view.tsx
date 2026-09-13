@@ -101,7 +101,7 @@ export default function ModelsView({ config }: { config: SiteConfig | null }) {
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-violet-600 hover:bg-violet-500" disabled={config?.uploadsEnabled === false}>Upload RVC model</Button>
+            <Button className="bg-red-600 hover:bg-red-500" disabled={config?.uploadsEnabled === false}>Upload RVC model</Button>
           </DialogTrigger>
           <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto">
             <DialogHeader>
@@ -145,7 +145,7 @@ export default function ModelsView({ config }: { config: SiteConfig | null }) {
               <input type="hidden" name="rightsAttested" value="true" />
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button type="submit" className="bg-violet-600 hover:bg-violet-500" disabled={busy}>
+                <Button type="submit" className="bg-red-600 hover:bg-red-500" disabled={busy}>
                   {busy ? <Spinner /> : "Submit for moderation"}
                 </Button>
               </DialogFooter>
@@ -178,7 +178,7 @@ export default function ModelsView({ config }: { config: SiteConfig | null }) {
                     <p>Engine: {m.engine} &middot; {m.sampleRate / 1000} kHz &middot; v{m.version}</p>
                     <p>License: {m.licenseName} {m.licenseVerified ? "(verified)" : "(unverified)"}</p>
                     {m.licenseUrl ? (
-                      <a href={m.licenseUrl} target="_blank" rel="noreferrer noopener" className="text-violet-500 underline">License terms</a>
+                      <a href={m.licenseUrl} target="_blank" rel="noreferrer noopener" className="text-red-500 underline">License terms</a>
                     ) : null}
                     <div className="pt-2">
                       <Button variant="outline" size="sm" onClick={() => report(m.id)}>Report</Button>
@@ -213,8 +213,8 @@ export default function ModelsView({ config }: { config: SiteConfig | null }) {
                       <td className="px-4 py-3">
                         <div className="font-medium">{m.name}</div>
                         <div className="font-mono text-[10px] text-zinc-400">{m.fileName} &middot; sha256 {(m.fileSha256 ?? "").slice(0, 12)}</div>
-                        {m.rejectionReason ? <div className="mt-1 text-xs text-rose-400">Rejected: {m.rejectionReason}</div> : null}
-                        {m.takedownReason ? <div className="mt-1 text-xs text-amber-400">Takedown: {m.takedownReason}</div> : null}
+                        {m.rejectionReason ? <div className="mt-1 text-xs text-red-400">Rejected: {m.rejectionReason}</div> : null}
+                        {m.takedownReason ? <div className="mt-1 text-xs text-zinc-200">Takedown: {m.takedownReason}</div> : null}
                       </td>
                       <td className="px-4 py-3"><StatusBadge status={m.status} /></td>
                       <td className="px-4 py-3 text-xs">{m.licenseName}{m.licenseVerified ? " (verified)" : ""}</td>
@@ -229,8 +229,8 @@ export default function ModelsView({ config }: { config: SiteConfig | null }) {
             </div>
           )}
           {config?.uploadsEnabled === false ? (
-            <Alert className="mt-4 border-amber-800 bg-amber-950/30">
-              <AlertDescription className="text-amber-200">Uploads are temporarily disabled by an administrator.</AlertDescription>
+            <Alert className="mt-4 border-white/25 bg-white/5">
+              <AlertDescription className="text-zinc-100">Uploads are temporarily disabled by an administrator.</AlertDescription>
             </Alert>
           ) : null}
         </TabsContent>

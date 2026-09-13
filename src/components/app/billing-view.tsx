@@ -69,7 +69,7 @@ export default function BillingView() {
                 <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                   {overview.ledger.map((e) => (
                     <tr key={e.id} className="bg-white dark:bg-zinc-950">
-                      <td className={`px-4 py-3 font-mono tabular-nums ${e.deltaCents >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                      <td className={`px-4 py-3 font-mono tabular-nums ${e.deltaCents >= 0 ? "text-white" : "text-red-600 dark:text-red-400"}`}>
                         {e.deltaCents >= 0 ? "+" : ""}{formatCents(e.deltaCents)}
                       </td>
                       <td className="px-4 py-3 tabular-nums">{formatCents(e.balanceAfterCents)}</td>
@@ -85,7 +85,7 @@ export default function BillingView() {
         </TabsContent>
         <TabsContent value="usage" className="mt-4">
           {usage === null ? (
-            <div className="flex justify-center py-10"><span className="h-4 w-4 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" /></div>
+            <div className="flex justify-center py-10"><span className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent" /></div>
           ) : usage.length === 0 ? (
             <EmptyState title="No usage yet" body="Sessions write metered records server-side: minutes, audio seconds and storage." />
           ) : (

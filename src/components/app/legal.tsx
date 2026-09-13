@@ -18,7 +18,7 @@ export default function LegalView({ slug, navigate }: { slug: string; navigate: 
     <div className="mx-auto max-w-4xl px-4 py-10">
       <div className="flex flex-wrap gap-2 pb-6">
         {Object.entries(DOCS).map(([key, d]) => (
-          <Button key={key} size="sm" variant={key === slug ? "default" : "outline"} className={key === slug ? "bg-violet-600 hover:bg-violet-500" : ""} onClick={() => navigate(`legal/${key}`)}>
+          <Button key={key} size="sm" variant={key === slug ? "default" : "outline"} className={key === slug ? "bg-red-600 hover:bg-red-500" : ""} onClick={() => navigate(`legal/${key}`)}>
             {d.nav}
           </Button>
         ))}
@@ -27,8 +27,8 @@ export default function LegalView({ slug, navigate }: { slug: string; navigate: 
         <h1 className="text-3xl font-semibold tracking-tight">{doc.title}</h1>
         <p className="mt-2 text-xs uppercase tracking-wider text-zinc-400">Last updated: {UPDATED}</p>
         {doc.review ? (
-          <Alert className="mt-5 border-amber-800 bg-amber-950/30">
-            <AlertDescription className="text-xs text-amber-200">{doc.review}</AlertDescription>
+          <Alert className="mt-5 border-white/25 bg-white/5">
+            <AlertDescription className="text-xs text-zinc-100">{doc.review}</AlertDescription>
           </Alert>
         ) : null}
         <div className="prose-neutral mt-6 max-w-none space-y-6 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
