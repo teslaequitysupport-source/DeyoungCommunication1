@@ -322,8 +322,8 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
           />
           <div className="mt-14 grid items-center gap-6 md:grid-cols-[1fr_auto_1fr]">
             <Reveal>
-              <figure className="relative overflow-hidden rounded-[var(--radius)] border border-white/10">
-                <img src="/img/man-mic.png" alt="A man speaking into a studio microphone, lit by red rim light" className="aspect-[3/4] w-full object-cover" loading="lazy" />
+              <figure className="group relative overflow-hidden rounded-[var(--radius)] border border-white/10">
+                <img src="/img/man-mic.png" alt="A man speaking into a studio microphone, lit by red rim light" className="aspect-[3/4] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" loading="lazy" />
                 <figcaption className="absolute bottom-0 left-0 right-0 bg-black/70 px-4 py-2 text-xs font-medium uppercase tracking-widest text-zinc-300 backdrop-blur">
                   Your microphone
                 </figcaption>
@@ -338,8 +338,8 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
               <span className="hidden h-px w-16 bg-red-600 md:block" />
             </div>
             <Reveal delay={120}>
-              <figure className="relative overflow-hidden rounded-[var(--radius)] border border-white/10">
-                <img src="/img/woman-mic.png" alt="A woman speaking into a studio microphone, lit by red rim light" className="aspect-[3/4] w-full object-cover" loading="lazy" />
+              <figure className="group relative overflow-hidden rounded-[var(--radius)] border border-white/10">
+                <img src="/img/woman-mic.png" alt="A woman speaking into a studio microphone, lit by red rim light" className="aspect-[3/4] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" loading="lazy" />
                 <figcaption className="absolute bottom-0 left-0 right-0 bg-black/70 px-4 py-2 text-xs font-medium uppercase tracking-widest text-zinc-300 backdrop-blur">
                   The converted output
                 </figcaption>
@@ -597,7 +597,7 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
                   </span>
                   <div>
                     <p className="font-display text-lg font-bold uppercase tracking-widest text-white">Operator brief</p>
-                    <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-red-500">Restricted &mdash; administrator eyes only</p>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-red-500">Restricted &middot; administrator eyes only</p>
                   </div>
                   <Badge className="ml-auto border-red-600 bg-red-600 font-mono text-[10px] text-white hover:bg-red-600">ADMIN SESSION</Badge>
                 </div>

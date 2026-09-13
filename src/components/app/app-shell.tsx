@@ -438,12 +438,26 @@ function Shell({
           </nav>
         ) : null}
         {config?.announcement ? (
-          <div className={cn("border-t px-4 py-1.5 text-center text-xs",
-            config.announcementLevel === "WARN"
-              ? "border-red-700 bg-red-950/70 font-medium text-red-300"
-              : "border-white/10 bg-white/5 text-zinc-300")}
-            role="status">
-            {config.announcement}
+          <div
+            className={cn(
+              "border-t px-4 py-2 text-center text-xs",
+              config.announcementLevel === "WARN"
+                ? "border-red-700 bg-red-950/70 font-medium text-red-300"
+                : "border-white/10 bg-white/[0.04] text-zinc-300",
+            )}
+            role="status"
+          >
+            <span className="inline-flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1">
+              <span
+                aria-hidden
+                className={cn(
+                  "live-dot inline-block h-1.5 w-1.5 rounded-full",
+                  config.announcementLevel === "WARN" ? "bg-red-500" : "bg-red-600",
+                )}
+              />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">Notice</span>
+              <span>{config.announcement}</span>
+            </span>
           </div>
         ) : null}
         {config?.maintenanceMode ? (

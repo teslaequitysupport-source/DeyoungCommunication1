@@ -337,6 +337,20 @@
       clip-path: inset(0 0 -12% 0);
     }
   }
+  /* Level meter bars inside device previews: a gentle live reading,
+     staggered per bar via inline animation-delay. */
+  .level-bar {
+    transform-origin: bottom;
+    animation: level-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes level-pulse {
+    0%, 100% {
+      transform: scaleY(0.5);
+    }
+    50% {
+      transform: scaleY(1);
+    }
+  }
   /* Scroll progress hairline */
   .scroll-progress {
     transform-origin: 0 50%;
@@ -367,10 +381,15 @@
     animation: none;
     clip-path: none;
   }
+  .level-bar {
+    animation: none;
+    transform: none;
+  }
 }
 [data-anim="off"] .animate-marquee,
 [data-anim="off"] .live-dot::after,
-[data-anim="off"] .skeleton::after {
+[data-anim="off"] .skeleton::after,
+[data-anim="off"] .level-bar {
   animation: none;
 }
 [data-anim="off"] .reveal {
