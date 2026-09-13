@@ -48,6 +48,10 @@ export const GET = wrap(
 
     return jsonOk({
       status: dbOk ? "ok" : "degraded",
+      // Deployed commit (Railway injects RAILWAY_GIT_COMMIT_SHA at runtime).
+      // lets anyone confirm WHICH build is serving: if this does not match
+      // the latest commit on main, the deploy did not ship.
+      version: process.env.RAILWAY_GIT_COMMIT_SHA ?? process.env.GIT_COMMIT_SHA ?? "dev-local",
       db: { ok: dbOk, latencyMs: dbLatencyMs },
       errors: {
         last500Count1h: errors500LastHour,
