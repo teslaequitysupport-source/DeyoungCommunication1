@@ -27,6 +27,8 @@ export function StatusBadge({ status, className }: { status: string; className?:
     // warning / in-flight
     PENDING_REVIEW: WARN,
     QUEUED: WARN,
+    RECEIVED: WARN,
+    TRAINING: WARN,
     ASSIGNING: WARN,
     CONNECTING: WARN,
     DRAINING: WARN,

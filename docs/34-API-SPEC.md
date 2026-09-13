@@ -12,9 +12,26 @@ All mutating routes: Zod validated, rate limited, Origin checked.
 
 ## Models
 - GET /api/models -> APPROVED models visible to the caller.
-- POST /api/models (upload, multipart) -> PENDING_REVIEW; rights
-  declaration required; rate limited 6/hour.
+- POST /api/models/upload (multipart: name, description, licenseName,
+  licenseUrl?, rightsAttested, file .pth) -> PENDING_REVIEW model with
+  sha256 + disk-stored file + ConsentRecord. Enforces the plan's
+  maxModelUploads slots and the uploadsEnabled setting; magic-byte
+  sniffed (zip/pickle), capped at MAX_MODEL_UPLOAD_MB; rate limited
+  6/hour. (Built 2026-09-14; earlier revisions documented this endpoint
+  before it existed, which was inaccurate.)
 - POST /api/models/:id/report (abuse) -> queues moderation event.
+
+## Voice clones (device audio upload)
+- POST /api/clone (multipart: name, description?, totalSec?, attested,
+  files 1..3 audio) -> private VoiceCloneRequest in status RECEIVED with
+  an honest statusNote: training is not available in this deployment
+  yet. Server verifies each file by container magic bytes (wav, mp3,
+  m4a, ogg, flac, webm), caps at MAX_SAMPLE_UPLOAD_MB (12MB default)
+  and 3 files, stores bytes as Postgres bytea, records ConsentRecord
+  RIGHTS_ATTESTATION with evidence hash. Rate limited 6/hour.
+- GET /api/clone/mine -> the caller's requests with sample metadata
+  (no audio bytes in list responses).
+- DELETE /api/clone/:id -> owner-only; samples cascade with the row.
 
 ## Sessions
 - POST /api/sessions {modelId, requestedTier} -> ASSIGNING result with

@@ -64,11 +64,13 @@ export default function GuidesView({ navigate }: { navigate: (to: string) => voi
           <div className="mt-6 flex flex-wrap gap-2">
             <Chip tone="ok">Browser studio: supported today</Chip>
             <Chip tone="part">OBS, Discord, Zoom: manual cable routing today</Chip>
+            <Chip tone="part">Clone from files: upload today, training pending</Chip>
             <Chip tone="plan">Native apps: coming soon</Chip>
           </div>
           <nav aria-label="Guides on this page" className="mt-8 flex flex-wrap gap-2">
             {[
               ["guide-studio", "Start in the studio"],
+              ["guide-clone", "Clone from files"],
               ["guide-obs", "OBS"],
               ["guide-social", "Discord, Zoom, Meet"],
               ["guide-record", "Record and download"],
@@ -116,6 +118,32 @@ export default function GuidesView({ navigate }: { navigate: (to: string) => voi
             </Step>
             <Step n={5} title="Tune and save">
               <p>Adjust the voice parameters until it sounds right. Turn on session recording to keep the converted audio in your browser; it stays there until you download it (see the record and download guide).</p>
+            </Step>
+          </ol>
+        </Guide>
+
+        <Guide id="guide-clone" title="Clone a voice from your own recordings" status={<Chip tone="part">Upload works today, training pending</Chip>}>
+          <p>
+            You can upload audio files from your device and submit them as a private clone request. The upload,
+            content verification, hashing and consent record all work today. What does not work yet is the training
+            step: no GPU training pipeline exists in this deployment, so your request stays queued as RECEIVED and
+            the interface tells you exactly that instead of faking progress.
+          </p>
+          <ol className="space-y-5">
+            <Step n={1} title="Open the Voices page and click Clone from audio">
+              <p>The button sits next to Upload RVC model. You need a verified account, because the request is stored privately against your login.</p>
+            </Step>
+            <Step n={2} title="Prepare the recordings">
+              <p>Pick one to three files of the voice you want to clone: clean, without background music, at least 30 seconds in total. Every file stays under 12MB. You hold the rights or the spoken consent of the person recorded; that is not a formality, it is the law and our policy.</p>
+            </Step>
+            <Step n={3} title="Attach the files and check the measurements">
+              <p>Your browser measures each file's length locally and shows it next to the name. The measurement is a convenience; if a file's codec cannot be decoded in the browser, you can still submit it and the server will verify the content itself.</p>
+            </Step>
+            <Step n={4} title="Tick the attestation and submit">
+              <p>The server checks every file's header by content (not by extension), computes a SHA-256 hash for each, stores the audio privately in the platform database and writes a consent record with an evidence hash. Nothing is published and no other account can see the request.</p>
+            </Step>
+            <Step n={5} title="What happens next, honestly">
+              <p>The request appears under My clones with status RECEIVED and a note explaining that training is not available yet. When real training capacity ships, queued requests are processed in order. You can delete a request at any time; deletion removes the audio samples from the database immediately.</p>
             </Step>
           </ol>
         </Guide>

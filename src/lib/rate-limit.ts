@@ -18,6 +18,7 @@ export const RATE_RULES = {
   apiWrite: { name: "api:write", limit: 60, windowSec: 60 },
   sessionStart: { name: "session:start", limit: 10, windowSec: 300 },
   modelUpload: { name: "model:upload", limit: 6, windowSec: 3600 },
+  cloneUpload: { name: "clone:upload", limit: 6, windowSec: 3600 },
   modelReport: { name: "model:report", limit: 10, windowSec: 3600 },
   workerRegister: { name: "worker:register", limit: 30, windowSec: 300 },
   workerHeartbeat: { name: "worker:heartbeat", limit: 30, windowSec: 60 },

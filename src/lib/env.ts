@@ -37,6 +37,15 @@ export const env = {
   // Upload constraints for voice model files.
   maxModelUploadMb: num(process.env.MAX_MODEL_UPLOAD_MB, 300),
 
+  // Where uploaded .pth model files are written. Ephemeral on most hosts:
+  // on Railway attach a volume and point this at it (e.g. /data/models) to
+  // persist files across deploys. The DB always keeps name, size and sha256.
+  uploadDir: process.env.VOXCORE_UPLOAD_DIR || ".data/uploads",
+
+  // Voice clone sample caps. Samples are stored in Postgres (bytea) so they
+  // survive redeploys; the per-file cap keeps memory and DB payloads safe.
+  maxSampleUploadMb: num(process.env.MAX_SAMPLE_UPLOAD_MB, 12),
+
   // Worker protocol.
   workerHeartbeatTimeoutSec: num(process.env.WORKER_HEARTBEAT_TIMEOUT_SEC, 60),
   workerTokenPrefix: "vcw_",

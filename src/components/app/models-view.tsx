@@ -10,7 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { StatusBadge, EmptyState, formatDate, Spinner } from "@/components/app/ui-bits";
+import { StatusBadge, EmptyState, formatDate, Spinner, SkeletonRows } from "@/components/app/ui-bits";
+import { minLengthHint } from "@/lib/client/form-validate";
 import { apiGet, apiSend, apiUpload, ApiClientError, CatalogModel } from "@/lib/client/api";
 import { useToast } from "@/hooks/use-toast";
 import { SiteConfig } from "@/components/app/app-shell";
@@ -34,6 +35,61 @@ interface MyModel {
   reviewedAt: string | null;
 }
 
+interface CloneSample {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  durationSec: number | null;
+  sha256: string;
+}
+
+interface CloneRequest {
+  id: string;
+  name: string;
+  description: string | null;
+  status: string;
+  statusNote: string | null;
+  totalBytes: number;
+  totalSec: number | null;
+  createdAt: string;
+  samples: CloneSample[];
+}
+
+// Client-side caps, mirrors of the server limits (the server stays the source
+// of truth; these exist so the browser can reject a bad file before upload).
+const CLONE_MAX_FILES = 3;
+const CLONE_MAX_FILE_MB = 12;
+const CLONE_ACCEPT = "audio/*,.wav,.mp3,.m4a,.ogg,.oga,.flac,.webm";
+
+function prettyBytes(bytes: number): string {
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)}MB`;
+  return `${Math.max(1, Math.round(bytes / 1024))}KB`;
+}
+
+function prettySec(sec: number | null | undefined): string {
+  if (!sec || !Number.isFinite(sec)) return "unknown";
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+}
+
+// Duration is measured in the browser with the Web Audio API. It is advisory
+// only: decoding can fail on exotic codecs, and a null duration never blocks
+// a submission the server would accept.
+async function audioDurationSec(file: File): Promise<number | null> {
+  try {
+    const ctx = new AudioContext();
+    const buf = await file.arrayBuffer();
+    const decoded = await ctx.decodeAudioData(buf);
+    const d = decoded.duration;
+    void ctx.close();
+    return Number.isFinite(d) ? d : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function ModelsView({ config }: { config: SiteConfig | null }) {
   const { toast } = useToast();
   const [catalog, setCatalog] = useState<CatalogModel[]>([]);
@@ -42,11 +98,89 @@ export default function ModelsView({ config }: { config: SiteConfig | null }) {
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Clone dialog state.
+  const [cloneOpen, setCloneOpen] = useState(false);
+  const [cloneBusy, setCloneBusy] = useState(false);
+  const [clones, setClones] = useState<CloneRequest[] | null>(null);
+  const [cloneFiles, setCloneFiles] = useState<File[] | null>(null);
+  const [cloneDurations, setCloneDurations] = useState<Record<string, number | null>>({});
+  const [cloneError, setCloneError] = useState<string | null>(null);
+  const [cloneNameError, setCloneNameError] = useState<string | null>(null);
+
   const load = () => {
     apiGet<{ models: CatalogModel[] }>("/api/models").then((d) => setCatalog(d.models)).catch(() => {});
     apiGet<{ models: MyModel[] }>("/api/models/mine").then((d) => setMine(d.models)).catch(() => setMine([]));
+    apiGet<{ requests: CloneRequest[] }>("/api/clone/mine").then((d) => setClones(d.requests)).catch(() => setClones([]));
   };
   useEffect(load, []);
+
+  const onCloneFilesPicked = (list: FileList | null) => {
+    setCloneError(null);
+    const picked = list ? Array.from(list) : [];
+    if (picked.length > CLONE_MAX_FILES) {
+      setCloneError(`Pick at most ${CLONE_MAX_FILES} audio files per clone request.`);
+      setCloneFiles(null);
+      return;
+    }
+    for (const f of picked) {
+      if (f.size > CLONE_MAX_FILE_MB * 1024 * 1024) {
+        setCloneError(`"${f.name}" is ${prettyBytes(f.size)}; the limit is ${CLONE_MAX_FILE_MB}MB per file.`);
+        setCloneFiles(null);
+        return;
+      }
+    }
+    setCloneFiles(picked.length > 0 ? picked : null);
+    // Measure durations in the background; failures stay silent (advisory).
+    for (const f of picked) {
+      if (!(f.name in cloneDurations)) {
+        audioDurationSec(f).then((d) => setCloneDurations((prev) => ({ ...prev, [f.name]: d })));
+      }
+    }
+  };
+
+  const onCloneSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setCloneError(null);
+    setCloneNameError(null);
+    const form = new FormData(e.currentTarget);
+    const nameHint = minLengthHint(String(form.get("name") ?? ""), 2, "a voice name");
+    if (nameHint) {
+      setCloneNameError(nameHint);
+      return;
+    }
+    if (!cloneFiles || cloneFiles.length === 0) {
+      setCloneError("Attach at least one audio file from your device.");
+      return;
+    }
+    const totalSec = cloneFiles.reduce((acc, f) => acc + (cloneDurations[f.name] ?? 0), 0);
+    form.delete("files");
+    for (const f of cloneFiles) form.append("files", f);
+    form.set("totalSec", totalSec > 0 ? String(Math.round(totalSec)) : "");
+    setCloneBusy(true);
+    try {
+      const res = await apiUpload<{ message: string }>("/api/clone", form);
+      toast({ title: "Clone request received", description: res.message });
+      setCloneOpen(false);
+      setCloneFiles(null);
+      setCloneDurations({});
+      load();
+    } catch (err) {
+      setCloneError(err instanceof ApiClientError ? err.message : "Upload failed. Try again.");
+    } finally {
+      setCloneBusy(false);
+    }
+  };
+
+  const removeClone = async (id: string) => {
+    if (!window.confirm("Delete this clone request? The stored audio samples are removed with it.")) return;
+    try {
+      await apiSend(`/api/clone/${id}`, "DELETE");
+      toast({ title: "Clone request deleted", description: "The audio samples were removed from the platform database." });
+      load();
+    } catch (err) {
+      toast({ title: "Deletion failed", description: err instanceof ApiClientError ? err.message : undefined, variant: "destructive" });
+    }
+  };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -99,15 +233,90 @@ export default function ModelsView({ config }: { config: SiteConfig | null }) {
             Approved models only. Community uploads carry license metadata and a signed rights attestation, and every listing has a working report link.
           </p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <div className="flex flex-wrap items-center gap-2">
+          <Dialog open={cloneOpen} onOpenChange={setCloneOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-red-600 hover:bg-red-500" disabled={config?.uploadsEnabled === false}>Clone from audio</Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Clone a voice from your device</DialogTitle>
+                <DialogDescription>
+                  Upload recordings of the voice you want to clone. One to three files, up to {CLONE_MAX_FILE_MB}MB each. wav, mp3, m4a, ogg, flac or webm.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="border border-white/15 bg-white/5 p-3 text-xs leading-relaxed text-zinc-300">
+                <p className="font-medium text-zinc-100">What actually happens with your audio</p>
+                <p className="mt-1">
+                  It is verified by content, hashed and stored privately in the platform database. Nobody else can see it and you can delete it at any time.
+                  Voice training is not available in this deployment yet: your request stays queued as RECEIVED until real training capacity exists. We do not simulate progress.
+                </p>
+              </div>
+              <form onSubmit={onCloneSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cl-name">Voice name</Label>
+                  <Input
+                    id="cl-name"
+                    name="name"
+                    required
+                    minLength={2}
+                    maxLength={80}
+                    placeholder="e.g. My narrator voice"
+                    aria-invalid={cloneNameError ? true : undefined}
+                  />
+                  {cloneNameError ? <p className="text-xs text-red-400" role="alert">{cloneNameError}</p> : null}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cl-desc">Description (optional)</Label>
+                  <Textarea id="cl-desc" name="description" rows={2} maxLength={1000} placeholder="Whose voice is this, and what is it for?" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cl-files">Audio files</Label>
+                  <Input id="cl-files" name="files" type="file" accept={CLONE_ACCEPT} multiple onChange={(e) => onCloneFilesPicked(e.target.files)} />
+                  {cloneFiles && cloneFiles.length > 0 ? (
+                    <ul className="space-y-1 text-xs text-zinc-400" aria-live="polite">
+                      {cloneFiles.map((f) => (
+                        <li key={f.name} className="flex flex-wrap justify-between gap-2">
+                          <span className="min-w-0 truncate">{f.name}</span>
+                          <span className="tabular-nums text-zinc-500">
+                            {prettyBytes(f.size)} · {prettySec(cloneDurations[f.name])}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-zinc-500">Tip: clean recordings with little background noise, at least 30 seconds in total, work best.</p>
+                  )}
+                </div>
+                <div className="flex items-start gap-2">
+                  <Checkbox id="cl-attest" name="attested" value="true" required className="mt-1" />
+                  <Label htmlFor="cl-attest" className="text-xs font-normal leading-relaxed text-zinc-500">
+                    I have the rights or the spoken consent of the person whose voice is in these recordings, and I accept the Voice Rights Policy. A consent record with a cryptographic evidence hash is stored for this submission.
+                  </Label>
+                </div>
+                {cloneError ? (
+                  <Alert variant="destructive" role="alert">
+                    <AlertDescription>{cloneError}</AlertDescription>
+                  </Alert>
+                ) : null}
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setCloneOpen(false)}>Cancel</Button>
+                  <Button type="submit" className="bg-red-600 hover:bg-red-500" disabled={cloneBusy}>
+                    {cloneBusy ? <Spinner /> : "Submit audio"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-red-600 hover:bg-red-500" disabled={config?.uploadsEnabled === false}>Upload RVC model</Button>
+            <Button variant="outline" disabled={config?.uploadsEnabled === false}>Upload RVC model (.pth)</Button>
           </DialogTrigger>
           <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Submit a voice model</DialogTitle>
               <DialogDescription>
-                RVC .pth checkpoint, up to 300MB. The platform stores and hashes the file and never executes it server-side. Moderation is human.
+                RVC .pth checkpoint, up to 300MB. The platform stores and hashes the file and never executes it server-side. Moderation is human. Upload slots are set by your plan.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={onSubmit} className="space-y-4">
@@ -143,6 +352,9 @@ export default function ModelsView({ config }: { config: SiteConfig | null }) {
               <input type="hidden" name="engine" value="RVC" />
               <input type="hidden" name="licenseVerified" value="false" />
               <input type="hidden" name="rightsAttested" value="true" />
+              <p className="text-xs text-zinc-500">
+                Storage note: model files live on the deployment disk. On Railway without a persistent volume they are cleared when the service redeploys; the name, size and sha256 stay in the database, and a removed file can simply be uploaded again.
+              </p>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
                 <Button type="submit" className="bg-red-600 hover:bg-red-500" disabled={busy}>
@@ -152,12 +364,14 @@ export default function ModelsView({ config }: { config: SiteConfig | null }) {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Tabs defaultValue="catalog" className="mt-6">
         <TabsList>
           <TabsTrigger value="catalog">Catalog ({catalog.length})</TabsTrigger>
           <TabsTrigger value="mine">My uploads ({mine?.length ?? 0})</TabsTrigger>
+          <TabsTrigger value="clones">My clones ({clones?.length ?? 0})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="catalog" className="mt-4">
@@ -233,6 +447,52 @@ export default function ModelsView({ config }: { config: SiteConfig | null }) {
               <AlertDescription className="text-zinc-100">Uploads are temporarily disabled by an administrator.</AlertDescription>
             </Alert>
           ) : null}
+        </TabsContent>
+
+        <TabsContent value="clones" className="mt-4">
+          {clones === null ? (
+            <SkeletonRows rows={3} />
+          ) : clones.length === 0 ? (
+            <EmptyState
+              title="No clone requests yet"
+              body="Use Clone from audio to upload recordings from your device. Your samples stay private, are hashed on arrival, and can be deleted by you at any time."
+            />
+          ) : (
+            <div className="space-y-4">
+              {clones.map((c) => (
+                <Card key={c.id} className="border-zinc-200 dark:border-zinc-800">
+                  <CardHeader className="pb-2">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <CardTitle className="text-base">{c.name}</CardTitle>
+                      <StatusBadge status={c.status} />
+                    </div>
+                    {c.description ? <CardDescription className="text-xs">{c.description}</CardDescription> : null}
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-xs text-zinc-500">
+                    <p className="tabular-nums">
+                      {c.samples.length} sample{c.samples.length === 1 ? "" : "s"} · {prettyBytes(c.totalBytes)} · audio length {prettySec(c.totalSec)} · submitted {formatDate(c.createdAt)}
+                    </p>
+                    <ul className="space-y-1">
+                      {c.samples.map((s) => (
+                        <li key={s.id} className="flex flex-wrap justify-between gap-2">
+                          <span className="min-w-0 truncate">{s.fileName}</span>
+                          <span className="tabular-nums text-zinc-600">
+                            {prettyBytes(s.sizeBytes)} · sha256 {s.sha256.slice(0, 12)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    {c.statusNote ? (
+                      <p className="border border-white/15 bg-white/5 p-2 leading-relaxed text-zinc-300">{c.statusNote}</p>
+                    ) : null}
+                    <div className="pt-1">
+                      <Button variant="outline" size="sm" onClick={() => removeClone(c.id)}>Delete</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

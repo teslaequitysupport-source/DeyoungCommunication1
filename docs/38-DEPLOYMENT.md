@@ -21,6 +21,15 @@ Checked: 2026-09-10.
   shell PATH (observed live: the server spawned /usr/bin/python3 while
   the operator's venv python held the agent dependencies). Pin it in
   production.
+- VOXCORE_UPLOAD_DIR (added 2026-09-14): where .pth model uploads are
+  written, default ".data/uploads" on the EPHEMERAL deployment disk.
+  For persistence on Railway, attach a volume (mount /data) and set
+  VOXCORE_UPLOAD_DIR=/data/models. Without a volume, uploaded model
+  files are cleared on redeploy; the DB keeps name/size/sha256, so
+  re-uploading is safe and detectable.
+- MAX_MODEL_UPLOAD_MB (300) and MAX_SAMPLE_UPLOAD_MB (12) cap the two
+  upload surfaces. Buffering a large .pth costs roughly 2x its size in
+  RAM: keep Railway RAM at 1GB or more if you allow large models.
 - Worker agents receive BACKEND_URL and a one-time token at launch; they
   never hold other secrets.
 
