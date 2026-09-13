@@ -39,6 +39,14 @@ export default function DashboardView({ navigate, me, refreshMe }: { navigate: (
   const { toast } = useToast();
 
   useEffect(() => {
+    // Only poll while a session actually exists. Firing these calls when
+    // logged out produced a storm of 401s on the landing view (noise in the
+    // security log and confusing failure toasts).
+    if (!me?.user) {
+      setSessions(null);
+      setBilling(null);
+      return;
+    }
     const load = () => {
       apiGet<{ sessions: SessionRow[] }>("/api/sessions").then((d) => setSessions(d.sessions)).catch(() => setSessions([]));
       apiGet<BillingOverview>("/api/billing/overview").then(setBilling).catch(() => {});
@@ -46,7 +54,7 @@ export default function DashboardView({ navigate, me, refreshMe }: { navigate: (
     load();
     const t = setInterval(load, 15_000);
     return () => clearInterval(t);
-  }, []);
+  }, [me?.user?.id]);
 
   const user = me?.user;
 

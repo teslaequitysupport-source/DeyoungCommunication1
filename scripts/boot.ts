@@ -121,7 +121,20 @@ function runSeed(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Main. Step 5 (the server) runs in-process via import so the repaired env
+// Step 5: bootstrap admin from ADMIN_EMAIL/ADMIN_PASSWORD (best-effort).
+// Unlike the seed this runs on EVERY boot and does not require an empty
+// users table, so the operator can gain admin access at any time by setting
+// the two variables and restarting.
+// ---------------------------------------------------------------------------
+function runBootstrapAdmin(): void {
+  const res = spawnSync("bun", ["scripts/bootstrap-admin.ts"], { stdio: "inherit", env: childEnv() });
+  if (res.status !== 0) {
+    logErr("BOOT: bootstrap admin exited nonzero (non-fatal) - admin account may be missing; see output above.");
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Main. Step 6 (the server) runs in-process via import so the repaired env
 // applies to the Prisma client too.
 // ---------------------------------------------------------------------------
 async function main() {
@@ -130,6 +143,7 @@ async function main() {
   runEnvDoctor();
   runDbPush();
   runSeed();
+  runBootstrapAdmin();
   log("BOOT: handoff to unified server (Next.js + audio gateway on $PORT)");
   await import("../server.ts");
 

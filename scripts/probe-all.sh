@@ -1,62 +1,81 @@
 #!/usr/bin/env bash
-# Boot production server against production Supabase and hammer every public
-# endpoint + the register/verify/login flow. One command: background processes
-# do not survive between tool calls in this sandbox.
+# Full-surface probe: every endpoint the browser touches, in the exact states
+# the browser produces them (anon / authed USER / ADMIN). Prints status + first
+# bytes for each. Probe users are cascade-deleted at the end.
+# Usage: scripts/probe-all.sh <base-url>
 set -u
-cd /home/z/my-project
+BASE="${1:-http://127.0.0.1:3998}"
+STAMP="$(date +%s)"
+EMAIL="e2e-all-${STAMP}@voxcore-probe.invalid"
+PW="ProbePass123x"
+JAR="$(mktemp)"
+AJAR="$(mktemp)"
+PASS=0; FAIL=0
+declare -a FAILURES
 
-PORT=3998
-export NODE_ENV=production
-export PORT=$PORT
-# .env already carries the encoded Supabase URL; boot.ts will re-verify.
-set -a; source .env; set +a
-export DATABASE_URL
+# name, method, path, expected-status, extra-curl-args...
+hit() {
+  local name="$1" method="$2" path="$3" want="$4"; shift 4
+  local out status body
+  out=$(curl -s -m 30 -w $'\n%{http_code}' -X "$method" "$BASE$path" "$@" 2>&1)
+  status=$(echo "$out" | tail -1)
+  body=$(echo "$out" | head -n -1)
+  if [ "$status" = "$want" ]; then
+    echo "PASS [$status] $name"
+    PASS=$((PASS+1))
+    LAST_BODY="$body"
+    return 0
+  else
+    echo "FAIL [$status want $want] $name"
+    echo "  body: $(echo "$body" | head -c 300)"
+    FAIL=$((FAIL+1)); FAILURES+=("$name ($status want $want)")
+    LAST_BODY="$body"
+    return 1
+  fi
+}
 
-echo "== boot =="
-bun scripts/boot.ts > /tmp/vox-probe-boot.log 2>&1 &
-BOOT_PID=$!
+echo "=== ANON SURFACE ==="
+hit "HTML page /"              GET  "/"                    200 -H "Origin: $BASE"
+hit "health"                   GET  "/api/health"          200
+hit "public/config"            GET  "/api/public/config"   200
+hit "public/limits"            GET  "/api/public/limits"   200
+hit "billing/plans"            GET  "/api/billing/plans"   200
+hit "models catalog"           GET  "/api/models"          200
+hit "operator/brief anon 401"  GET  "/api/operator/brief"  401
 
-for i in $(seq 1 60); do
-  sleep 1
-  if curl -sf "http://127.0.0.1:$PORT/api/health" > /dev/null 2>&1; then break; fi
-  if ! kill -0 $BOOT_PID 2>/dev/null; then echo "BOOT DIED"; tail -30 /tmp/vox-probe-boot.log; exit 1; fi
-done
+echo "=== REGISTER + VERIFY ==="
+REG=$(curl -s -m 30 -c "$JAR" -X POST "$BASE/api/auth/register" -H 'Content-Type: application/json' -H "Origin: $BASE" -d "{\"email\":\"$EMAIL\",\"password\":\"$PW\",\"acceptTerms\":true}")
+if echo "$REG" | grep -q '"ok":true'; then echo "PASS register"; PASS=$((PASS+1)); else echo "FAIL register: $(echo "$REG" | head -c 300)"; FAIL=$((FAIL+1)); FAILURES+=("register"); fi
+TOKEN=$(echo "$REG" | sed -n 's/.*"devVerificationToken":"\([^"]*\)".*/\1/p')
+hit "verify-email"             POST "/api/auth/verify-email" 200 -b "$JAR" -H 'Content-Type: application/json' -H "Origin: $BASE" -d "{\"token\":\"$TOKEN\"}"
 
-echo "== GET endpoints =="
-for ep in /api/health /api/public/config /api/public/limits /api/models /api/billing/plans /api/auth/me /api/operator/brief /api/sessions /api/billing/overview /api/notifications; do
-  code=$(curl -s -o /tmp/vox-resp.json -w '%{http_code}' "http://127.0.0.1:$PORT$ep")
-  echo "$code $ep"
-  if [ "$code" = "500" ]; then echo "--- 500 BODY:"; cat /tmp/vox-resp.json; echo; fi
-done
+echo "=== AUTHED USER SURFACE ==="
+hit "auth/me"                  GET  "/api/auth/me"          200 -b "$JAR"
+hit "billing/overview"         GET  "/api/billing/overview" 200 -b "$JAR"
+hit "billing/usage"            GET  "/api/billing/usage"    200 -b "$JAR"
+hit "sessions list"            GET  "/api/sessions"         200 -b "$JAR"
+hit "models/mine"              GET  "/api/models/mine"      200 -b "$JAR"
+hit "notifications"            GET  "/api/notifications"    200 -b "$JAR"
+hit "support tickets list"     GET  "/api/support/tickets"  200 -b "$JAR"
+hit "auth/sessions devices"    GET  "/api/auth/sessions"    200 -b "$JAR"
+hit "start session (no model)" POST "/api/sessions"         409 -b "$JAR" -H 'Content-Type: application/json' -H "Origin: $BASE" -d "{\"modelId\":\"00000000-0000-0000-0000-000000000000\",\"requestedTier\":\"DSP_CPU\"}"
+hit "create ticket"            POST "/api/support/tickets"   200 -b "$JAR" -H 'Content-Type: application/json' -H "Origin: $BASE" -d '{"subject":"Probe ticket","body":"Automated probe - safe to delete","category":"GENERAL"}'
 
-echo "== register flow =="
-TS=$(date +%s)
-EMAIL="probe-$TS@voxcore-probe.invalid"
-REG=$(curl -s -X POST "http://127.0.0.1:$PORT/api/auth/register" -H 'content-type: application/json' \
-  -d "{\"email\":\"$EMAIL\",\"password\":\"Probe-T3st!x\",\"name\":\"Probe\",\"acceptTerms\":true}")
-echo "register: $REG" | head -c 400; echo
-TOKEN=$(echo "$REG" | grep -o '"devVerificationToken":"[^"]*"' | cut -d'"' -f4)
-if [ -n "$TOKEN" ]; then
-  V=$(curl -s -X POST "http://127.0.0.1:$PORT/api/auth/verify" -H 'content-type: application/json' -d "{\"token\":\"$TOKEN\"}")
-  echo "verify: $V" | head -c 200; echo
-fi
-LOGIN=$(curl -s -c /tmp/vox-cookies.txt -X POST "http://127.0.0.1:$PORT/api/auth/login" -H 'content-type: application/json' \
-  -d "{\"email\":\"$EMAIL\",\"password\":\"Probe-T3st!x\"}")
-echo "login: $LOGIN" | head -c 300; echo
-ME=$(curl -s -b /tmp/vox-cookies.txt "http://127.0.0.1:$PORT/api/auth/me")
-echo "me(authed): $(echo $ME | head -c 300)"; echo
+echo "=== FRESH LOGIN ==="
+hit "login fresh"              POST "/api/auth/login"        200 -c "$JAR" -H 'Content-Type: application/json' -H "Origin: $BASE" -d "{\"email\":\"$EMAIL\",\"password\":\"$PW\"}"
 
-echo "== authed GETs =="
-for ep in /api/sessions /api/billing/overview /api/models /api/notifications; do
-  code=$(curl -s -b /tmp/vox-cookies.txt -o /tmp/vox-resp.json -w '%{http_code}' "http://127.0.0.1:$PORT$ep")
-  echo "$code $ep (authed)"
-  if [ "$code" = "500" ]; then echo "--- 500 BODY:"; cat /tmp/vox-resp.json; echo; fi
-done
+echo "=== ADMIN SURFACE (temp admin) ==="
+bun scripts/make-brief-admin.ts >/dev/null 2>&1
+hit "login admin"              POST "/api/auth/login"        200 -c "$AJAR" -H 'Content-Type: application/json' -H "Origin: $BASE" -d '{"email":"brief-admin-probe@voxcore-probe.invalid","password":"BriefProbe-2026!x"}'
+hit "operator/brief admin"     GET  "/api/operator/brief"    200 -b "$AJAR"
+hit "admin/overview"           GET  "/api/admin/overview"    200 -b "$AJAR"
+hit "admin/users"              GET  "/api/admin/users"       200 -b "$AJAR"
 
-echo "== cleanup =="
-bun scripts/cleanup-probe.ts 2>&1 | tail -2
+echo ""
+echo "RESULT: PASS=$PASS FAIL=$FAIL"
+if [ ${#FAILURES[@]} -gt 0 ]; then printf '  failed: %s\n' "${FAILURES[@]}"; fi
 
-kill $BOOT_PID 2>/dev/null
-echo "== boot log errors (if any) =="
-grep -i "unhandled_route_error\|error" /tmp/vox-probe-boot.log | grep -v "rate_limit" | tail -10
-echo DONE
+# cleanup probe users (cascade)
+bun scripts/cleanup-probe.ts >/dev/null 2>&1 || true
+echo "probe users cleaned"
+[ "$FAIL" -eq 0 ]

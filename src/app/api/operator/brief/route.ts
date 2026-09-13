@@ -85,7 +85,7 @@ export const GET = wrap(
           id: "admin-bootstrap",
           title: "Create the real admin account",
           body:
-            "No administrator exists until ADMIN_EMAIL and ADMIN_PASSWORD are set in Railway and the service is redeployed; the bootstrap admin is only seeded into an empty users table. Until then the command centre at /#/admin is unreachable.",
+            "Every boot now guarantees the bootstrap admin: set ADMIN_EMAIL and ADMIN_PASSWORD in Railway and restart - the account is created, promoted, re-activated and its password synced to the env value (no empty-database requirement). Until both variables are set, the command centre at /#/admin stays unreachable; there are no default credentials by design.",
         },
         {
           id: "railway-ram",

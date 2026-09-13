@@ -4,6 +4,11 @@
 // Audit/security events are intentionally LEFT (append-only trail).
 // Usage: DATABASE_URL=<url> bun scripts/cleanup-probe.ts
 import { PrismaClient } from "@prisma/client";
+import { normalizeDatabaseUrl } from "./boot-lib";
+
+// Standalone scripts do NOT inherit boot.ts's in-process env repair.
+const repaired = normalizeDatabaseUrl(process.env.DATABASE_URL ?? "").url;
+process.env.DATABASE_URL = repaired;
 
 const db = new PrismaClient();
 

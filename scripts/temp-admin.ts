@@ -3,6 +3,11 @@
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../src/lib/auth";
 import { hashToken } from "../src/lib/crypto";
+import { normalizeDatabaseUrl } from "./boot-lib";
+
+// Standalone scripts do NOT inherit boot.ts's in-process env repair.
+const repaired = normalizeDatabaseUrl(process.env.DATABASE_URL ?? "").url;
+process.env.DATABASE_URL = repaired;
 
 const db = new PrismaClient();
 const EMAIL = "temp-admin-visual@voxcore-probe.invalid";

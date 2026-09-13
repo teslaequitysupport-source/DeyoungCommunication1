@@ -3,6 +3,12 @@
 // by scripts/cleanup-probe.ts as well.
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { normalizeDatabaseUrl } from "../scripts/boot-lib";
+
+// Standalone scripts do NOT inherit boot.ts's in-process env repair, so the
+// raw DATABASE_URL (raw # $ , ) & in the password) must be normalized here.
+const repaired = normalizeDatabaseUrl(process.env.DATABASE_URL ?? "").url;
+process.env.DATABASE_URL = repaired;
 
 const db = new PrismaClient();
 const email = "brief-admin-probe@voxcore-probe.invalid";

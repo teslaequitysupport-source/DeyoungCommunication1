@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { wrap, jsonOk } from "@/lib/http";
+import { recentRouteErrors } from "@/lib/error-ring";
 
 // Liveness + database round-trip + honest failure counters. Used by the
 // platform healthcheck (HTTP 200 always, body reports state truthfully),
@@ -38,10 +39,23 @@ export const GET = wrap(
       errors500LastHour = null;
     }
 
+    // In-process error ring (reset on restart). Published here - WITHOUT the
+    // stack, which stays admin-only via the operator brief - so a user who
+    // sees "Internal server error" can self-diagnose by opening /api/health:
+    // it names the failing route and the exact error message.
+    const ring = recentRouteErrors(3600 * 1000);
+    const lastRing = ring.length > 0 ? ring[ring.length - 1] : null;
+
     return jsonOk({
       status: dbOk ? "ok" : "degraded",
       db: { ok: dbOk, latencyMs: dbLatencyMs },
-      errors: { last500Count1h: errors500LastHour, last500Route: lastErrorRoute },
+      errors: {
+        last500Count1h: errors500LastHour,
+        last500Route: lastErrorRoute,
+        lastRingError: lastRing
+          ? { at: lastRing.at, route: lastRing.route, method: lastRing.method, message: lastRing.message }
+          : null,
+      },
       time: new Date().toISOString(),
     });
   },
