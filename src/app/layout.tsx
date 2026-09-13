@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
-// Typography system: Space Grotesk for display headlines, Inter for body,
-// JetBrains Mono for technical micro-labels. Loaded at build time by
-// next/font (no runtime font requests).
+// Typography system (two typefaces per the design spec): Space Grotesk for
+// display headlines, Inter for body copy, labels, forms and controls.
+// Loaded at build time by next/font (no runtime font requests).
 const grotesk = Space_Grotesk({
   variable: "--font-grotesk",
   subsets: ["latin"],
@@ -15,12 +15,6 @@ const grotesk = Space_Grotesk({
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-});
-
-const jetbrains = JetBrains_Mono({
-  variable: "--font-jetbrains",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -40,7 +34,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#050505",
+  themeColor: "#0a0a0d",
 };
 
 export default function RootLayout({
@@ -51,7 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
-        className={`${grotesk.variable} ${inter.variable} ${jetbrains.variable} antialiased bg-background text-foreground`}
+        className={`${grotesk.variable} ${inter.variable} antialiased bg-background text-foreground`}
       >
         {children}
         <Toaster />

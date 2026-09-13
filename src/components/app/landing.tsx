@@ -6,33 +6,23 @@ import { Badge } from "@/components/ui/badge";
 import { apiGet, CatalogModel, Me, PlanInfo, ApiClientError } from "@/lib/client/api";
 import { SiteConfig } from "@/components/app/app-shell";
 import Vox3D from "@/components/app/vox-3d";
-import { TiltCard, Reveal, Skeleton, SkeletonCards, SkeletonStats, CursorSpotlight, EmptyState } from "@/components/app/ui-bits";
+import { TiltCard, Reveal, Skeleton, SkeletonCards, SkeletonStats, EmptyState } from "@/components/app/ui-bits";
 import {
   AudioWaveform, ServerCog, ShieldCheck, UploadCloud, Gauge,
   ArrowRight, ChevronDown, EyeOff, Scale, ScanEye, FileLock2, DatabaseZap,
 } from "lucide-react";
 
-// The homepage: a full-length, 3D-animated product surface in strict
-// red / black / white. Copy follows the honest-engineering rules: no
-// invented metrics, no testimonials, no fake logos. What is not shipped
-// is labeled, not advertised.
+// The homepage: a full-length product surface in strict black / white / one
+// red. Copy follows the honest-engineering rules: no invented metrics, no
+// testimonials, no fake logos. What is not shipped is labeled, not advertised.
+// Motion budget: ONE hero moment (the voiceform sphere + kinetic headline);
+// everything else is subtle orientation (reveals, scroll progress).
 
 const COMPAT_MATRIX = [
   { target: "Browser apps (this studio)", status: "SUPPORTED", note: "Chrome, Edge, Firefox: microphone capture and converted playback in-browser, measured live in the studio." },
   { target: "Discord / OBS / Zoom (Windows)", status: "DESKTOP COMPANION", note: "Requires the Windows client with a virtual microphone (VB-CABLE route). Planned phase 2; not shipped in this build." },
   { target: "Third-party apps (Android)", status: "PARTIAL", note: "Android 10+ restricts unverified microphone injection. In-app conversion works; system-wide routing does not." },
   { target: "Third-party apps (iOS)", status: "UNSUPPORTED", note: "iOS sandboxing does not permit replacing the system microphone. In-app conversion only." },
-];
-
-const TICKER = [
-  "128 MS CHUNK CADENCE",
-  "MEASURED P50 / P95 LATENCY",
-  "OPEN MODEL UPLOADS",
-  "HUMAN MODERATION",
-  "AUDITED TAKEDOWNS",
-  "SCALE-TO-ZERO ECONOMICS",
-  "SERVER-SIDE RATE LIMITING",
-  "NO FABRICATED METRICS",
 ];
 
 const FEATURES = [
@@ -84,6 +74,34 @@ const GUARDRAILS = [
   { icon: ShieldCheck, title: "Audit chain", body: "Security events, admin actions and model lifecycle changes are append-only and verifiable end to end." },
 ];
 
+// Objection handling: every answer states the truth, including the limits.
+const FAQ = [
+  {
+    q: "Is the conversion actually real-time?",
+    a: "For built-in DSP voices, yes: audio is processed in 128 ms chunks and returned while you speak, with the P50/P95 latency of your own session shown live in the studio. RVC model inference runs on GPU workers that are burst-only in this deployment, so GPU-voice latency is not yet comparable and is never presented as real-time.",
+  },
+  {
+    q: "Can I use it in Discord, OBS or Zoom?",
+    a: "Not yet in this build. The browser studio works today in Chrome, Edge and Firefox. System-wide voice routing needs the Windows desktop companion with a virtual microphone; it is planned, and it is labeled as not shipped rather than promised with a date.",
+  },
+  {
+    q: "Who can upload voices, and how are they reviewed?",
+    a: "Anyone with an account can upload an RVC model, but every upload carries a mandatory rights attestation and license metadata, is fingerprinted (sha256) for dedup, and is published only after a human moderator approves it. Reports trigger immediate, audited takedown.",
+  },
+  {
+    q: "What does it cost?",
+    a: "Nothing is charged in this deployment, and that is stated plainly: the credit ledger and usage metering are live, but no payment provider is wired and prices stay unpublished until they are set from measured GPU cost data. Free-tier capacity is enforced server-side.",
+  },
+  {
+    q: "What happens to my voice data?",
+    a: "Microphone audio is captured in your browser, chunked, and processed in memory. Nothing is recorded to disk; your session telemetry (latency percentiles, packet stats) is stored so the numbers you see are real. You can end a session at any time and delete your account from the account page.",
+  },
+  {
+    q: "Why are some numbers on this page replaced with dashes?",
+    a: "Because the deployment has not measured them yet. Counters on this page are fetched live from the running system, and nothing is pre-filled to look busier than it is. If a value is missing, the system does not have it.",
+  },
+];
+
 interface LimitRule { key: string; bucket: string; limit: number; windowSec: number }
 interface LimitsResponse { enforcement: string; abuse: string; rules: LimitRule[] }
 interface OperatorBrief {
@@ -117,16 +135,16 @@ function SectionHead({ kicker, title, lede }: { kicker: string; title: React.Rea
   return (
     <Reveal>
       <p className="label-kicker text-red-600">{kicker}</p>
-      <h2 className="mt-3 font-display text-3xl font-bold uppercase leading-[1.02] tracking-tight text-white sm:text-5xl">{title}</h2>
-      {lede ? <p className="mt-4 max-w-3xl text-sm leading-relaxed text-zinc-400 sm:text-base">{lede}</p> : null}
+      <h2 className="mt-3 max-w-3xl font-display text-3xl font-bold leading-[1.05] tracking-[-0.02em] text-white sm:text-5xl">{title}</h2>
+      {lede ? <p className="mt-4 max-w-3xl text-base leading-[1.7] text-zinc-400">{lede}</p> : null}
     </Reveal>
   );
 }
 
 function StatusChip({ status }: { status: string }) {
-  if (status === "SUPPORTED") return <Badge className="border-white bg-white font-mono text-[10px] text-zinc-950 hover:bg-white">{status}</Badge>;
-  if (status === "UNSUPPORTED") return <Badge className="border-red-500 bg-red-600 font-mono text-[10px] text-white hover:bg-red-600">{status}</Badge>;
-  return <Badge className="border-white/40 bg-transparent font-mono text-[10px] text-zinc-200 hover:bg-transparent">{status}</Badge>;
+  if (status === "SUPPORTED") return <Badge className="border-white bg-white text-[10px] font-medium tracking-wide text-black hover:bg-white">{status}</Badge>;
+  if (status === "UNSUPPORTED") return <Badge className="border-red-500 bg-red-600 text-[10px] font-medium tracking-wide text-white hover:bg-red-600">{status}</Badge>;
+  return <Badge className="border-white/40 bg-transparent text-[10px] font-medium tracking-wide text-zinc-200 hover:bg-transparent">{status}</Badge>;
 }
 
 export default function LandingView({ navigate, config, user }: { navigate: (to: string) => void; config: SiteConfig | null; user: Me["user"] }) {
@@ -160,12 +178,9 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
       {/* ============================= HERO ============================= */}
       <section className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden border-b border-white/10" id="top">
         <div className="grid-lines grid-lines-fade absolute inset-0" aria-hidden />
-        <div className="scanlines pointer-events-none absolute inset-0" aria-hidden />
-        <CursorSpotlight />
-        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[560px] w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600/10 blur-[120px]" aria-hidden />
         <Vox3D className="pointer-events-none absolute inset-0" intensity={config?.animationIntensity} />
 
-        <div className="relative mx-auto w-full max-w-7xl px-4 py-28 sm:px-6">
+        <div className="relative mx-auto w-full max-w-7xl px-4 py-24 sm:px-6 sm:py-32">
           <div className="flex items-center gap-3">
             <span className="live-dot inline-block h-2 w-2 rounded-full bg-red-600" aria-hidden />
             <p className="label-kicker text-zinc-300">Real-time voice conversion &middot; infrastructure core &middot; live</p>
@@ -177,10 +192,11 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
             <span className="kinetic block" style={{ animationDelay: "0.31s" }}>in real time.</span>
           </h1>
 
-          <p className="mt-8 max-w-2xl text-pretty text-base leading-relaxed text-zinc-400 sm:text-lg">
-            Speak into your microphone and hear a converted voice come back through a GPU worker fleet, a self-healing
-            scheduler and a scale-to-zero cost model. Every latency figure you will see in this product is measured,
-            not marketed.
+          <p className="mt-8 max-w-2xl text-pretty text-base leading-[1.7] text-zinc-400 sm:text-lg">
+            VoxCore turns your microphone into a live voice pipeline: speak, and a converted voice comes back while you
+            are still talking - carried by a self-healing worker fleet, an honest scheduler and a scale-to-zero cost
+            model. Built for creators, developers and teams who need live voice, not offline renders. Every latency
+            figure you will see is measured from real sessions, not marketed.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
@@ -201,18 +217,18 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
             </Button>
           </div>
 
-          <p className="mt-6 max-w-2xl font-mono text-[11px] leading-relaxed text-zinc-500">
-            REGISTRATION REQUIRES EMAIL VERIFICATION. THIS DEPLOYMENT HAS SMTP DISABLED, SO VERIFICATION TOKENS ARE
-            SHOWN ONCE AT SIGNUP (DOCUMENTED DEV-MODE BEHAVIOR).
+          <p className="mt-6 max-w-2xl text-[11px] font-medium uppercase leading-relaxed tracking-wide text-zinc-400">
+            Registration requires email verification. This deployment has SMTP disabled, so verification tokens are
+            shown once at signup (documented dev-mode behavior).
           </p>
 
           {/* Live honest counters - only numbers this deployment actually serves. */}
           <div className="mt-10 grid max-w-3xl grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-4">
             {[
-              { label: "ENFORCED RATE RULES", value: limits ? String(limits.rules.length) : null },
-              { label: "VOICES PUBLISHED", value: models ? String(models.length) : null },
-              { label: "PLANS ENFORCED", value: plans ? String(plans.length) : null },
-              { label: "FABRICATED METRICS", value: "0" },
+              { label: "Enforced rate rules", value: limits ? String(limits.rules.length) : null },
+              { label: "Voices published", value: models ? String(models.length) : null },
+              { label: "Plans enforced", value: plans ? String(plans.length) : null },
+              { label: "Fabricated metrics", value: "0" },
             ].map((s) => (
               <div key={s.label} className="bg-black px-4 py-4">
                 {s.value !== null ? (
@@ -220,7 +236,7 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
                 ) : (
                   <div className="skeleton h-7 w-10" />
                 )}
-                <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-zinc-500">{s.label}</p>
+                <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-400">{s.label}</p>
               </div>
             ))}
           </div>
@@ -229,7 +245,7 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
           <div className="mt-16 grid grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-3 lg:grid-cols-6">
             {["Microphone", "Capture 16 kHz", "Audio gateway", "Worker fleet", "Conversion", "Playback"].map((step, i) => (
               <div key={step} className="relative bg-black px-4 py-4 transition-colors hover:bg-red-950/30">
-                <span className="font-mono text-[10px] text-red-600">{String(i + 1).padStart(2, "0")}</span>
+                <span className="text-[10px] font-medium text-red-600">{String(i + 1).padStart(2, "0")}</span>
                 <p className="mt-1 text-xs font-medium uppercase tracking-wider text-zinc-300">{step}</p>
               </div>
             ))}
@@ -237,31 +253,57 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
         </div>
       </section>
 
-      {/* ============================ TICKER ============================ */}
-      <div className="overflow-hidden border-b border-white/10 bg-black py-3" aria-hidden>
-        <div className="animate-marquee flex w-max items-center">
-          {[...TICKER, ...TICKER].map((item, i) => (
-            <span key={`${item}-${i}`} className="flex items-center font-mono text-[11px] uppercase tracking-[0.25em] text-zinc-400">
-              <span className="px-6">{item}</span>
-              <span className="text-red-600">&#9670;</span>
-            </span>
-          ))}
-        </div>
-      </div>
-
       {/* ========================== MANIFESTO =========================== */}
       <section className="border-b border-white/10 bg-black">
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32">
           <Reveal>
-            <p className="label-kicker text-red-600">Principle 01 &mdash; no fabrication</p>
-            <p className="mt-8 max-w-5xl font-display text-3xl font-medium leading-[1.15] tracking-tight text-white sm:text-5xl">
+            <p className="label-kicker text-red-600">Principle 01 — no fabrication</p>
+            <p className="mt-8 max-w-5xl font-display text-3xl font-medium leading-[1.15] tracking-[-0.02em] text-white sm:text-5xl">
               Every number here is <span className="text-red-600">measured</span> from real sessions. Every capability
-              is labeled <span className="font-mono text-2xl sm:text-3xl">SUPPORTED</span>,{" "}
-              <span className="font-mono text-2xl sm:text-3xl">PARTIAL</span> or{" "}
-              <span className="font-mono text-2xl sm:text-3xl">UNSUPPORTED</span>. What is not shipped is{" "}
+              is labeled <span className="font-medium">SUPPORTED</span>,{" "}
+              <span className="font-medium">PARTIAL</span> or{" "}
+              <span className="font-medium">UNSUPPORTED</span>. What is not shipped is{" "}
               <span className="text-hollow">not advertised.</span>
             </p>
           </Reveal>
+        </div>
+      </section>
+
+      {/* ====================== PROBLEM / TENSION ======================= */}
+      <section className="border-b border-white/10 bg-black">
+        <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
+          <SectionHead
+            kicker="The problem"
+            title={<>Live voice is a<br />latency war.</>}
+            lede="Offline voice conversion is a solved convenience. Real-time is a different discipline entirely: past roughly 150 ms of round-trip delay, conversation stops feeling natural and people talk over each other. Pipelines drop. Workers vanish mid-session. GPU bills explode overnight."
+          />
+          <div className="mt-14 grid gap-4 md:grid-cols-3">
+            {[
+              {
+                n: "01",
+                t: "Delay kills conversation",
+                b: "Humans interrupt within ~200 ms. A conversion pipeline that queues whole files can never join a live conversation - it has to think in small chunks, every chunk on a deadline.",
+              },
+              {
+                n: "02",
+                t: "Workers die mid-session",
+                b: "Any fleet loses machines. If your session is pinned to one worker and that worker disappears, the silence is the product failing. Failover has to be automatic, not an apology email.",
+              },
+              {
+                n: "03",
+                t: "Capacity burns money",
+                b: "GPUs idle between sessions cost real money every hour. Capacity nobody pays for must scale to zero, and paid capacity must be capped by explicit budgets - not by surprises.",
+              },
+            ].map((item, i) => (
+              <Reveal key={item.n} delay={i * 90}>
+                <div className="h-full border border-white/10 bg-card p-6 transition-colors hover:border-white/25">
+                  <span className="text-sm font-semibold text-red-600">{item.n}</span>
+                  <h3 className="mt-4 font-display text-lg font-bold tracking-[-0.01em] text-white">{item.t}</h3>
+                  <p className="mt-3 text-sm leading-[1.7] text-zinc-400">{item.b}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -277,13 +319,13 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
             {FEATURES.map((f, i) => (
               <Reveal key={f.title} delay={(i % 3) * 90}>
                 <TiltCard className="group h-full">
-                  <div className="corner-frame h-full border border-white/10 bg-card p-6 transition-colors duration-300 group-hover:border-red-600/60 group-hover:glow-red">
+                  <div className="h-full border border-white/10 bg-card p-6 transition-colors duration-300 group-hover:border-red-600/60 group-hover:glow-red">
                     <div className="flex items-start justify-between">
                       <f.icon className="h-6 w-6 text-red-600" aria-hidden />
-                      <span className="font-mono text-xs text-zinc-600 group-hover:text-red-600">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="text-xs font-medium text-zinc-500 transition-colors group-hover:text-red-600">{String(i + 1).padStart(2, "0")}</span>
                     </div>
-                    <h3 className="mt-6 font-display text-lg font-bold uppercase tracking-wide text-white">{f.title}</h3>
-                    <p className="mt-3 text-sm leading-relaxed text-zinc-400">{f.body}</p>
+                    <h3 className="mt-6 font-display text-lg font-bold tracking-[-0.01em] text-white">{f.title}</h3>
+                    <p className="mt-3 text-sm leading-[1.7] text-zinc-400">{f.body}</p>
                   </div>
                 </TiltCard>
               </Reveal>
@@ -305,8 +347,8 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
               <Reveal key={step.name} delay={i * 60}>
                 <div className="group grid grid-cols-[64px_1fr] gap-4 border-t border-white/10 py-8 transition-colors last:border-b hover:bg-red-950/10 sm:grid-cols-[96px_320px_1fr] sm:gap-8 sm:px-4">
                   <span className="font-display text-3xl font-bold text-red-600 sm:text-4xl">{String(i + 1).padStart(2, "0")}</span>
-                  <h3 className="font-display text-base font-bold uppercase tracking-wider text-white sm:text-lg">{step.name}</h3>
-                  <p className="col-start-2 text-sm leading-relaxed text-zinc-400 sm:col-start-3">{step.body}</p>
+                  <h3 className="font-display text-base font-bold tracking-[-0.01em] text-white sm:text-lg">{step.name}</h3>
+                  <p className="col-start-2 text-sm leading-[1.7] text-zinc-400 sm:col-start-3">{step.body}</p>
                 </div>
               </Reveal>
             ))}
@@ -344,9 +386,9 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
             </div>
           )}
           {limits ? (
-            <div className="mt-6 grid gap-2 font-mono text-[11px] leading-relaxed text-zinc-500 md:grid-cols-2">
-              <p className="border-l-2 border-red-600 pl-3">ENFORCEMENT: {limits.enforcement.toUpperCase()}</p>
-              <p className="border-l-2 border-white/20 pl-3">ABUSE: {limits.abuse.toUpperCase()}</p>
+            <div className="mt-6 grid gap-2 text-[11px] leading-relaxed text-zinc-400 md:grid-cols-2">
+              <p className="border-l-2 border-red-600 pl-3 uppercase tracking-wide">Enforcement: {limits.enforcement}</p>
+              <p className="border-l-2 border-white/20 pl-3 uppercase tracking-wide">Abuse: {limits.abuse}</p>
             </div>
           ) : null}
         </div>
@@ -377,11 +419,11 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
                     <TiltCard max={5}>
                       <div className="h-full border border-white/10 bg-card p-5 transition-colors hover:border-red-600/60">
                         <div className="flex items-center justify-between gap-2">
-                          <h3 className="font-display text-base font-bold uppercase tracking-wide text-white">{m.name}</h3>
-                          <Badge className="border-red-800 bg-red-950/70 font-mono text-[10px] text-red-400 hover:bg-red-950/70">{m.engine}</Badge>
+                          <h3 className="font-display text-base font-bold tracking-[-0.01em] text-white">{m.name}</h3>
+                          <Badge className="border-red-800 bg-red-950/70 text-[10px] font-medium text-red-400 hover:bg-red-950/70">{m.engine}</Badge>
                         </div>
-                        <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-zinc-400">{m.description}</p>
-                        <p className="mt-4 border-t border-white/10 pt-3 font-mono text-[10px] uppercase tracking-wider text-zinc-500">
+                        <p className="mt-2 line-clamp-2 text-xs leading-[1.7] text-zinc-400">{m.description}</p>
+                        <p className="mt-4 border-t border-white/10 pt-3 text-[10px] font-medium uppercase tracking-wider text-zinc-400">
                           {m.licenseName}{m.licenseVerified ? " · verified" : " · unverified"}
                         </p>
                       </div>
@@ -409,24 +451,27 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
           />
           <Reveal>
             <div className="mt-14 border border-white/10">
-              <table className="w-full text-sm">
-                <thead className="bg-white/5 text-left">
-                  <tr>
-                    <th className="px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-zinc-400">Target</th>
-                    <th className="px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-zinc-400">Status</th>
-                    <th className="px-4 py-3 font-mono text-[11px] uppercase tracking-widest text-zinc-400">Why</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/10">
-                  {COMPAT_MATRIX.map((row) => (
-                    <tr key={row.target} className="bg-black transition-colors hover:bg-red-950/20">
-                      <td className="px-4 py-4 font-medium text-white">{row.target}</td>
-                      <td className="px-4 py-4"><StatusChip status={row.status} /></td>
-                      <td className="px-4 py-4 text-zinc-400">{row.note}</td>
+              {/* Mobile: the table scrolls inside its own frame; the page never scrolls sideways. */}
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[560px] text-sm">
+                  <thead className="bg-white/5 text-left">
+                    <tr>
+                      <th scope="col" className="px-4 py-3 text-[11px] font-medium uppercase tracking-widest text-zinc-400">Target</th>
+                      <th scope="col" className="px-4 py-3 text-[11px] font-medium uppercase tracking-widest text-zinc-400">Status</th>
+                      <th scope="col" className="px-4 py-3 text-[11px] font-medium uppercase tracking-widest text-zinc-400">Why</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-white/10">
+                    {COMPAT_MATRIX.map((row) => (
+                      <tr key={row.target} className="bg-black transition-colors hover:bg-red-950/20">
+                        <td className="px-4 py-4 font-medium text-white">{row.target}</td>
+                        <td className="px-4 py-4"><StatusChip status={row.status} /></td>
+                        <td className="px-4 py-4 text-zinc-400">{row.note}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </Reveal>
         </div>
@@ -445,8 +490,8 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
               <Reveal key={g.title} delay={(i % 4) * 70}>
                 <div className="group h-full border border-white/10 bg-card p-6 transition-colors hover:border-red-600/60">
                   <g.icon className="h-6 w-6 text-red-600" aria-hidden />
-                  <h3 className="mt-6 font-display text-base font-bold uppercase tracking-wide text-white">{g.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-zinc-400">{g.body}</p>
+                  <h3 className="mt-6 font-display text-base font-bold tracking-[-0.01em] text-white">{g.title}</h3>
+                  <p className="mt-3 text-sm leading-[1.7] text-zinc-400">{g.body}</p>
                 </div>
               </Reveal>
             ))}
@@ -470,13 +515,13 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
                 <Reveal key={p.code} delay={(i % 4) * 70}>
                   <div className="flex h-full flex-col border border-white/10 bg-card p-6 transition-colors hover:border-red-600/60">
                     <div className="flex items-baseline justify-between">
-                      <h3 className="font-display text-lg font-bold uppercase tracking-wide text-white">{p.name}</h3>
-                      <span className="font-mono text-[11px] text-red-600">
-                        {p.priceCents === null ? "PRICING PENDING" : `$${(p.priceCents / 100).toFixed(0)}/MO`}
+                      <h3 className="font-display text-lg font-bold tracking-[-0.01em] text-white">{p.name}</h3>
+                      <span className="text-[11px] font-medium uppercase tracking-wider text-red-600">
+                        {p.priceCents === null ? "Pricing pending" : `$${(p.priceCents / 100).toFixed(0)}/mo`}
                       </span>
                     </div>
-                    <p className="mt-2 text-xs leading-relaxed text-zinc-400">{p.description}</p>
-                    <dl className="mt-5 space-y-2 border-t border-white/10 pt-4 font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                    <p className="mt-2 text-xs leading-[1.7] text-zinc-400">{p.description}</p>
+                    <dl className="mt-5 space-y-2 border-t border-white/10 pt-4 text-[11px] font-medium uppercase tracking-wider text-zinc-400">
                       <div className="flex justify-between"><dt>Sessions</dt><dd className="text-white">{p.maxConcurrentSessions}</dd></div>
                       <div className="flex justify-between"><dt>Min / day</dt><dd className="text-white">{p.maxMinutesPerDay}</dd></div>
                       <div className="flex justify-between"><dt>Min / month</dt><dd className="text-white">{p.maxMinutesPerMonth}</dd></div>
@@ -639,17 +684,40 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
         </section>
       ) : null}
 
+      {/* ============================ FAQ =============================== */}
+      <section className="border-b border-white/10 bg-black">
+        <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6">
+          <SectionHead
+            kicker="Straight answers"
+            title="Questions, handled honestly"
+            lede="Every answer below describes the system as it is deployed right now - including what it cannot do."
+          />
+          <div className="mt-14 border-t border-white/10">
+            {FAQ.map((item) => (
+              <details key={item.q} className="group border-b border-white/10">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 transition-colors hover:text-red-400 [&::-webkit-details-marker]:hidden">
+                  <span className="font-display text-base font-bold tracking-[-0.01em] text-white sm:text-lg">{item.q}</span>
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/20 text-zinc-300 transition-transform duration-300 group-open:rotate-45 group-open:border-red-600 group-open:text-red-600" aria-hidden>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+                  </span>
+                </summary>
+                <p className="max-w-3xl pb-6 text-sm leading-[1.7] text-zinc-400">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ========================== FINAL CTA =========================== */}
       <section className="relative overflow-hidden bg-black">
         <div className="grid-lines grid-lines-fade absolute inset-0" aria-hidden />
-        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[720px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600/15 blur-[110px]" aria-hidden />
-        <div className="relative mx-auto max-w-7xl px-4 py-28 text-center sm:px-6 sm:py-36">
+        <div className="relative mx-auto max-w-7xl px-4 py-24 text-center sm:px-6 sm:py-32">
           <Reveal>
             <p className="label-kicker text-red-600">Open the pipeline</p>
-            <h2 className="mx-auto mt-6 max-w-4xl font-display text-4xl font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-6xl">
+            <h2 className="mx-auto mt-6 max-w-4xl font-display text-4xl font-bold leading-[1.02] tracking-[-0.02em] text-white sm:text-6xl">
               Try it with<br /><span className="text-red-600">your own voice.</span>
             </h2>
-            <p className="mx-auto mt-6 max-w-xl text-sm leading-relaxed text-zinc-400 sm:text-base">
+            <p className="mx-auto mt-6 max-w-xl text-base leading-[1.7] text-zinc-400">
               Create an account, open the studio and speak. The latency numbers you will see are measured from your
               own session, chunk by chunk.
             </p>

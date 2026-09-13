@@ -7,8 +7,25 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+  /* Two-typeface system: Space Grotesk (display) + Inter (everything else).
+     The legacy mono token is intentionally mapped to Inter so no third
+     typeface can render anywhere in the product. */
+  --font-mono: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-grotesk), var(--font-inter), ui-sans-serif, sans-serif;
+  /* One disciplined red ramp - every red-* class resolves to the SAME hue. */
+  --color-red-300: #f78b94;
+  --color-red-400: #f25463;
+  --color-red-500: #ee2337;
+  --color-red-600: #e11d2e;
+  --color-red-700: #c31626;
+  --color-red-800: #9c1220;
+  --color-red-900: #4c0d14;
+  --color-red-950: #2a070b;
+  /* Near-black surfaces per the visual spec (no pure #000 anywhere). */
+  --color-black: #0a0a0d;
+  --color-white: #ffffff;
+  /* Container: 1200px editorial grid (overrides Tailwind's 80rem 7xl). */
+  --container-7xl: 1200px;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -39,90 +56,123 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 2px);
+  /* ONE radius system: 12px standard, 8px for micro elements (skeleton
+     slats, tiny chips). No other radii anywhere except true circles. */
+  --radius-sm: 8px;
   --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 2px);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius);
 }
 
 /*
- * VOXCORE DESIGN SYSTEM — "REDLINE"
- * Strict palette: red (#E8192C), black (#050505), white (#FAFAFA) + neutral
- * alpha steps of white for hierarchy. No other hues anywhere.
- * Geometry: zero radius (editorial / technical), 1px hairline borders,
- * red used only for action, alert and emphasis. Dark-only theme.
+ * VOXCORE DESIGN SYSTEM — "REDLINE 2"
+ * Strict palette: one disciplined red (#E11D2E, dark step #B91524),
+ * near-black surfaces (#0A0A0D .. #131318), white / near-white text.
+ * No other hues anywhere. One radius (12px, 8px micro), one shadow,
+ * one 4px-based spacing scale, 48px primary controls, 1200px container.
+ * Dark-only theme.
  */
+
+/* Spacing scale (4px base) - used for section rhythm and component spacing. */
 :root {
-  --radius: 0rem;
-  --background: #050505;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+  --space-8: 48px;
+  --space-9: 64px;
+  --space-10: 80px;
+  --space-11: 96px;
+  --space-12: 128px;
+  --space-13: 160px;
+  --color-black: #0a0a0d;
+  --color-black-soft: #131318;
+  --color-white: #ffffff;
+  --color-white-soft: #f4f4f0;
+  --color-red: #e11d2e;
+  --color-red-dark: #b91524;
+  --color-border-token: rgba(255, 255, 255, 0.16);
+  --color-muted-token: rgba(255, 255, 255, 0.68);
+  --radius: 12px;
+  --border-width: 1px;
+  --shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
+  --control-height: 48px;
+  --container-width: 1200px;
+}
+
+:root {
+  --background: #0a0a0d;
   --foreground: #fafafa;
-  --card: #0a0a0b;
+  --card: #0f0f14;
   --card-foreground: #fafafa;
-  --popover: #0b0b0d;
+  --popover: #111117;
   --popover-foreground: #fafafa;
-  --primary: #e8192c;
+  --primary: #e11d2e;
   --primary-foreground: #ffffff;
-  --secondary: #141416;
+  --secondary: #131318;
   --secondary-foreground: #fafafa;
-  --muted: #101012;
-  --muted-foreground: #a3a3a8;
-  --accent: #17171a;
+  --muted: #0d0d12;
+  --muted-foreground: rgba(255, 255, 255, 0.68);
+  --accent: #16161c;
   --accent-foreground: #ffffff;
-  --destructive: #ff2e3f;
+  --destructive: #e11d2e;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.1);
+  --border: rgba(255, 255, 255, 0.16);
   --input: rgba(255, 255, 255, 0.16);
-  --ring: #e8192c;
-  --chart-1: #e8192c;
-  --chart-2: #ff5a63;
+  --ring: #e11d2e;
+  --chart-1: #e11d2e;
+  --chart-2: #f25463;
   --chart-3: #ffffff;
-  --chart-4: #7a7a80;
-  --chart-5: #333338;
-  --sidebar: #08080a;
+  --chart-4: #8a8a92;
+  --chart-5: #33333b;
+  --sidebar: #0c0c10;
   --sidebar-foreground: #fafafa;
-  --sidebar-primary: #e8192c;
+  --sidebar-primary: #e11d2e;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #17171a;
+  --sidebar-accent: #16161c;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #e8192c;
+  --sidebar-border: rgba(255, 255, 255, 0.16);
+  --sidebar-ring: #e11d2e;
 }
 
 /* Single dark theme: .dark is deliberately identical to :root so a stray
    class toggle can never reintroduce another palette. */
 .dark {
-  --background: #050505;
+  --background: #0a0a0d;
   --foreground: #fafafa;
-  --card: #0a0a0b;
+  --card: #0f0f14;
   --card-foreground: #fafafa;
-  --popover: #0b0b0d;
+  --popover: #111117;
   --popover-foreground: #fafafa;
-  --primary: #e8192c;
+  --primary: #e11d2e;
   --primary-foreground: #ffffff;
-  --secondary: #141416;
+  --secondary: #131318;
   --secondary-foreground: #fafafa;
-  --muted: #101012;
-  --muted-foreground: #a3a3a8;
-  --accent: #17171a;
+  --muted: #0d0d12;
+  --muted-foreground: rgba(255, 255, 255, 0.68);
+  --accent: #16161c;
   --accent-foreground: #ffffff;
-  --destructive: #ff2e3f;
+  --destructive: #e11d2e;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.1);
+  --border: rgba(255, 255, 255, 0.16);
   --input: rgba(255, 255, 255, 0.16);
-  --ring: #e8192c;
-  --chart-1: #e8192c;
-  --chart-2: #ff5a63;
+  --ring: #e11d2e;
+  --chart-1: #e11d2e;
+  --chart-2: #f25463;
   --chart-3: #ffffff;
-  --chart-4: #7a7a80;
-  --chart-5: #333338;
-  --sidebar: #08080a;
+  --chart-4: #8a8a92;
+  --chart-5: #33333b;
+  --sidebar: #0c0c10;
   --sidebar-foreground: #fafafa;
-  --sidebar-primary: #e8192c;
+  --sidebar-primary: #e11d2e;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #17171a;
+  --sidebar-accent: #16161c;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.1);
-  --sidebar-ring: #e8192c;
+  --sidebar-border: rgba(255, 255, 255, 0.16);
+  --sidebar-ring: #e11d2e;
 }
 
 @layer base {
@@ -136,10 +186,12 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "cv05";
+    /* Data-heavy product: aligned numerals everywhere (counts, latency, money). */
+    font-variant-numeric: tabular-nums;
     text-rendering: optimizeLegibility;
   }
   ::selection {
-    background: #e8192c;
+    background: #e11d2e;
     color: #ffffff;
   }
   /* Technical hairline scrollbar */
@@ -148,14 +200,15 @@
     height: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: #050505;
+    background: #0a0a0d;
   }
   ::-webkit-scrollbar-thumb {
-    background: #26262a;
-    border: 2px solid #050505;
+    background: #26262d;
+    border: 2px solid #0a0a0d;
+    border-radius: 8px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #e8192c;
+    background: #e11d2e;
   }
 }
 
@@ -171,12 +224,16 @@
     -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 40%, black 30%, transparent 75%);
     mask-image: radial-gradient(ellipse 90% 80% at 50% 40%, black 30%, transparent 75%);
   }
-  /* Red emphasis glow for key actions */
+  /* Red emphasis glow for key actions (the one shadow language) */
   .glow-red {
-    box-shadow: 0 0 0 1px rgba(232, 25, 44, 0.55), 0 8px 32px -8px rgba(232, 25, 44, 0.55);
+    box-shadow: 0 0 0 1px rgba(225, 29, 46, 0.55), 0 8px 32px -8px rgba(225, 29, 46, 0.55);
   }
   .glow-red-lg {
-    box-shadow: 0 0 0 1px rgba(232, 25, 44, 0.6), 0 12px 60px -12px rgba(232, 25, 44, 0.75);
+    box-shadow: 0 0 0 1px rgba(225, 29, 46, 0.6), 0 12px 60px -12px rgba(225, 29, 46, 0.75);
+  }
+  /* Elevated surface shadow (the single elevation system) */
+  .shadow-vox {
+    box-shadow: var(--shadow);
   }
   /* Hollow display type (outline only) */
   .text-hollow {
@@ -185,14 +242,15 @@
   }
   .text-hollow-red {
     color: transparent;
-    -webkit-text-stroke: 1px rgba(232, 25, 44, 0.75);
+    -webkit-text-stroke: 1px rgba(225, 29, 46, 0.75);
   }
-  /* Micro label: mono, uppercase, wide tracking */
+  /* Micro label: uppercase, wide tracking (Inter, per two-typeface rule) */
   .label-kicker {
-    font-family: var(--font-jetbrains), ui-monospace, monospace;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
     text-transform: uppercase;
-    letter-spacing: 0.32em;
+    letter-spacing: 0.24em;
     font-size: 0.6875rem;
+    font-weight: 500;
   }
   /* 3D tilt surface */
   .tilt {
@@ -224,11 +282,12 @@
       transform: translateX(-50%);
     }
   }
-  /* Skeleton shimmer: sweep highlight over a dark block. Zero radius, */
-  /* white hairline feel - matches the Redline geometry. */
+  /* Skeleton shimmer: sweep highlight over a dark block. 8px micro radius
+     - the one radius exception for tiny elements. */
   .skeleton {
     position: relative;
     overflow: hidden;
+    border-radius: var(--radius-sm);
     background: rgba(255, 255, 255, 0.055);
   }
   .skeleton::after {
@@ -236,7 +295,7 @@
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.09) 45%, rgba(232, 25, 44, 0.12) 55%, transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.09) 45%, rgba(225, 29, 46, 0.12) 55%, transparent);
     animation: shimmer 1.6s ease-in-out infinite;
   }
   @keyframes shimmer {
@@ -244,17 +303,30 @@
       transform: translateX(100%);
     }
   }
-  /* Cinematic scanlines (very low alpha, hero-only) */
-  .scanlines {
-    background-image: repeating-linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.022) 0px,
-      rgba(255, 255, 255, 0.022) 1px,
-      transparent 1px,
-      transparent 3px
-    );
+  /* Pulsing live indicator */
+  .live-dot {
+    position: relative;
   }
-  /* Kinetic headline: per-line clip reveal on load */
+  .live-dot::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 9999px;
+    border: 1px solid rgba(225, 29, 46, 0.6);
+    animation: liveping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  @keyframes liveping {
+    0% {
+      transform: scale(0.6);
+      opacity: 1;
+    }
+    80%,
+    100% {
+      transform: scale(1.9);
+      opacity: 0;
+    }
+  }
+  /* Kinetic headline: per-line clip reveal on load (the one load moment) */
   .kinetic {
     display: block;
     clip-path: inset(0 0 110% 0);
@@ -269,53 +341,6 @@
   .scroll-progress {
     transform-origin: 0 50%;
     will-change: transform;
-  }
-  /* Pulsing live indicator */
-  .live-dot {
-    position: relative;
-  }
-  .live-dot::after {
-    content: "";
-    position: absolute;
-    inset: -4px;
-    border-radius: 9999px;
-    border: 1px solid rgba(232, 25, 44, 0.6);
-    animation: liveping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
-  }
-  @keyframes liveping {
-    0% {
-      transform: scale(0.6);
-      opacity: 1;
-    }
-    80%,
-    100% {
-      transform: scale(1.9);
-      opacity: 0;
-    }
-  }
-  /* Corner ticks for technical frames */
-  .corner-frame {
-    position: relative;
-  }
-  .corner-frame::before,
-  .corner-frame::after {
-    content: "";
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    pointer-events: none;
-  }
-  .corner-frame::before {
-    top: -1px;
-    left: -1px;
-    border-top: 1px solid #e8192c;
-    border-left: 1px solid #e8192c;
-  }
-  .corner-frame::after {
-    bottom: -1px;
-    right: -1px;
-    border-bottom: 1px solid #e8192c;
-    border-right: 1px solid #e8192c;
   }
 }
 

@@ -39,14 +39,10 @@ export default function DashboardView({ navigate, me, refreshMe }: { navigate: (
   const { toast } = useToast();
 
   useEffect(() => {
-    // Only poll while a session actually exists. Firing these calls when
-    // logged out produced a storm of 401s on the landing view (noise in the
-    // security log and confusing failure toasts).
-    if (!me?.user) {
-      setSessions(null);
-      setBilling(null);
-      return;
-    }
+    // Only poll while a session actually exists (this view is mounted only
+    // for signed-in users; the guard covers the transient null). Avoids the
+    // logged-out 401 storms the landing view used to produce.
+    if (!me?.user) return;
     const load = () => {
       apiGet<{ sessions: SessionRow[] }>("/api/sessions").then((d) => setSessions(d.sessions)).catch(() => setSessions([]));
       apiGet<BillingOverview>("/api/billing/overview").then(setBilling).catch(() => {});
@@ -63,7 +59,7 @@ export default function DashboardView({ navigate, me, refreshMe }: { navigate: (
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Welcome back{user?.name ? `, ${user.name}` : ""}</h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-zinc-400">
             Plan {billing?.limits?.planName ?? "..."} &middot; signed in as {user?.email}
             {user?.emailVerifiedAt ? "" : " (email unverified; verification is required for uploads)"}
           </p>

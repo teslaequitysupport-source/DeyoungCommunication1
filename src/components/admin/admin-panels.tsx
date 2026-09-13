@@ -580,7 +580,7 @@ function AuditPanel() {
               {e.targetType ? `${e.targetType} ${e.targetId ?? ""} ` : ""}
               {e.reason ? `/ reason: ${e.reason}` : ""}
             </div>
-            <div className="mt-0.5 truncate font-mono text-[9px] text-zinc-600">hash {e.hash?.slice(0, 24)} prev {e.prevHash?.slice(0, 24)}</div>
+            <div className="mt-0.5 truncate font-mono text-[10px] text-zinc-600">hash {e.hash?.slice(0, 24)} prev {e.prevHash?.slice(0, 24)}</div>
           </div>
         ))}
       </div>

@@ -20,8 +20,8 @@ interface Vox3DProps {
   intensity?: AnimIntensity;
 }
 
-const RED = [232, 25, 44] as const;
-const RED_BRIGHT = [255, 96, 104] as const;
+const RED = [225, 29, 46] as const; // #e11d2e - the one disciplined red
+const RED_BRIGHT = [255, 92, 102] as const; // depth-shaded bright step of the same hue
 const WHITE = [255, 255, 255] as const;
 
 export default function Vox3D({ className, intensity = "FULL" }: Vox3DProps) {
@@ -51,8 +51,8 @@ export default function Vox3D({ className, intensity = "FULL" }: Vox3DProps) {
     let dpr = Math.min(window.devicePixelRatio || 1, 1.75);
 
     // --- geometry -----------------------------------------------------------
-    const BAR_COUNT = 460;
-    const DUST_COUNT = 240;
+    const BAR_COUNT = 420;
+    const DUST_COUNT = 150;
     const bars: { x: number; y: number; z: number; phase: number; speed: number }[] = [];
     const GA = Math.PI * (3 - Math.sqrt(5)); // golden angle
     for (let i = 0; i < BAR_COUNT; i++) {

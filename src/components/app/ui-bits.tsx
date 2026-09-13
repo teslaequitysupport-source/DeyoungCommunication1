@@ -190,59 +190,6 @@ export function SkeletonRows({ rows = 4, className }: { rows?: number; className
 }
 
 // ---------------------------------------------------------------------------
-// Cursor spotlight: a soft red radial glow that trails the pointer. Desktop
-// pointers only; disabled for reduced motion and the admin animation switch.
-// Pure presentation - pointer-events are none and it ignores touch devices.
-// ---------------------------------------------------------------------------
-export function CursorSpotlight({ className }: { className?: string }) {
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const fine = window.matchMedia("(pointer: fine)").matches;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const animOff = document.documentElement.dataset.anim === "off";
-    if (!fine || reduced || animOff) return;
-
-    let raf = 0;
-    let tx = window.innerWidth / 2;
-    let ty = window.innerHeight / 3;
-    let x = tx;
-    let y = ty;
-    const onMove = (e: MouseEvent) => {
-      tx = e.clientX;
-      ty = e.clientY;
-    };
-    const tick = () => {
-      // Lerp for a weighted, trailing feel instead of a rigid follow.
-      x += (tx - x) * 0.12;
-      y += (ty - y) * 0.12;
-      el.style.transform = `translate3d(${(x - 260).toFixed(1)}px, ${(y - 260).toFixed(1)}px, 0)`;
-      raf = requestAnimationFrame(tick);
-    };
-    window.addEventListener("mousemove", onMove, { passive: true });
-    raf = requestAnimationFrame(tick);
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      aria-hidden
-      className={cn(
-        "pointer-events-none fixed left-0 top-0 z-[5] h-[520px] w-[520px] rounded-full opacity-70",
-        "bg-[radial-gradient(circle,rgba(232,25,44,0.10)_0%,rgba(232,25,44,0.045)_38%,transparent_68%)]",
-        className
-      )}
-    />
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Scroll progress hairline (top of viewport). rAF-batched, passive listener.
 // ---------------------------------------------------------------------------
 export function ScrollProgress({ className }: { className?: string }) {

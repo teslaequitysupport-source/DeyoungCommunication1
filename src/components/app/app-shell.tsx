@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
+import { Menu, X } from "lucide-react";
 import { SkeletonCards, ScrollProgress } from "@/components/app/ui-bits";
 import LandingView from "@/components/app/landing";
 import AuthView from "@/components/app/auth-view";
@@ -35,6 +36,28 @@ export interface SiteConfig {
 export interface RouteInfo {
   path: string; // e.g. "admin/workers"
   query: URLSearchParams;
+}
+
+// Brand mark: five voice bars whose tops form a "V" valley - the product
+// (a voice waveform) and the name (VoxCore) in one glyph. Stays legible at
+// 16px; clear space = one bar width on all sides; monochrome-safe.
+export function VoxMark({ size = 28, className }: { size?: number; className?: string }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 28 28"
+      role="img"
+      aria-label="VoxCore"
+      className={cn("shrink-0", className)}
+    >
+      <rect width="28" height="28" rx="8" fill="#e11d2e" />
+      {[5, 8.5, 12, 15.5, 19].map((x, i) => {
+        const h = [10, 6, 3, 6, 10][i];
+        return <rect key={x} x={x} y={21 - h} width={2.5} height={h} rx={1.25} fill="#ffffff" />;
+      })}
+    </svg>
+  );
 }
 
 function parseHash(): RouteInfo {
@@ -98,7 +121,7 @@ export default function AppShell() {
       <div className="flex min-h-screen flex-col bg-black text-zinc-100">
         <header className="sticky top-0 z-40 border-b border-white/10 bg-black/85 backdrop-blur">
           <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
-            <span className="flex h-7 w-7 items-center justify-center bg-red-600 font-mono text-xs font-bold text-white">VX</span>
+            <VoxMark size={28} />
             <span className="skeleton h-4 w-24" aria-hidden />
             <div className="ml-auto flex items-center gap-2" aria-hidden>
               <span className="skeleton h-8 w-16" />
@@ -254,8 +277,8 @@ export default function AppShell() {
 function AccessDenied({ isAdmin, navigate, suspended }: { isAdmin: boolean; navigate: (to: string) => void; suspended?: boolean }) {
   return (
     <div className="mx-auto max-w-xl px-4 py-24 text-center">
-      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">{suspended ? "Account suspended" : "Administrator access required"}</h1>
-      <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">
+      <h1 className="text-2xl font-semibold text-zinc-100">{suspended ? "Account suspended" : "Administrator access required"}</h1>
+      <p className="mt-3 text-sm text-zinc-400">
         {suspended
           ? "Your account has been suspended by an administrator. Contact support from the legal and contact pages for assistance."
           : "The command centre is restricted to administrator accounts. All access attempts are recorded as security events."}
@@ -283,6 +306,36 @@ function Shell({
   children: React.ReactNode;
 }) {
   const inAdmin = typeof window !== "undefined" && window.location.hash.startsWith("#/admin");
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close the mobile menu when the route changes (hash event) or Escape.
+  // setState inside event-listener callbacks - allowed, not effect-body.
+  useEffect(() => {
+    const onHash = () => setMobileOpen(false);
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
+
+  const go = (to: string) => {
+    setMobileOpen(false);
+    navigate(to);
+  };
+
+  const mobileLinks: [string, string][] = [
+    ["studio", "Studio"],
+    ["models", "Voices"],
+    ["support", "Support"],
+    ...(user ? [["dashboard", "Dashboard"] as [string, string]] : []),
+  ];
+
   return (
     <div className="flex min-h-screen flex-col bg-black text-zinc-100">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:bg-red-600 focus:px-3 focus:py-2 focus:text-white">
@@ -290,42 +343,77 @@ function Shell({
       </a>
       <header className="sticky top-0 z-40 border-b border-white/10 bg-black/85 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
-          <button onClick={() => navigate("")} className="flex items-center gap-2 font-semibold tracking-tight" aria-label="Go to home">
-            <span className="flex h-7 w-7 items-center justify-center bg-red-600 font-mono text-xs font-bold text-white">VX</span>
-            <span className="font-display text-sm font-bold uppercase tracking-widest">{config?.siteName ?? "VoxCore"}</span>
+          <button onClick={() => go("")} className="flex min-w-0 items-center gap-2 font-semibold tracking-tight" aria-label="Go to home">
+            <VoxMark size={28} />
+            <span className="hidden min-[420px]:inline font-display text-sm font-bold uppercase tracking-widest">{config?.siteName ?? "VoxCore"}</span>
             {isAdmin && window.location.hash.startsWith("#/admin") ? (
-              <span className="ml-1 border border-red-700 bg-red-950/60 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-widest text-red-400">command centre</span>
+              <span className="ml-1 hidden min-[420px]:inline border border-red-700 bg-red-950/60 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-widest text-red-400 sm:inline">command centre</span>
             ) : null}
           </button>
 
           <nav className="ml-auto flex items-center gap-1" aria-label="Main">
             {inAdmin ? (
               <>
-                <Button variant="ghost" size="sm" onClick={() => navigate("")} className="text-zinc-300 hover:text-white">Public site</Button>
+                <Button variant="ghost" size="sm" onClick={() => go("")} className="text-zinc-300 hover:text-white">Public site</Button>
               </>
             ) : (
               <>
-                <Button variant="ghost" size="sm" onClick={() => navigate("studio")} className="hidden sm:inline-flex">Studio</Button>
-                <Button variant="ghost" size="sm" onClick={() => navigate("models")} className="hidden sm:inline-flex">Voices</Button>
-                <Button variant="ghost" size="sm" onClick={() => navigate("support")} className="hidden md:inline-flex">Support</Button>
+                <Button variant="ghost" size="sm" onClick={() => go("studio")} className="hidden sm:inline-flex">Studio</Button>
+                <Button variant="ghost" size="sm" onClick={() => go("models")} className="hidden sm:inline-flex">Voices</Button>
+                <Button variant="ghost" size="sm" onClick={() => go("support")} className="hidden md:inline-flex">Support</Button>
                 {user ? (
                   <>
-                    <Button variant="ghost" size="sm" onClick={() => navigate("dashboard")} className="hidden sm:inline-flex">Dashboard</Button>
+                    <Button variant="ghost" size="sm" onClick={() => go("dashboard")} className="hidden sm:inline-flex">Dashboard</Button>
                     {isAdmin ? (
-                      <Button size="sm" className="bg-red-600 font-display font-bold uppercase tracking-wider hover:bg-red-500" onClick={() => navigate("admin/overview")}>Command centre</Button>
+                      <Button size="sm" className="hidden h-11 bg-red-600 font-display font-bold uppercase tracking-wider hover:bg-red-500 sm:inline-flex" onClick={() => go("admin/overview")}>Command centre</Button>
                     ) : null}
-                    <Button variant="outline" size="sm" onClick={logout}>Sign out</Button>
+                    <Button variant="outline" size="sm" onClick={() => { setMobileOpen(false); logout(); }} className="hidden sm:inline-flex">Sign out</Button>
                   </>
                 ) : (
                   <>
-                    <Button variant="ghost" size="sm" onClick={() => navigate("auth/login")}>Sign in</Button>
-                    <Button size="sm" className="bg-red-600 font-display font-bold uppercase tracking-wider hover:bg-red-500" onClick={() => navigate("auth/register")}>Create account</Button>
+                    <Button variant="ghost" size="sm" onClick={() => go("auth/login")} className="h-11 px-3">Sign in</Button>
+                    <Button size="sm" className="h-11 bg-red-600 px-3 font-display font-bold uppercase tracking-wider hover:bg-red-500 min-[480px]:px-4" onClick={() => go("auth/register")}>Create account</Button>
                   </>
                 )}
+                {/* Mobile menu toggle: the only nav surface below sm. */}
+                <button
+                  type="button"
+                  onClick={() => setMobileOpen((v) => !v)}
+                  aria-expanded={mobileOpen}
+                  aria-controls="mobile-menu"
+                  aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                  className="ml-1 grid h-11 w-11 place-items-center rounded-[var(--radius-sm)] text-zinc-200 outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring sm:hidden"
+                >
+                  {mobileOpen ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
+                </button>
               </>
             )}
           </nav>
         </div>
+
+        {/* Mobile menu: full-width disclosure panel under the header. */}
+        {mobileOpen ? (
+          <nav id="mobile-menu" aria-label="Mobile" className="border-t border-white/10 bg-popover shadow-vox sm:hidden">
+            <div className="mx-auto flex max-w-7xl flex-col p-3">
+              {mobileLinks.map(([to, label]) => (
+                <Button key={to} variant="ghost" onClick={() => go(to)} className="h-11 justify-start text-zinc-200">
+                  {label}
+                </Button>
+              ))}
+              <div className="my-2 h-px bg-white/10" aria-hidden />
+              {user ? (
+                <>
+                  {isAdmin ? (
+                    <Button variant="ghost" onClick={() => go("admin/overview")} className="h-11 justify-start text-red-400">Command centre</Button>
+                  ) : null}
+                  <Button variant="ghost" onClick={() => { setMobileOpen(false); logout(); }} className="h-11 justify-start text-zinc-300">Sign out</Button>
+                </>
+              ) : (
+                <Button onClick={() => go("auth/register")} className="h-11 justify-start bg-red-600 font-display font-bold uppercase tracking-wider hover:bg-red-500">Create account</Button>
+              )}
+            </div>
+          </nav>
+        ) : null}
         {config?.announcement ? (
           <div className={cn("border-t px-4 py-1.5 text-center text-xs",
             config.announcementLevel === "WARN"
@@ -346,9 +434,12 @@ function Shell({
       <main id="main" className="flex-1">{children}</main>
 
       <footer className="mt-auto border-t border-white/10 bg-black">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-5 text-xs sm:flex-row sm:items-center sm:justify-between text-zinc-400">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <span className="font-medium">{config?.siteName ?? "VoxCore"}</span>
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-6 text-xs sm:flex-row sm:items-center sm:justify-between text-zinc-400">
+          <div className="flex flex-wrap items-center gap-x-1 gap-y-1">
+            <span className="mr-2 flex items-center gap-2 font-medium">
+              <VoxMark size={18} />
+              {config?.siteName ?? "VoxCore"}
+            </span>
             {[
               ["legal/terms", "Terms"],
               ["legal/privacy", "Privacy"],
@@ -359,12 +450,12 @@ function Shell({
               ["legal/copyright", "Copyright"],
               ["legal/contact", "Contact"],
             ].map(([to, label]) => (
-              <button key={to} onClick={() => navigate(to)} className="font-mono uppercase tracking-wider text-zinc-500 transition-colors hover:text-red-500">
+              <button key={to} onClick={() => navigate(to)} className="rounded-[var(--radius-sm)] px-2 py-2 font-medium uppercase tracking-wider text-zinc-400 outline-none transition-colors hover:text-red-500 focus-visible:ring-2 focus-visible:ring-ring">
                 {label}
               </button>
             ))}
           </div>
-          <div className="text-zinc-400 dark:text-zinc-500">
+          <div className="text-zinc-400">
             Real-time AI voice conversion. Infrastructure core build, September 2026. No fabricated metrics: all numbers shown anywhere in this product are measured live.
           </div>
         </div>

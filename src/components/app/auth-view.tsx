@@ -246,7 +246,9 @@ export default function AuthView({
             {mode === "register" ? (
               <div className="flex items-start gap-2">
                 <Checkbox id="accept" checked={accept} onCheckedChange={(v) => setAccept(v === true)} className="mt-1" required />
-                <Label htmlFor="accept" className="text-xs font-normal leading-relaxed text-zinc-500">
+                {/* block overrides the shadcn Label's flex display so the inline
+                    legal links flow as one sentence instead of flex columns. */}
+                <Label htmlFor="accept" className="block text-xs font-normal leading-relaxed text-zinc-400">
                   I accept the{" "}
                   <button type="button" className="underline hover:text-red-500" onClick={() => navigate("legal/terms")}>Terms</button>, the{" "}
                   <button type="button" className="underline hover:text-red-500" onClick={() => navigate("legal/privacy")}>Privacy Policy</button> and the{" "}
@@ -254,7 +256,7 @@ export default function AuthView({
                 </Label>
               </div>
             ) : null}
-            <Button type="submit" className="w-full bg-red-600 hover:bg-red-500" disabled={busy}>
+            <Button type="submit" className="h-12 w-full bg-red-600 text-base font-semibold hover:bg-red-500" disabled={busy}>
               {busy ? "Working..." : mode === "login" ? "Sign in" : "Create account"}
             </Button>
           </form>
@@ -265,7 +267,7 @@ export default function AuthView({
                 <span className="text-xs text-zinc-500">or</span>
                 <div className="h-px flex-1 bg-zinc-300 dark:bg-zinc-700" />
               </div>
-              <Button type="button" variant="outline" className="w-full" onClick={googleStart} disabled={busy}>
+              <Button type="button" variant="outline" className="h-12 w-full" onClick={googleStart} disabled={busy}>
                 {mode === "login" ? "Continue with Google" : "Sign up with Google"}
               </Button>
               {mode === "register" ? (
