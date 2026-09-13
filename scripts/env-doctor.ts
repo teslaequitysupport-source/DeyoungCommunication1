@@ -87,6 +87,11 @@ function main() {
   if (isSupabasePooler && !url.includes("sslmode=")) {
     console.log("ENV-DOCTOR WARN: no sslmode in DATABASE_URL; Supabase requires TLS - append ?sslmode=require.");
   }
+  if (!process.env.APP_ORIGIN) {
+    console.log(
+      "ENV-DOCTOR WARN: APP_ORIGIN not set - Kaggle worker cells and (future) email links would point at http://localhost:3000. Set it to https://<your-service>.up.railway.app."
+    );
+  }
   if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
     console.log(
       "ENV-DOCTOR WARN: ADMIN_EMAIL/ADMIN_PASSWORD not set - the platform will boot but there will be NO admin account (there are no default credentials by design). Set both and redeploy on an empty database."

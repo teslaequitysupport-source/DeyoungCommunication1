@@ -83,7 +83,12 @@ class LocalProvider implements GpuProvider {
         expiresAt: new Date(Date.now() + 3600_000),
       },
     });
-    const backend = `http://127.0.0.1:3000`;
+    // The agent dials the control plane over loopback. server.ts sets
+    // BACKEND_URL to http://127.0.0.1:$PORT before this runs; do NOT hardcode
+    // a port - platforms like Railway assign $PORT dynamically and a hardcoded
+    // 3000 made the spawned agent dial a port nobody listens on (observed as
+    // workers that never register and sessions that never start).
+    const backend = process.env.BACKEND_URL || `http://127.0.0.1:${process.env.PORT || 3000}`;
     const child = spawn(AGENT_PYTHON, [AGENT_ENTRY], {
       cwd: AGENT_DIR,
       env: {
@@ -100,6 +105,16 @@ class LocalProvider implements GpuProvider {
     let lastOut = "";
     child.stdout?.on("data", (d) => { lastOut = String(d).slice(-400); });
     child.stderr?.on("data", (d) => { lastOut = String(d).slice(-400); });
+    // spawn() failures surface as an 'error' event, not a non-zero exit (e.g.
+    // ENOENT when the interpreter is missing). Without this listener the error
+    // is an unhandled event and the admin sees "spawned" while nothing runs.
+    child.on("error", (err) => {
+      localProcesses.delete(worker.id);
+      void db.workerEvent.create({
+        data: { workerId: worker.id, level: "ERROR", kind: "PROCESS_ERROR", message: `Failed to spawn agent interpreter "${AGENT_PYTHON}": ${err.message}`, data: JSON.stringify({ hint: "Set VOXCORE_AGENT_PYTHON to a python3 that has the worker-agent deps installed (see requirements.txt)" }) },
+      }).catch(() => {});
+      void db.worker.update({ where: { id: worker.id }, data: { status: "FAILED", lastError: `spawn failed: ${err.message}` } }).catch(() => {});
+    });
     child.on("exit", (code) => {
       localProcesses.delete(worker.id);
       void db.workerEvent.create({
