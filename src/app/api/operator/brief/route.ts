@@ -2,6 +2,7 @@ import { wrap, jsonOk } from "@/lib/http";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
+import { recentRouteErrors } from "@/lib/error-ring";
 
 // Operator brief: live deployment state plus internal operator notes.
 // The entire response is gated behind requireAdmin(): anyone else receives
@@ -68,6 +69,11 @@ export const GET = wrap(
       // Honest, actionable, sometimes uncomfortable. Users never see
       // these: they are served from this ADMIN-gated endpoint only.
       // ---------------------------------------------------------------
+      // Unhandled route errors (500s) captured in-process. This is the
+      // one-look diagnosis: exact route, message and stack, without needing
+      // platform log access. Reset on redeploy/restart by design.
+      recentErrors: recentRouteErrors(),
+
       notes: [
         {
           id: "rotate-credentials",

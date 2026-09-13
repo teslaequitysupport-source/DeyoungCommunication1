@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
+import { SkeletonCards, ScrollProgress } from "@/components/app/ui-bits";
 import LandingView from "@/components/app/landing";
 import AuthView from "@/components/app/auth-view";
 import DashboardView from "@/components/app/dashboard";
@@ -91,12 +92,50 @@ export default function AppShell() {
   };
 
   if (!booted) {
+    // Branded boot skeleton: the page frame with shimmering placeholders
+    // instead of a bare spinner - the layout is stable from the first frame.
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-widest text-zinc-500">
-          <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" aria-hidden />
-          Loading platform
-        </div>
+      <div className="flex min-h-screen flex-col bg-black text-zinc-100">
+        <header className="sticky top-0 z-40 border-b border-white/10 bg-black/85 backdrop-blur">
+          <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
+            <span className="flex h-7 w-7 items-center justify-center bg-red-600 font-mono text-xs font-bold text-white">VX</span>
+            <span className="skeleton h-4 w-24" aria-hidden />
+            <div className="ml-auto flex items-center gap-2" aria-hidden>
+              <span className="skeleton h-8 w-16" />
+              <span className="skeleton h-8 w-28" />
+            </div>
+          </div>
+        </header>
+        <main id="main" className="flex-1">
+          <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6" aria-label="Loading platform">
+            <span className="sr-only">Loading platform</span>
+            <div aria-hidden>
+              <div className="flex items-center gap-3">
+                <span className="live-dot inline-block h-2 w-2 rounded-full bg-red-600" />
+                <span className="skeleton h-2.5 w-72" />
+              </div>
+              <div className="mt-8 space-y-4">
+                <span className="skeleton block h-14 w-3/4" />
+                <span className="skeleton block h-14 w-1/2 bg-red-950/60" />
+                <span className="skeleton block h-14 w-2/3" />
+              </div>
+              <div className="mt-8 space-y-2">
+                <span className="skeleton block h-3 w-full max-w-xl" />
+                <span className="skeleton block h-3 w-4/5 max-w-xl" />
+              </div>
+              <div className="mt-10 flex gap-3">
+                <span className="skeleton block h-12 w-48" />
+                <span className="skeleton block h-12 w-40" />
+              </div>
+              <SkeletonCards count={4} className="mt-16" />
+            </div>
+          </div>
+        </main>
+        <footer className="mt-auto border-t border-white/10 bg-black">
+          <div className="mx-auto max-w-7xl px-4 py-5" aria-hidden>
+            <span className="skeleton block h-3 w-64" />
+          </div>
+        </footer>
       </div>
     );
   }
@@ -301,6 +340,7 @@ function Shell({
             Maintenance mode: new sessions and uploads are paused by the administrator.
           </div>
         ) : null}
+        <ScrollProgress />
       </header>
 
       <main id="main" className="flex-1">{children}</main>

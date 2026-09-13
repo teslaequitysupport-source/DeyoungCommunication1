@@ -109,6 +109,178 @@ export function Spinner({ className }: { className?: string }) {
 }
 
 // ---------------------------------------------------------------------------
+// Skeleton loading primitives. A shimmer sweep (white hairline + red tint)
+// over dark blocks - same geometry as the design system. All are decorative:
+// aria-hidden with an sr-only "Loading" note where context matters.
+// ---------------------------------------------------------------------------
+
+export function Skeleton({ className, "aria-label": ariaLabel }: { className?: string; "aria-label"?: string }) {
+  return (
+    <>
+      {ariaLabel ? <span className="sr-only">{ariaLabel}</span> : null}
+      <div aria-hidden className={cn("skeleton", className)} />
+    </>
+  );
+}
+
+export function SkeletonText({ lines = 3, className }: { lines?: number; className?: string }) {
+  return (
+    <div aria-hidden className={cn("space-y-2", className)}>
+      {Array.from({ length: lines }).map((_, i) => (
+        <div
+          key={i}
+          className="skeleton h-3"
+          style={{ width: i === lines - 1 ? "62%" : `${100 - (i % 3) * 8}%` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Skeleton for the StatCard grid (dashboards, operator counters).
+export function SkeletonStats({ count = 4, className }: { count?: number; className?: string }) {
+  return (
+    <div aria-hidden className={cn("grid grid-cols-2 gap-4 sm:grid-cols-4", className)}>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="border border-white/10 bg-card p-4">
+          <div className="skeleton h-2.5 w-20" />
+          <div className="skeleton mt-3 h-7 w-16" />
+          <div className="skeleton mt-3 h-2.5 w-24" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Skeleton for card grids (catalog, plans, features).
+export function SkeletonCards({ count = 4, className }: { count?: number; className?: string }) {
+  return (
+    <div aria-hidden className={cn("grid gap-4 sm:grid-cols-2 lg:grid-cols-4", className)}>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="border border-white/10 bg-card p-5">
+          <div className="flex items-center justify-between">
+            <div className="skeleton h-4 w-28" />
+            <div className="skeleton h-4 w-12" />
+          </div>
+          <div className="mt-4 space-y-2">
+            <div className="skeleton h-3 w-full" />
+            <div className="skeleton h-3 w-4/5" />
+            <div className="skeleton h-3 w-3/5" />
+          </div>
+          <div className="skeleton mt-5 h-2.5 w-24" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Skeleton for table rows (sessions, admin tables).
+export function SkeletonRows({ rows = 4, className }: { rows?: number; className?: string }) {
+  return (
+    <div aria-hidden className={cn("divide-y divide-white/5 border border-white/10", className)}>
+      {Array.from({ length: rows }).map((_, i) => (
+        <div key={i} className="flex items-center gap-4 bg-card px-4 py-4">
+          <div className="skeleton h-3 w-28" />
+          <div className="skeleton h-3 w-16" />
+          <div className="skeleton ml-auto h-3 w-20" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Cursor spotlight: a soft red radial glow that trails the pointer. Desktop
+// pointers only; disabled for reduced motion and the admin animation switch.
+// Pure presentation - pointer-events are none and it ignores touch devices.
+// ---------------------------------------------------------------------------
+export function CursorSpotlight({ className }: { className?: string }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const fine = window.matchMedia("(pointer: fine)").matches;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const animOff = document.documentElement.dataset.anim === "off";
+    if (!fine || reduced || animOff) return;
+
+    let raf = 0;
+    let tx = window.innerWidth / 2;
+    let ty = window.innerHeight / 3;
+    let x = tx;
+    let y = ty;
+    const onMove = (e: MouseEvent) => {
+      tx = e.clientX;
+      ty = e.clientY;
+    };
+    const tick = () => {
+      // Lerp for a weighted, trailing feel instead of a rigid follow.
+      x += (tx - x) * 0.12;
+      y += (ty - y) * 0.12;
+      el.style.transform = `translate3d(${(x - 260).toFixed(1)}px, ${(y - 260).toFixed(1)}px, 0)`;
+      raf = requestAnimationFrame(tick);
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    raf = requestAnimationFrame(tick);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      aria-hidden
+      className={cn(
+        "pointer-events-none fixed left-0 top-0 z-[5] h-[520px] w-[520px] rounded-full opacity-70",
+        "bg-[radial-gradient(circle,rgba(232,25,44,0.10)_0%,rgba(232,25,44,0.045)_38%,transparent_68%)]",
+        className
+      )}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Scroll progress hairline (top of viewport). rAF-batched, passive listener.
+// ---------------------------------------------------------------------------
+export function ScrollProgress({ className }: { className?: string }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let raf = 0;
+    const update = () => {
+      const doc = document.documentElement;
+      const max = doc.scrollHeight - window.innerHeight;
+      const p = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+      el.style.transform = `scaleX(${p.toFixed(4)})`;
+      raf = 0;
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    update();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      aria-hidden
+      className={cn("scroll-progress absolute bottom-0 left-0 h-px w-full bg-red-600", className)}
+      style={{ transform: "scaleX(0)" }}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
 // 3D tilt surface: mouse-tracked rotateX/rotateY with perspective. Disabled
 // for touch pointers and reduced-motion users (renders as a static card).
 // ---------------------------------------------------------------------------

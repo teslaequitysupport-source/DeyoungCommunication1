@@ -34,3 +34,27 @@ export function normalizeDatabaseUrl(raw: string): { url: string; changed: boole
 export function mask(url: string): string {
   return url.replace(/(\/\/[^:/@]+:)[^@]*(@)/, "$1***$2");
 }
+
+// Append Prisma connection-pool parameters when the caller has not set them.
+// Rationale: on small Railway containers the default pool size scales with CPU
+// count, and a burst of concurrent requests can exhaust the database's pooler
+// connections, surfacing as intermittent 500s on every DB-backed route. An
+// explicit, modest pool with a timeout converts that failure class into a
+// short wait, and an existing ?connection_limit= is always respected.
+export function withPoolParams(
+  raw: string,
+  params: Record<string, string> = { connection_limit: "10", pool_timeout: "15", connect_timeout: "10" }
+): { url: string; added: string[] } {
+  if (!/^postgres(?:ql)?:\/\//.test(raw)) return { url: raw, added: [] };
+  const [base, query = ""] = raw.split("?");
+  const existing = new Set(query.split("&").map((kv) => kv.split("=")[0]).filter(Boolean));
+  const added: string[] = [];
+  const pairs: string[] = query ? [query] : [];
+  for (const [k, v] of Object.entries(params)) {
+    if (!existing.has(k)) {
+      pairs.push(`${k}=${v}`);
+      added.push(k);
+    }
+  }
+  return { url: pairs.length ? `${base}?${pairs.join("&")}` : base, added };
+}

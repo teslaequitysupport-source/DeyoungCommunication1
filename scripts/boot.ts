@@ -23,7 +23,7 @@
 // Run: NODE_ENV=production bun scripts/boot.ts
 
 import { spawnSync } from "child_process";
-import { normalizeDatabaseUrl, mask } from "./boot-lib";
+import { normalizeDatabaseUrl, withPoolParams, mask } from "./boot-lib";
 
 function log(msg: string) {
   console.log(JSON.stringify({ level: "info", msg, ts: new Date().toISOString() }));
@@ -41,7 +41,16 @@ function logErr(msg: string) {
 function repairDatabaseUrl(): boolean {
   const raw = process.env.DATABASE_URL;
   if (!raw) return true; // env-doctor reports this with exact instructions
-  const { url, changed } = normalizeDatabaseUrl(raw);
+  let { url, changed } = normalizeDatabaseUrl(raw);
+  // Keep the runtime connection pool bounded and time-bounded (see
+  // withPoolParams): unbounded pools on small containers exhaust the
+  // database pooler under bursts and surface as intermittent 500s.
+  const pooled = withPoolParams(url);
+  if (pooled.added.length > 0) {
+    url = pooled.url;
+    changed = true;
+    log(`BOOT: DATABASE_URL pool params added: ${pooled.added.join(", ")}`);
+  }
   if (changed) {
     process.env.DATABASE_URL = url;
     logErr(

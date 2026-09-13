@@ -5,6 +5,7 @@ import { ApiError, tooMany } from "@/lib/errors";
 import { RATE_RULES, checkRateLimit, retryAfterSec, RateRuleName } from "@/lib/rate-limit";
 import { assertSameOrigin } from "@/lib/auth";
 import { securityEvent } from "@/lib/audit";
+import { recordRouteError } from "@/lib/error-ring";
 
 // Route handler wrapper: same-origin enforcement for mutations, per-rule rate
 // limiting, request metrics with periodic pruning, consistent error envelope.
@@ -77,6 +78,12 @@ export function wrap(handler: Handler, options: WrapOptions = {}): Handler {
         );
       }
       console.error(JSON.stringify({ level: "error", msg: "unhandled_route_error", route, err: String(err), stack: (err as Error)?.stack }));
+      // Keep the failure inspectable in-product: the admin-gated operator
+      // brief reads this ring, so a 500 can be diagnosed without platform
+      // log access. Best-effort - recording must never throw.
+      try {
+        recordRouteError(route, method, err);
+      } catch {}
       void recordMetric(route, method, 500, Date.now() - started);
       return NextResponse.json(
         { error: { code: "INTERNAL", message: "Internal server error" } },

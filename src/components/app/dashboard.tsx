@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { StatusBadge, StatCard, EmptyState, formatDate, formatCents, Spinner } from "@/components/app/ui-bits";
+import { StatusBadge, StatCard, EmptyState, formatDate, formatCents, SkeletonStats, SkeletonRows } from "@/components/app/ui-bits";
 import { apiGet, Me } from "@/lib/client/api";
 import { useToast } from "@/hooks/use-toast";
 
@@ -74,11 +74,17 @@ export default function DashboardView({ navigate, me, refreshMe }: { navigate: (
         </Alert>
       ) : null}
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Credit balance" value={billing ? formatCents(billing.balanceCents) : <Spinner />} sub="Consumed by measured usage; granted by admins (charging deferred)" />
-        <StatCard label="Minutes today" value={billing ? `${Math.round(billing.usage.minutesToday * 10) / 10}` : <Spinner />} sub={billing?.limits ? `Plan limit ${billing.limits.maxMinutesPerDay} min` : undefined} tone={(billing?.usage.minutesToday ?? 0) > (billing?.limits?.maxMinutesPerDay ?? 1) * 0.8 ? "warn" : "default"} />
-        <StatCard label="Minutes this month" value={billing ? `${Math.round(billing.usage.minutesThisMonth * 10) / 10}` : <Spinner />} sub={billing?.limits ? `Plan limit ${billing.limits.maxMinutesPerMonth} min` : undefined} />
-        <StatCard label="Metered cost" value={billing ? formatCents(billing.usage.totalCostCents) : <Spinner />} sub="What your usage consumed in credits" />
+      <div className="mt-6">
+        {billing ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard label="Credit balance" value={formatCents(billing.balanceCents)} sub="Consumed by measured usage; granted by admins (charging deferred)" />
+            <StatCard label="Minutes today" value={`${Math.round(billing.usage.minutesToday * 10) / 10}`} sub={billing.limits ? `Plan limit ${billing.limits.maxMinutesPerDay} min` : undefined} tone={(billing.usage.minutesToday ?? 0) > (billing.limits?.maxMinutesPerDay ?? 1) * 0.8 ? "warn" : "default"} />
+            <StatCard label="Minutes this month" value={`${Math.round(billing.usage.minutesThisMonth * 10) / 10}`} sub={billing.limits ? `Plan limit ${billing.limits.maxMinutesPerMonth} min` : undefined} />
+            <StatCard label="Metered cost" value={formatCents(billing.usage.totalCostCents)} sub="What your usage consumed in credits" />
+          </div>
+        ) : (
+          <SkeletonStats count={4} />
+        )}
       </div>
 
       {billing?.limits ? (
@@ -106,7 +112,7 @@ export default function DashboardView({ navigate, me, refreshMe }: { navigate: (
           <Button variant="ghost" size="sm" onClick={() => navigate("studio")}>Start a session</Button>
         </div>
         {sessions === null ? (
-          <div className="flex justify-center py-10"><Spinner /></div>
+          <SkeletonRows rows={4} />
         ) : sessions.length === 0 ? (
           <EmptyState title="No sessions yet" body="Open the studio, pick a voice and speak. Your sessions will appear here with measured latency percentiles." />
         ) : (

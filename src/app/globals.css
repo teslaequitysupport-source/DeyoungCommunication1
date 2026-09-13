@@ -224,6 +224,52 @@
       transform: translateX(-50%);
     }
   }
+  /* Skeleton shimmer: sweep highlight over a dark block. Zero radius, */
+  /* white hairline feel - matches the Redline geometry. */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.055);
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.09) 45%, rgba(232, 25, 44, 0.12) 55%, transparent);
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  /* Cinematic scanlines (very low alpha, hero-only) */
+  .scanlines {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.022) 0px,
+      rgba(255, 255, 255, 0.022) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+  /* Kinetic headline: per-line clip reveal on load */
+  .kinetic {
+    display: block;
+    clip-path: inset(0 0 110% 0);
+    animation: kinetic-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes kinetic-rise {
+    to {
+      clip-path: inset(0 0 -12% 0);
+    }
+  }
+  /* Scroll progress hairline */
+  .scroll-progress {
+    transform-origin: 0 50%;
+    will-change: transform;
+  }
   /* Pulsing live indicator */
   .live-dot {
     position: relative;
@@ -289,13 +335,25 @@
   .live-dot::after {
     animation: none;
   }
+  .skeleton::after {
+    animation: none;
+  }
+  .kinetic {
+    animation: none;
+    clip-path: none;
+  }
 }
 [data-anim="off"] .animate-marquee,
-[data-anim="off"] .live-dot::after {
+[data-anim="off"] .live-dot::after,
+[data-anim="off"] .skeleton::after {
   animation: none;
 }
 [data-anim="off"] .reveal {
   opacity: 1;
   transform: none;
   transition: none;
+}
+[data-anim="off"] .kinetic {
+  animation: none;
+  clip-path: none;
 }

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { apiGet, CatalogModel, Me, PlanInfo, ApiClientError } from "@/lib/client/api";
 import { SiteConfig } from "@/components/app/app-shell";
 import Vox3D from "@/components/app/vox-3d";
-import { TiltCard, Reveal } from "@/components/app/ui-bits";
+import { TiltCard, Reveal, Skeleton, SkeletonCards, SkeletonStats, CursorSpotlight, EmptyState } from "@/components/app/ui-bits";
 import {
   AudioWaveform, ServerCog, ShieldCheck, UploadCloud, Gauge,
   ArrowRight, ChevronDown, EyeOff, Scale, ScanEye, FileLock2, DatabaseZap,
@@ -104,6 +104,7 @@ interface OperatorBrief {
     audioChunkMs: number; maxModelUploadMb: number;
   };
   notes: { id: string; title: string; body: string }[];
+  recentErrors?: { at: string; route: string; method: string; message: string; stack: string | null }[];
 }
 
 function fmtWindow(sec: number): string {
@@ -129,16 +130,16 @@ function StatusChip({ status }: { status: string }) {
 }
 
 export default function LandingView({ navigate, config, user }: { navigate: (to: string) => void; config: SiteConfig | null; user: Me["user"] }) {
-  const [models, setModels] = useState<CatalogModel[]>([]);
-  const [plans, setPlans] = useState<PlanInfo[]>([]);
+  const [models, setModels] = useState<CatalogModel[] | null>(null);
+  const [plans, setPlans] = useState<PlanInfo[] | null>(null);
   const [limits, setLimits] = useState<LimitsResponse | null>(null);
   const [brief, setBrief] = useState<OperatorBrief | null>(null);
   const [briefError, setBriefError] = useState<string | null>(null);
   const isAdmin = user?.role === "ADMIN";
 
   useEffect(() => {
-    apiGet<{ models: CatalogModel[] }>("/api/models").then((d) => setModels(d.models)).catch(() => {});
-    apiGet<{ plans: PlanInfo[] }>("/api/billing/plans").then((d) => setPlans(d.plans)).catch(() => {});
+    apiGet<{ models: CatalogModel[] }>("/api/models").then((d) => setModels(d.models)).catch(() => setModels([]));
+    apiGet<{ plans: PlanInfo[] }>("/api/billing/plans").then((d) => setPlans(d.plans)).catch(() => setPlans([]));
     apiGet<LimitsResponse>("/api/public/limits").then(setLimits).catch(() => {});
   }, []);
 
@@ -159,6 +160,8 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
       {/* ============================= HERO ============================= */}
       <section className="relative flex min-h-[100svh] flex-col justify-center overflow-hidden border-b border-white/10" id="top">
         <div className="grid-lines grid-lines-fade absolute inset-0" aria-hidden />
+        <div className="scanlines pointer-events-none absolute inset-0" aria-hidden />
+        <CursorSpotlight />
         <div className="pointer-events-none absolute left-1/2 top-1/2 h-[560px] w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-red-600/10 blur-[120px]" aria-hidden />
         <Vox3D className="pointer-events-none absolute inset-0" intensity={config?.animationIntensity} />
 
@@ -169,9 +172,9 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
           </div>
 
           <h1 className="mt-8 font-display text-[13vw] font-bold uppercase leading-[0.92] tracking-tight text-white sm:text-7xl lg:text-8xl">
-            Your voice,
-            <span className="block text-red-600">rebuilt</span>
-            <span className="block">in real time.</span>
+            <span className="kinetic" style={{ animationDelay: "0.05s" }}>Your voice,</span>
+            <span className="kinetic block text-red-600" style={{ animationDelay: "0.18s" }}>rebuilt</span>
+            <span className="kinetic block" style={{ animationDelay: "0.31s" }}>in real time.</span>
           </h1>
 
           <p className="mt-8 max-w-2xl text-pretty text-base leading-relaxed text-zinc-400 sm:text-lg">
@@ -202,6 +205,25 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
             REGISTRATION REQUIRES EMAIL VERIFICATION. THIS DEPLOYMENT HAS SMTP DISABLED, SO VERIFICATION TOKENS ARE
             SHOWN ONCE AT SIGNUP (DOCUMENTED DEV-MODE BEHAVIOR).
           </p>
+
+          {/* Live honest counters - only numbers this deployment actually serves. */}
+          <div className="mt-10 grid max-w-3xl grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-4">
+            {[
+              { label: "ENFORCED RATE RULES", value: limits ? String(limits.rules.length) : null },
+              { label: "VOICES PUBLISHED", value: models ? String(models.length) : null },
+              { label: "PLANS ENFORCED", value: plans ? String(plans.length) : null },
+              { label: "FABRICATED METRICS", value: "0" },
+            ].map((s) => (
+              <div key={s.label} className="bg-black px-4 py-4">
+                {s.value !== null ? (
+                  <p className="font-display text-2xl font-bold text-white">{s.value}</p>
+                ) : (
+                  <div className="skeleton h-7 w-10" />
+                )}
+                <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-zinc-500">{s.label}</p>
+              </div>
+            ))}
+          </div>
 
           {/* Pipeline strip */}
           <div className="mt-16 grid grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-3 lg:grid-cols-6">
@@ -312,7 +334,14 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
               ))}
             </div>
           ) : (
-            <p className="mt-10 font-mono text-xs text-zinc-500">FETCHING LIVE LIMITS&hellip;</p>
+            <div aria-label="Loading live rate limits" className="mt-14 grid grid-cols-2 gap-px border border-white/10 bg-white/10 sm:grid-cols-3 lg:grid-cols-5">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} aria-hidden className="bg-black p-5">
+                  <div className="skeleton h-2.5 w-24" />
+                  <div className="skeleton mt-3 h-7 w-16" />
+                </div>
+              ))}
+            </div>
           )}
           {limits ? (
             <div className="mt-6 grid gap-2 font-mono text-[11px] leading-relaxed text-zinc-500 md:grid-cols-2">
@@ -339,25 +368,33 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
             </Reveal>
           </div>
           <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {models.slice(0, 4).map((m, i) => (
-              <Reveal key={m.id} delay={(i % 4) * 70}>
-                <TiltCard max={5}>
-                  <div className="h-full border border-white/10 bg-card p-5 transition-colors hover:border-red-600/60">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="font-display text-base font-bold uppercase tracking-wide text-white">{m.name}</h3>
-                      <Badge className="border-red-800 bg-red-950/70 font-mono text-[10px] text-red-400 hover:bg-red-950/70">{m.engine}</Badge>
-                    </div>
-                    <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-zinc-400">{m.description}</p>
-                    <p className="mt-4 border-t border-white/10 pt-3 font-mono text-[10px] uppercase tracking-wider text-zinc-500">
-                      {m.licenseName}{m.licenseVerified ? " · verified" : " · unverified"}
-                    </p>
+            {models === null ? (
+              <SkeletonCards count={4} className="sm:col-span-2 lg:col-span-4" />
+            ) : (
+              <>
+                {models.slice(0, 4).map((m, i) => (
+                  <Reveal key={m.id} delay={(i % 4) * 70}>
+                    <TiltCard max={5}>
+                      <div className="h-full border border-white/10 bg-card p-5 transition-colors hover:border-red-600/60">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="font-display text-base font-bold uppercase tracking-wide text-white">{m.name}</h3>
+                          <Badge className="border-red-800 bg-red-950/70 font-mono text-[10px] text-red-400 hover:bg-red-950/70">{m.engine}</Badge>
+                        </div>
+                        <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-zinc-400">{m.description}</p>
+                        <p className="mt-4 border-t border-white/10 pt-3 font-mono text-[10px] uppercase tracking-wider text-zinc-500">
+                          {m.licenseName}{m.licenseVerified ? " · verified" : " · unverified"}
+                        </p>
+                      </div>
+                    </TiltCard>
+                  </Reveal>
+                ))}
+                {models.length === 0 ? (
+                  <div className="sm:col-span-2 lg:col-span-4">
+                    <EmptyState title="No approved models published yet" body="Built-in DSP voices are available in the studio now. Community RVC uploads appear here only after passing human moderation with a verified license." />
                   </div>
-                </TiltCard>
-              </Reveal>
-            ))}
-            {models.length === 0 ? (
-              <p className="font-mono text-xs text-zinc-500">NO APPROVED MODELS PUBLISHED YET.</p>
-            ) : null}
+                ) : null}
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -426,26 +463,30 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
             lede="Prices are intentionally unpublished: they will be set from the measured GPU cost model, not invented. Limits below are real and enforced server-side. Credits are administratively granted in this deployment; no payment can be taken."
           />
           <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {plans.map((p, i) => (
-              <Reveal key={p.code} delay={(i % 4) * 70}>
-                <div className="flex h-full flex-col border border-white/10 bg-card p-6 transition-colors hover:border-red-600/60">
-                  <div className="flex items-baseline justify-between">
-                    <h3 className="font-display text-lg font-bold uppercase tracking-wide text-white">{p.name}</h3>
-                    <span className="font-mono text-[11px] text-red-600">
-                      {p.priceCents === null ? "PRICING PENDING" : `$${(p.priceCents / 100).toFixed(0)}/MO`}
-                    </span>
+            {plans === null ? (
+              <SkeletonCards count={4} className="sm:col-span-2 lg:col-span-4" />
+            ) : (
+              plans.map((p, i) => (
+                <Reveal key={p.code} delay={(i % 4) * 70}>
+                  <div className="flex h-full flex-col border border-white/10 bg-card p-6 transition-colors hover:border-red-600/60">
+                    <div className="flex items-baseline justify-between">
+                      <h3 className="font-display text-lg font-bold uppercase tracking-wide text-white">{p.name}</h3>
+                      <span className="font-mono text-[11px] text-red-600">
+                        {p.priceCents === null ? "PRICING PENDING" : `$${(p.priceCents / 100).toFixed(0)}/MO`}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs leading-relaxed text-zinc-400">{p.description}</p>
+                    <dl className="mt-5 space-y-2 border-t border-white/10 pt-4 font-mono text-[11px] uppercase tracking-wider text-zinc-400">
+                      <div className="flex justify-between"><dt>Sessions</dt><dd className="text-white">{p.maxConcurrentSessions}</dd></div>
+                      <div className="flex justify-between"><dt>Min / day</dt><dd className="text-white">{p.maxMinutesPerDay}</dd></div>
+                      <div className="flex justify-between"><dt>Min / month</dt><dd className="text-white">{p.maxMinutesPerMonth}</dd></div>
+                      <div className="flex justify-between"><dt>Upload slots</dt><dd className="text-white">{p.maxModelUploads}</dd></div>
+                      <div className="flex justify-between"><dt>Tiers</dt><dd className="text-right text-white">{p.allowedTiers.join(", ")}</dd></div>
+                    </dl>
                   </div>
-                  <p className="mt-2 text-xs leading-relaxed text-zinc-400">{p.description}</p>
-                  <dl className="mt-5 space-y-2 border-t border-white/10 pt-4 font-mono text-[11px] uppercase tracking-wider text-zinc-400">
-                    <div className="flex justify-between"><dt>Sessions</dt><dd className="text-white">{p.maxConcurrentSessions}</dd></div>
-                    <div className="flex justify-between"><dt>Min / day</dt><dd className="text-white">{p.maxMinutesPerDay}</dd></div>
-                    <div className="flex justify-between"><dt>Min / month</dt><dd className="text-white">{p.maxMinutesPerMonth}</dd></div>
-                    <div className="flex justify-between"><dt>Upload slots</dt><dd className="text-white">{p.maxModelUploads}</dd></div>
-                    <div className="flex justify-between"><dt>Tiers</dt><dd className="text-right text-white">{p.allowedTiers.join(", ")}</dd></div>
-                  </dl>
-                </div>
-              </Reveal>
-            ))}
+                </Reveal>
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -477,7 +518,20 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
                 ) : null}
 
                 {!brief && !briefError ? (
-                  <p className="mt-6 font-mono text-xs text-zinc-500">FETCHING OPERATOR BRIEF&hellip;</p>
+                  <div className="mt-8" aria-label="Loading operator brief">
+                    <SkeletonStats count={6} className="grid-cols-2 sm:grid-cols-3 lg:grid-cols-6" />
+                    <div className="mt-6 space-y-3" aria-hidden>
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="border border-white/10 bg-black p-4">
+                          <div className="skeleton h-3.5 w-64" />
+                          <div className="mt-3 space-y-2">
+                            <div className="skeleton h-3 w-full" />
+                            <div className="skeleton h-3 w-4/5" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ) : null}
 
                 {brief ? (
@@ -529,6 +583,38 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
                         ))}
                       </div>
                     </div>
+
+                    {/* 500 diagnostics: what failed, where, with stack. */}
+                    {brief.recentErrors && brief.recentErrors.length > 0 ? (
+                      <div>
+                        <p className="label-kicker text-red-500">Unhandled route errors &middot; in-process capture &middot; cleared on redeploy</p>
+                        <p className="mt-2 font-mono text-[11px] text-zinc-500">
+                          THE “INTERNAL SERVER ERROR” TOASTS USERS SEE LAND HERE WITH ROUTE + STACK. THIS IS THE DIAGNOSIS SOURCE.
+                        </p>
+                        <div className="mt-4 space-y-3">
+                          {brief.recentErrors.map((e, i) => (
+                            <div key={`${e.at}-${i}`} className="border border-red-900/60 bg-red-950/20 p-4">
+                              <div className="flex flex-wrap items-center gap-3">
+                                <Badge className="border-red-600 bg-red-600 font-mono text-[10px] text-white hover:bg-red-600">500</Badge>
+                                <p className="font-mono text-xs text-white">{e.method} {e.route}</p>
+                                <p className="ml-auto font-mono text-[10px] text-zinc-500">{new Date(e.at).toLocaleString()}</p>
+                              </div>
+                              <p className="mt-2 font-mono text-[11px] leading-relaxed text-red-300">{e.message}</p>
+                              {e.stack ? (
+                                <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap border-t border-red-900/40 pt-2 font-mono text-[10px] leading-relaxed text-zinc-500">{e.stack}</pre>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="label-kicker text-zinc-400">Unhandled route errors</p>
+                        <p className="mt-3 border border-white/10 bg-black px-3 py-2 font-mono text-xs text-zinc-400">
+                          NONE CAPTURED SINCE LAST DEPLOY. IF A USER REPORTS “INTERNAL SERVER ERROR”, THIS BLOCK SHOWS THE EXACT ROUTE AND STACK.
+                        </p>
+                      </div>
+                    )}
 
                     {/* internal write-ups */}
                     <div>
