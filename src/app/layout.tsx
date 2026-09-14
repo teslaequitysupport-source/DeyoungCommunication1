@@ -17,6 +17,13 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+// Deployed-build marker, rendered as <meta name="voxcore-build"> in the HTML
+// head. View-source on any page names the exact commit that is serving, even
+// when /api/health is unreachable. Same fallback chain as /api/health; baked
+// at build time (Railway injects RAILWAY_GIT_COMMIT_SHA into the build env).
+const BUILD_SHA =
+  process.env.RAILWAY_GIT_COMMIT_SHA ?? process.env.GIT_COMMIT_SHA ?? "dev-local";
+
 export const metadata: Metadata = {
   title: "VoxCore: Real-Time AI Voice Conversion",
   description:
@@ -24,6 +31,9 @@ export const metadata: Metadata = {
   keywords: ["voice conversion", "real-time", "AI voice", "RVC", "streaming audio"],
   icons: {
     icon: "/logo.svg",
+  },
+  other: {
+    "voxcore-build": BUILD_SHA,
   },
   openGraph: {
     title: "VoxCore: Real-Time AI Voice Conversion",

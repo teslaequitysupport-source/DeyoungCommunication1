@@ -43,6 +43,31 @@ process.on("uncaughtException", (err) => {
 const dev = process.env.NODE_ENV !== "production";
 const port = Number(process.env.PORT || 3000);
 
+// Last-resort 500 page for requests that crash Next's own handler (render
+// faults, RSC payload failures). Dependency-free inline HTML: no DB, no
+// fonts, no stylesheet. This replaces the old bare-text "internal server
+// error" response, which was the one failure surface with no branding, no
+// guidance and no diagnosis path.
+const FALLBACK_500_HTML = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VoxCore / Fault</title>
+</head>
+<body style="background:#0a0a0d;color:#f4f4f0;font-family:ui-sans-serif,system-ui,sans-serif;margin:0">
+<div style="align-items:center;display:flex;flex-direction:column;justify-content:center;min-height:100vh;padding:24px;text-align:center">
+<p style="color:#e11d2e;font-family:ui-monospace,monospace;font-size:11px;letter-spacing:0.35em;text-transform:uppercase">VoxCore / Fault</p>
+<h1 style="font-size:clamp(32px,6vw,56px);font-weight:700;letter-spacing:-0.02em;margin:24px 0 0">Something broke on our side.</h1>
+<p style="color:#a3a3a8;font-size:14px;line-height:1.7;margin:20px auto 0;max-width:420px">This request hit a fault outside the normal error handling. It is logged with full detail in the server logs. Reload first. If it persists, the public diagnostics endpoint below reports the deployed build and the last recorded error.</p>
+<div style="display:flex;gap:16px;margin-top:32px;flex-wrap:wrap;justify-content:center">
+<a href="/" style="background:#e11d2e;border:1px solid #e11d2e;color:#ffffff;font-family:ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:0.2em;padding:12px 32px;text-decoration:none;text-transform:uppercase">Reload</a>
+<a href="/api/health" style="border:1px solid rgba(255,255,255,0.2);color:#f4f4f0;font-family:ui-monospace,monospace;font-size:12px;font-weight:600;letter-spacing:0.2em;padding:12px 32px;text-decoration:none;text-transform:uppercase">Diagnostics</a>
+</div>
+</div>
+</body>
+</html>`;
+
 // The gateway reports session metrics to the control plane over HTTP; inside
 // this process that is the same server, so default BACKEND_URL to itself.
 if (!process.env.BACKEND_URL) {
@@ -59,9 +84,23 @@ async function main() {
 
   const server = createServer((req, res) => {
     handle(req, res).catch((err) => {
-      console.error("request handling error", err);
+      // Structured log line: this is the one 500 class invisible to
+      // RequestMetric (the metric write lives inside route handlers, which
+      // have already crashed here), so the platform log is its only record.
+      console.error(
+        JSON.stringify({
+          level: "error",
+          msg: "request_handling_error",
+          route: req.url,
+          method: req.method,
+          err: err instanceof Error ? (err.stack ?? err.message) : String(err),
+          ts: new Date().toISOString(),
+        })
+      );
       res.statusCode = 500;
-      res.end("internal server error");
+      res.setHeader("content-type", "text/html; charset=utf-8");
+      res.setHeader("cache-control", "no-store");
+      res.end(FALLBACK_500_HTML);
     });
   });
 

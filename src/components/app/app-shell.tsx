@@ -68,7 +68,7 @@ function parseHash(): RouteInfo {
   return { path: pathPart || "", query: new URLSearchParams(queryPart || "") };
 }
 
-export default function AppShell() {
+export default function AppShell({ buildSha }: { buildSha?: string }) {
   const [route, setRoute] = useState<RouteInfo>({ path: "", query: new URLSearchParams() });
   const [me, setMe] = useState<Me | null>(null);
   const [config, setConfig] = useState<SiteConfig | null>(null);
@@ -494,8 +494,19 @@ function Shell({
               </button>
             ))}
           </div>
-          <div className="text-zinc-400">
-            Real-time AI voice conversion. Infrastructure core build, September 2026. No fabricated metrics: all numbers shown anywhere in this product are measured live.
+          <div className="flex flex-col items-start gap-2 text-zinc-400 sm:items-end">
+            <span>
+              Real-time AI voice conversion. Infrastructure core build, September 2026. No fabricated metrics: all numbers shown anywhere in this product are measured live.
+            </span>
+            {/* Deployed-build chip: the exact commit serving this page. If this
+                does not match the latest commit on main, the deploy did not
+                ship - no tooling needed to verify. */}
+            <span
+              className="border border-white/10 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-zinc-500"
+              title="Deployed build commit"
+            >
+              build {buildSha ? buildSha.slice(0, 8) : "dev-local"}
+            </span>
           </div>
         </div>
       </footer>

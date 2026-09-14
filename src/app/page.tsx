@@ -6,5 +6,10 @@ import AppShell from "@/components/app/app-shell";
 // exposes only this page, so navigation is hash-based here.
 
 export default function Home() {
-  return <AppShell />;
+  // Baked at build time. Railway injects RAILWAY_GIT_COMMIT_SHA into the
+  // build environment, so the footer chip names the commit this build was
+  // made from. Same fallback chain as /api/health.
+  const buildSha =
+    process.env.RAILWAY_GIT_COMMIT_SHA ?? process.env.GIT_COMMIT_SHA ?? "dev-local";
+  return <AppShell buildSha={buildSha} />;
 }
