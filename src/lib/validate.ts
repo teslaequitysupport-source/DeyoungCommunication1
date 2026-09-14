@@ -148,6 +148,17 @@ export const planPatchSchema = z.object({
   description: z.string().trim().max(500).optional(),
 });
 
+// Browser self-reported UI faults (error boundary + global listeners).
+// Every field size-capped; the server never trusts more than this shape.
+export const clientErrorSchema = z.object({
+  digest: z.string().trim().max(100).optional(),
+  message: z.string().trim().min(1).max(600),
+  stack: z.string().trim().max(4000).optional(),
+  route: z.string().trim().max(200).optional(),
+  page: z.string().trim().max(200).optional(),
+  buildSha: z.string().trim().max(50).optional(),
+});
+
 export const workerRegisterSchema = z.object({
   regToken: z.string().min(10).max(200),
   name: z.string().trim().min(1).max(80).optional(),

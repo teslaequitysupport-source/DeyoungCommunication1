@@ -128,6 +128,7 @@ interface OperatorBrief {
   };
   notes: { id: string; title: string; body: string }[];
   recentErrors?: { at: string; route: string; method: string; message: string; stack: string | null }[];
+  recentClientFaults?: { createdAt: string; digest: string | null; message: string; route: string | null; page: string | null; buildSha: string | null }[];
 }
 
 function fmtWindow(sec: number): string {
@@ -709,6 +710,31 @@ export default function LandingView({ navigate, config, user }: { navigate: (to:
                         </p>
                       </div>
                     )}
+
+                    {/* browser self-reported UI faults: what the visitor's
+                        browser threw, on which route and build. Survives
+                        redeploys, unlike the in-process ring above. */}
+                    {brief.recentClientFaults && brief.recentClientFaults.length > 0 ? (
+                      <div>
+                        <p className="label-kicker text-red-500">Client UI faults &middot; last 24h &middot; self-reported by visitor browsers</p>
+                        <div className="mt-4 space-y-3">
+                          {brief.recentClientFaults.map((e, i) => (
+                            <div key={`${e.createdAt}-${i}`} className="border border-red-900/60 bg-red-950/20 p-4">
+                              <div className="flex flex-wrap items-center gap-3">
+                                <Badge className="border-red-600 bg-red-600 font-mono text-[10px] text-white hover:bg-red-600">UI</Badge>
+                                <p className="font-mono text-xs text-white">{e.route ? `#/${e.route}` : (e.page ?? "/")}</p>
+                                {e.buildSha ? <p className="font-mono text-[10px] text-zinc-500">build {e.buildSha.slice(0, 8)}</p> : null}
+                                <p className="ml-auto font-mono text-[10px] text-zinc-500">{new Date(e.createdAt).toLocaleString()}</p>
+                              </div>
+                              <p className="mt-2 font-mono text-[11px] leading-relaxed text-red-300">{e.message}</p>
+                              {e.digest ? (
+                                <p className="mt-1 font-mono text-[10px] text-zinc-500">digest: {e.digest}</p>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
 
                     {/* internal write-ups */}
                     <div>

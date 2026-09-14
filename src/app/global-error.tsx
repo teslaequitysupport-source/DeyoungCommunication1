@@ -5,6 +5,8 @@
 // does not inherit the app shell. Self-contained inline styles so it works
 // even when the global stylesheet failed to load.
 
+import { useEffect } from "react";
+
 export default function GlobalError({
   error,
   reset,
@@ -12,6 +14,30 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    // Best-effort self-report. This boundary may be rendering while the app
+    // shell is broken, so: plain fetch, no retries, swallow every failure.
+    try {
+      const buildSha =
+        document.querySelector('meta[name="voxcore-build"]')?.getAttribute("content") ?? undefined;
+      void fetch("/api/client-errors", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        keepalive: true,
+        body: JSON.stringify({
+          message: error.message.slice(0, 600) || "root boundary fault",
+          stack: error.stack ? error.stack.slice(0, 4000) : undefined,
+          digest: error.digest ? error.digest.slice(0, 100) : undefined,
+          page: window.location.pathname.slice(0, 200),
+          buildSha: buildSha ? buildSha.slice(0, 50) : undefined,
+        }),
+      }).catch(() => {});
+    } catch {
+      // never let reporting throw
+    }
+  }, [error]);
+
   return (
     <html lang="en">
       <body style={{ background: "#050505", color: "#fafafa", fontFamily: "ui-sans-serif, system-ui, sans-serif", margin: 0 }}>

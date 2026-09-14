@@ -19,6 +19,30 @@ export default function Error({
     // Client-side render errors surface in the console; the digest lets
     // support correlate this screen with the server-side log entry.
     console.error("voxcore_ui_error", error.message, error.digest);
+
+    // Self-report the fault so the operator brief shows it without the
+    // visitor having to copy anything. Best-effort: never throws, never
+    // retries (one report per fault per page load).
+    try {
+      const buildSha =
+        document.querySelector('meta[name="voxcore-build"]')?.getAttribute("content") ?? undefined;
+      void fetch("/api/client-errors", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        keepalive: true,
+        body: JSON.stringify({
+          message: error.message.slice(0, 600) || "route boundary fault",
+          stack: error.stack ? error.stack.slice(0, 4000) : undefined,
+          digest: error.digest ? error.digest.slice(0, 100) : undefined,
+          route: window.location.hash.replace(/^#\/?/, "").slice(0, 200) || undefined,
+          page: window.location.pathname.slice(0, 200),
+          buildSha: buildSha ? buildSha.slice(0, 50) : undefined,
+        }),
+      }).catch(() => {});
+    } catch {
+      // never let reporting throw
+    }
   }, [error]);
 
   return (
@@ -29,9 +53,9 @@ export default function Error({
         Something broke on our side.
       </h1>
       <p className="mt-5 max-w-md text-sm leading-relaxed text-[#a3a3a8]">
-        This was a server or render fault, not anything you did. The failure is
-        logged with full detail server-side. Retry first - if it persists, quote
-        the digest below.
+        This was a server or render fault, not anything you did. The fault has
+        been reported automatically with full technical detail. Retry first -
+        if it persists, quote the digest below.
       </p>
       {error?.digest ? (
         <p className="mt-4 border border-white/10 bg-white/[0.03] px-4 py-2 font-mono text-xs text-[#a3a3a8]">

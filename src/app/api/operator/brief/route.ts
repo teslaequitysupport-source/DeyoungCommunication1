@@ -15,7 +15,7 @@ export const GET = wrap(
     await requireAdmin();
 
     const dayAgo = new Date(Date.now() - 24 * 3600 * 1000);
-    const [usersTotal, usersSuspended, modelsPending, modelsApproved, modelsTakenDown, workersByStatus, sessionsActive, queueWaiting, ticketsOpen, rateLimited24h, denied24h, requests24h] = await Promise.all([
+    const [usersTotal, usersSuspended, modelsPending, modelsApproved, modelsTakenDown, workersByStatus, sessionsActive, queueWaiting, ticketsOpen, rateLimited24h, denied24h, requests24h, clientFaults24h, recentClientFaults] = await Promise.all([
       db.user.count(),
       db.user.count({ where: { status: "SUSPENDED" } }),
       db.voiceModel.count({ where: { status: "PENDING_REVIEW" } }),
@@ -28,6 +28,13 @@ export const GET = wrap(
       db.securityEvent.count({ where: { kind: "RATE_LIMITED", createdAt: { gte: dayAgo } } }),
       db.securityEvent.count({ where: { kind: "PERMISSION_DENIED", createdAt: { gte: dayAgo } } }),
       db.requestMetric.count({ where: { createdAt: { gte: dayAgo } } }),
+      db.clientErrorReport.count({ where: { createdAt: { gte: dayAgo } } }),
+      db.clientErrorReport.findMany({
+        where: { createdAt: { gte: dayAgo } },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        select: { createdAt: true, digest: true, message: true, route: true, page: true, buildSha: true },
+      }),
     ]);
 
     const workerCounts: Record<string, number> = {};
@@ -51,6 +58,7 @@ export const GET = wrap(
         tickets: { unresolved: ticketsOpen },
         security: { rateLimited24h: rateLimited24h, permissionDenied24h: denied24h },
         traffic: { requests24h: requests24h },
+        clientFaults: { last24h: clientFaults24h },
       },
 
       env: {
@@ -73,6 +81,12 @@ export const GET = wrap(
       // one-look diagnosis: exact route, message and stack, without needing
       // platform log access. Reset on redeploy/restart by design.
       recentErrors: recentRouteErrors(),
+
+      // Browser self-reported UI faults (error boundary + global listeners),
+      // stored in ClientErrorReport. These survive redeploys and cover the
+      // failure class the in-process ring cannot see: faults that happen in
+      // the visitor's browser.
+      recentClientFaults,
 
       notes: [
         {

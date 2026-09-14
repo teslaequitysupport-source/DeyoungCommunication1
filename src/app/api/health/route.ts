@@ -46,6 +46,35 @@ export const GET = wrap(
     const ring = recentRouteErrors(3600 * 1000);
     const lastRing = ring.length > 0 ? ring[ring.length - 1] : null;
 
+    // Most recent browser self-reported UI fault (last hour). Same disclosure
+    // discipline as the ring: message, route and build only - no stack, no
+    // user agent. This covers the failure class the ring cannot see: faults
+    // that happen inside the visitor's browser.
+    let lastClientFault: {
+      at: string;
+      route: string | null;
+      message: string;
+      buildSha: string | null;
+    } | null = null;
+    try {
+      const hourAgo = new Date(Date.now() - 3600 * 1000);
+      const fault = await db.clientErrorReport.findFirst({
+        where: { createdAt: { gte: hourAgo } },
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true, route: true, message: true, buildSha: true },
+      });
+      if (fault) {
+        lastClientFault = {
+          at: fault.createdAt.toISOString(),
+          route: fault.route,
+          message: fault.message,
+          buildSha: fault.buildSha,
+        };
+      }
+    } catch {
+      lastClientFault = null;
+    }
+
     return jsonOk({
       status: dbOk ? "ok" : "degraded",
       // Deployed commit (Railway injects RAILWAY_GIT_COMMIT_SHA at runtime).
@@ -59,6 +88,7 @@ export const GET = wrap(
         lastRingError: lastRing
           ? { at: lastRing.at, route: lastRing.route, method: lastRing.method, message: lastRing.message }
           : null,
+        lastClientFault,
       },
       time: new Date().toISOString(),
     });

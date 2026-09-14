@@ -26,6 +26,7 @@ export const RATE_RULES = {
   supportContact: { name: "support:contact", limit: 3, windowSec: 3600 },
   waitlistJoin: { name: "waitlist:join", limit: 3, windowSec: 3600 },
   supportReply: { name: "support:reply", limit: 30, windowSec: 600 },
+  clientError: { name: "client:error", limit: 30, windowSec: 600 },
   adminWrite: { name: "admin:write", limit: 120, windowSec: 60 },
   testLab: { name: "admin:testlab", limit: 20, windowSec: 60 },
   emailResend: { name: "auth:email-resend", limit: 3, windowSec: 3600 },

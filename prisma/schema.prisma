@@ -753,3 +753,24 @@ model TestRun {
 
   @@index([kind, createdAt])
 }
+
+// ---------------------------------------------------------------------------
+// CLIENT FAULT REPORTS
+// Self-reported UI faults: the browser error boundary and global error
+// listeners POST here so a render fault is diagnosable without asking the
+// visitor to open dev tools. Size-capped, rate-limited, never sent anywhere.
+// ---------------------------------------------------------------------------
+
+model ClientErrorReport {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  digest    String?  @db.VarChar(100) // Next.js server-error digest, when present
+  message   String   @db.VarChar(600)
+  stack     String?  @db.VarChar(4000)
+  route     String?  @db.VarChar(200) // hash route in the SPA, e.g. "guides"
+  page      String?  @db.VarChar(200) // window.location.pathname
+  buildSha  String?  @db.VarChar(50)  // voxcore-build meta value of the reporting page
+  userAgent String?  @db.VarChar(300)
+
+  @@index([createdAt])
+}

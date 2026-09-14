@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import ClientErrorReporter from "@/components/app/client-error-reporter";
 
 // Typography system (two typefaces per the design spec): Space Grotesk for
 // display headlines, Inter for body copy, labels, forms and controls.
@@ -59,6 +60,10 @@ export default function RootLayout({
       >
         {children}
         <Toaster />
+        {/* Self-reporting UI faults: render faults come from the error
+            boundaries, everything else (handler throws, unhandled
+            rejections) from these listeners. */}
+        <ClientErrorReporter />
       </body>
     </html>
   );
