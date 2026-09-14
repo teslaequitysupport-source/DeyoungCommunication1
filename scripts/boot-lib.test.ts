@@ -1,11 +1,14 @@
 // Unit check for the DATABASE_URL auto-repair in scripts/boot-lib.ts
 // (pure functions, no boot, no DB).
-// Cases: the user's exact raw paste, the known-good encoded URL (idempotency),
-// a raw '%' in a password, no password, no userinfo, non-postgres URL.
+// Cases: a raw paste with the full tricky character set (# $ , ) &), the
+// known-good encoded URL (idempotency), a raw '%' in a password, no password,
+// no userinfo, non-postgres URL.
+// NOTE: the fixtures are SYNTHETIC. Real credentials never belong in source
+// files; rotate any that were ever committed or pasted into chat.
 import { normalizeDatabaseUrl, withPoolParams } from "./boot-lib";
 
-const RAW = "postgresql://postgres.ercecgqzogmmhhueyygu:#T2$WF2,VwRp)&J@aws-1-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require";
-const ENCODED = "postgresql://postgres.ercecgqzogmmhhueyygu:%23T2%24WF2%2CVwRp%29%26J@aws-1-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require";
+const RAW = "postgresql://postgres.projref000000000000:#A1$B2,Cd)&Ef@aws-1-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require";
+const ENCODED = "postgresql://postgres.projref000000000000:%23A1%24B2%2CCd%29%26Ef@aws-1-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require";
 
 let failures = 0;
 function check(name: string, got: { url: string; changed: boolean }, wantUrl: string, wantChanged: boolean) {
@@ -28,7 +31,7 @@ check("non-postgres untouched", normalizeDatabaseUrl("mysql://u:p#x@h/db"), "mys
 
 // The repaired URL must parse and round-trip the password exactly.
 const parsed = new URL(ENCODED);
-const roundTrip = decodeURIComponent(parsed.password) === "#T2$WF2,VwRp)&J";
+const roundTrip = decodeURIComponent(parsed.password) === "#A1$B2,Cd)&Ef";
 console.log(roundTrip ? "PASS repaired URL parses; decodeURIComponent round-trips the password" : "FAIL round-trip");
 if (!roundTrip) failures++;
 
